@@ -46,13 +46,15 @@
 .bottom-item span{font-size:10px;font-weight:500}
 .bottom-item.active{color:var(--text)}
 .count{color:#59655e;background:transparent;font-size:9px;font-weight:600}
+.account-button{padding:0;color:var(--muted);background:transparent;border:0;font-size:11px}.account-button.authenticated{color:var(--accent)}
+.auth-dialog{position:absolute;z-index:20;inset:0;display:flex;align-items:center;padding:18px;background:rgba(37,42,38,.24)}.auth-dialog.hidden{display:none}.auth-card{width:100%;padding:21px 18px;background:#fff;border-radius:11px;box-shadow:0 16px 40px rgba(37,42,38,.16)}.auth-card h2{margin-top:5px;font-size:20px;letter-spacing:-.04em}.auth-card p{margin-top:9px;color:var(--muted);font-size:11px;line-height:1.5}.auth-form{display:grid;gap:12px;margin-top:19px}.auth-form label{display:grid;gap:6px;color:var(--muted);font-size:10px}.auth-form input{width:100%;padding:10px 0;color:var(--text);background:transparent;border:0;border-bottom:1px solid var(--line);outline:0;font-size:12px}.auth-primary{padding:11px;color:#fff;background:var(--accent);border:0;border-radius:6px;font-size:11px}.auth-secondary{padding:4px 0;color:var(--accent);background:transparent;border:0;font-size:10px}.auth-status{min-height:16px;margin-top:10px!important;color:var(--accent)!important;font-size:10px!important}.auth-status.error{color:var(--hard)!important}.auth-account{display:flex;align-items:center;justify-content:space-between;margin-top:17px;padding-top:13px;border-top:1px solid var(--line);color:var(--muted);font-size:10px}
 </style>
 </head>
 <body>
 <div class="heading"><h1>轻舟 · 手机网页版预览 v31</h1><p>推荐只在每天第一次开始时生成；状态只改变提示，刷新任务才重新抽取。</p></div>
 <div class="phone">
   <div class="status"><span>9:41</span><span>Wi-Fi&nbsp;&nbsp;100%</span></div>
-  <div class="appbar"><div class="brand">轻舟</div><div class="top-note">···</div></div>
+  <div class="appbar"><div class="brand">轻舟</div><button id="accountButton" class="account-button" type="button">账户</button></div>
 
   <section id="startScreen" class="screen start">
     <div class="start-topline"><span>轻舟</span><span id="startDate"></span></div>
@@ -96,7 +98,10 @@
   <div id="reviewDialog" class="review-dialog hidden"><div class="review-card"><div class="sheet-head"><div><div class="eyebrow">TASK REVIEW</div><h2 id="reviewDialogTitle"></h2></div><button class="close" data-close="reviewDialog">×</button></div><p>留下一句话就够了。完成文字输入，即完成这次复盘。</p><textarea id="reviewText" maxlength="200" placeholder="这次有什么值得记住的？"></textarea><div class="review-footer"><span><b id="reviewCount">0</b>/200</span><button class="review-done" id="reviewDone" disabled>完成复盘</button></div></div></div>
   <div id="taskLimitAlert" class="capacity-alert hidden"><div class="capacity-alert-card"><div class="capacity-alert-mark">!</div><h3>当下囤积任务过多，请先一件一件事情来，或者先生成灵感</h3><button id="goIdeasFromLimit">生成灵感</button></div></div>
   <div id="capacityAlert" class="capacity-alert hidden"><div class="capacity-alert-card"><div class="capacity-alert-mark">!</div><h3>任务分配尚未达到最优解，请重新对任务进行合并或拆解</h3><p>当前难度容量已经达到上限，这项任务暂时无法加入 To-do。</p><button id="closeCapacityAlert">知道了</button></div></div>
+  <div id="authDialog" class="auth-dialog hidden"><div class="auth-card"><div class="eyebrow">ACCOUNT</div><h2 id="authTitle">登录轻舟</h2><p id="authDescription">登录后，任务会在不同浏览器和设备间保持同步。</p><form id="authForm" class="auth-form"><label>邮箱<input id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label><label>密码<input id="authPassword" type="password" autocomplete="current-password" minlength="8" required placeholder="至少 8 位"></label><button id="authSubmit" class="auth-primary" type="submit">登录</button></form><button id="authModeToggle" class="auth-secondary" type="button">创建新账号</button><button id="resetPassword" class="auth-secondary" type="button">发送密码重置邮件</button><p id="authStatus" class="auth-status"></p><div id="authAccount" class="auth-account hidden"><span id="authEmailLabel"></span><button id="signOut" class="auth-secondary" type="button">退出登录</button></div></div></div>
 </div>
+<script src="./supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const screens={start:document.getElementById('startScreen'),todo:document.getElementById('todoScreen'),done:document.getElementById('doneScreen')};
 const navs={start:document.getElementById('startNav'),todo:document.getElementById('todoNav'),done:document.getElementById('doneNav')};
@@ -123,6 +128,13 @@ const recommendationRules={
   some:{target:'medium',order:['medium','easy','hard']},
   ready:{target:'hard',order:['hard','medium','easy']}
 };
+const appStateStorageKey='lightboat-app-state-v1';
+const supabaseUrl=window.QINGZHOU_SUPABASE_URL||'';
+const supabaseAnonKey=window.QINGZHOU_SUPABASE_ANON_KEY||'';
+const supabaseClient=window.supabase&&supabaseUrl&&supabaseAnonKey?window.supabase.createClient(supabaseUrl,supabaseAnonKey):null;
+let currentUser=null;
+let stateHydrated=false;
+let cloudSyncTimer=null;
 
 function loadDailyRecommendations(){
   try{
@@ -137,6 +149,133 @@ function loadDailyRecommendations(){
 }
 function saveDailyRecommendations(){
   try{localStorage.setItem(recommendationStorageKey,JSON.stringify({version:recommendationRuleVersion,state:recommendationState,taskIdsByState:recommendedTaskIdsByState}))}catch(error){}
+}
+
+function setAuthStatus(message,error=false){
+  const status=document.getElementById('authStatus');
+  status.textContent=message||'';
+  status.classList.toggle('error',error);
+}
+function openAuthDialog(){
+  document.getElementById('authDialog').classList.remove('hidden');
+  document.getElementById('authEmail').focus();
+}
+function closeAuthDialog(){document.getElementById('authDialog').classList.add('hidden')}
+function setAuthMode(signup){
+  document.getElementById('authTitle').textContent=signup?'创建轻舟账号':'登录轻舟';
+  document.getElementById('authDescription').textContent=signup?'使用邮箱和密码保存你的任务，并在其他浏览器恢复。':'登录后，任务会在不同浏览器和设备间保持同步。';
+  document.getElementById('authSubmit').textContent=signup?'创建账号':'登录';
+  document.getElementById('authModeToggle').textContent=signup?'已有账号，直接登录':'创建新账号';
+  document.getElementById('authForm').dataset.mode=signup?'signup':'login';
+  document.getElementById('resetPassword').classList.toggle('hidden',signup);
+  setAuthStatus('');
+}
+function showAccountState(user){
+  currentUser=user||null;
+  const button=document.getElementById('accountButton');
+  button.textContent=user?(user.email||'已登录'):'账户';
+  button.classList.toggle('authenticated',Boolean(user));
+  document.getElementById('authAccount').classList.toggle('hidden',!user);
+  document.getElementById('authEmailLabel').textContent=user?.email||'';
+  if(user){
+    document.getElementById('authForm').classList.add('hidden');
+    document.getElementById('authModeToggle').classList.add('hidden');
+    document.getElementById('resetPassword').classList.add('hidden');
+    document.getElementById('authTitle').textContent='账号已登录';
+    document.getElementById('authDescription').textContent='你的任务会自动保存到云端。';
+  }else{
+    document.getElementById('authForm').classList.remove('hidden');
+    document.getElementById('authModeToggle').classList.remove('hidden');
+    setAuthMode(false);
+  }
+}
+
+function readAppState(){
+  const todo=allTodoItems().map(item=>({id:item.id,title:item.title,project:item.project,difficulty:item.difficulty,deadline:item.deadline,display:item.display,priority:item.priority}));
+  const done=[...document.querySelectorAll('#doneList .done-row')].map(row=>({
+    id:row.dataset.taskId,title:row.querySelector('.done-copy strong').textContent.trim(),project:row.dataset.project||'未分类',difficulty:row.dataset.difficulty||'easy',deadline:row.dataset.deadline||'',display:row.querySelector('.done-copy small').textContent.trim().split(' · ').slice(2).join(' · '),completed:Number(row.dataset.completed||Date.now()),reviewRequired:Boolean(row.querySelector('.review-check input')?.checked),reviewNote:completedReviewNotes.get(row.dataset.taskId)||''
+  }));
+  const ideas=[...document.querySelectorAll('#ideaList .idea-text')].map(item=>item.textContent.trim()).filter(Boolean);
+  return {version:1,todo,done,ideas,updatedAt:new Date().toISOString()};
+}
+function saveLocalAppState(){
+  try{localStorage.setItem(appStateStorageKey,JSON.stringify(readAppState()))}catch(error){}
+}
+function createTodoRow(item){
+  const row=document.createElement('div');
+  row.className='task-row';
+  row.dataset.project=item.project||'未分类';
+  row.dataset.difficulty=item.difficulty||'easy';
+  row.dataset.deadline=item.deadline||'';
+  row.dataset.priority=item.priority||'other';
+  const check=document.createElement('button');
+  check.className='check todo-check';check.type='button';check.dataset.taskId=item.id;check.dataset.title=item.title;check.dataset.project=row.dataset.project;check.dataset.difficulty=row.dataset.difficulty;check.dataset.deadline=row.dataset.deadline;check.dataset.display=item.display||'未设置截止时间';check.textContent='○';
+  const main=document.createElement('button');main.className='task-main';
+  main.innerHTML='<span class="task-title"></span><span class="meta"><span></span><span class="'+(item.difficulty||'easy')+'"></span><span></span></span>';
+  main.querySelector('.task-title').textContent=item.title;main.querySelector('.meta span').textContent=row.dataset.project;main.querySelector('.meta span:nth-child(2)').textContent=difficultyLabels[row.dataset.difficulty];main.querySelector('.meta span:last-child').textContent=item.display||'未设置截止时间';
+  row.append(check,main);return row;
+}
+function createDoneRow(item){
+  const row=document.createElement('div');row.className='done-row';row.dataset.taskId=item.id;row.dataset.project=item.project||'未分类';row.dataset.difficulty=item.difficulty||'easy';row.dataset.deadline=item.deadline||'';row.dataset.completed=String(item.completed||Date.now());
+  const copy=document.createElement('div');copy.className='done-copy';const title=document.createElement('strong');title.textContent=item.title;const meta=document.createElement('small');meta.textContent=(item.display&&item.display.includes(' · '))?item.display:(row.dataset.project+' · '+difficultyLabels[row.dataset.difficulty]+' · '+(item.display||'未设置截止时间'));copy.append(title,meta);
+  const review=document.createElement('label');review.className='review-check';review.innerHTML='<input type="checkbox">需要复盘';review.querySelector('input').checked=Boolean(item.reviewRequired);row.append(copy,review);
+  if(item.reviewNote)completedReviewNotes.set(item.id,item.reviewNote);return row;
+}
+function applyAppState(state){
+  if(!state||state.version!==1)return false;
+  document.querySelectorAll('#todoTasksView .task-row').forEach(row=>row.remove());
+  document.querySelectorAll('#doneList .done-row').forEach(row=>row.remove());
+  completedReviewNotes.clear();
+  const groups={};document.querySelectorAll('#todoTasksView .group').forEach(group=>{groups[group.querySelector('.group-title').childNodes[0].textContent.trim()]=group});
+  (Array.isArray(state.todo)?state.todo:[]).forEach(item=>{const group=groups[priorityLabels[item.priority]||'其他'];if(group)group.appendChild(createTodoRow(item))});
+  (Array.isArray(state.done)?state.done:[]).forEach(item=>document.getElementById('doneList').appendChild(createDoneRow(item)));
+  const ideas=document.getElementById('ideaList');ideas.innerHTML='';(Array.isArray(state.ideas)?state.ideas:[]).forEach(text=>ideas.appendChild(makeIdeaRow(text)));
+  updateCounts();applyTodoFilters();applyDoneFilters();renderReviewList();
+  return true;
+}
+function loadLocalAppState(){
+  try{const state=JSON.parse(localStorage.getItem(appStateStorageKey)||'null');return state&&applyAppState(state)}catch(error){return false}
+}
+async function loadCloudAppState(){
+  if(!supabaseClient||!currentUser)return false;
+  const {data,error}=await supabaseClient.from('user_app_state').select('state').eq('user_id',currentUser.id).maybeSingle();
+  if(error)throw error;
+  if(data?.state){applyAppState(data.state);saveLocalAppState();return true}
+  await saveCloudAppState(true);return false;
+}
+async function saveCloudAppState(force=false){
+  if(!supabaseClient||!currentUser)return;
+  const state=readAppState();saveLocalAppState();
+  clearTimeout(cloudSyncTimer);
+  const save=async()=>{const {error}=await supabaseClient.from('user_app_state').upsert({user_id:currentUser.id,state,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error)console.warn('Cloud sync failed',error)};
+  if(force)await save();else cloudSyncTimer=setTimeout(save,250);
+}
+function persistAppState(){saveCloudAppState()}
+async function handleAuthSubmit(event){
+  event.preventDefault();
+  if(!supabaseClient){setAuthStatus('云端尚未配置，当前仅保存在本机。',true);return}
+  const email=document.getElementById('authEmail').value.trim();const password=document.getElementById('authPassword').value;const signup=document.getElementById('authForm').dataset.mode==='signup';
+  setAuthStatus(signup?'正在创建账号…':'正在登录…');
+  const result=signup?await supabaseClient.auth.signUp({email,password}):await supabaseClient.auth.signInWithPassword({email,password});
+  if(result.error){setAuthStatus(result.error.message,true);return}
+  if(signup&&!result.data.session){setAuthStatus('账号已创建，请检查邮箱并完成验证后再登录。');return}
+  await finishAuth(result.data.session?.user||null);
+}
+async function finishAuth(user){
+  if(!user)return;
+  showAccountState(user);
+  try{const hadLocal=Boolean(localStorage.getItem(appStateStorageKey));const hadCloud=await loadCloudAppState();if(hadLocal&&!hadCloud)await saveCloudAppState(true);setAuthStatus('已同步');setTimeout(closeAuthDialog,700)}catch(error){setAuthStatus('云端同步失败，请稍后重试。',true);console.error(error)}
+}
+async function initAuth(){
+  document.getElementById('accountButton').onclick=()=>{if(currentUser)openAuthDialog();else openAuthDialog()};
+  document.getElementById('authForm').onsubmit=handleAuthSubmit;
+  document.getElementById('authModeToggle').onclick=()=>setAuthMode(document.getElementById('authForm').dataset.mode!=='signup');
+  document.getElementById('resetPassword').onclick=async()=>{if(!supabaseClient){setAuthStatus('云端尚未配置，当前仅保存在本机。',true);return}const email=document.getElementById('authEmail').value.trim();if(!email){setAuthStatus('请先填写邮箱。',true);return}const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:location.href});setAuthStatus(error?error.message:'密码重置邮件已发送，请检查邮箱。',Boolean(error))};
+  document.getElementById('signOut').onclick=async()=>{if(supabaseClient)await supabaseClient.auth.signOut();showAccountState(null);setAuthStatus('已退出登录');setAuthMode(false)};
+  setAuthMode(false);
+  if(!supabaseClient){document.getElementById('accountButton').title='云端尚未配置';return}
+  const {data}=await supabaseClient.auth.getSession();if(data.session)await finishAuth(data.session.user);else openAuthDialog();
+  supabaseClient.auth.onAuthStateChange((_event,session)=>{if(session&&!currentUser)finishAuth(session.user)});
 }
 
 function updateStartDate(){
@@ -315,6 +454,7 @@ function completeTask(button){
   updateCounts();
   applyDoneFilters();
   renderReviewList();
+  persistAppState();
   if(activeEnergy)renderRecommendations(activeEnergy);
 }
 document.addEventListener('click',event=>{
@@ -414,6 +554,7 @@ document.getElementById('doneList').addEventListener('change',event=>{
   const row=event.target.closest('.done-row');
   if(!event.target.checked)completedReviewNotes.delete(row.dataset.taskId);
   renderReviewList();
+  persistAppState();
 });
 document.getElementById('pendingReviews').addEventListener('click',event=>{
   const row=event.target.closest('[data-review-id]');
@@ -457,6 +598,7 @@ document.getElementById('reviewDone').onclick=()=>{
   document.getElementById('reviewDialog').classList.add('hidden');
   currentReviewId=null;
   renderReviewList();
+  persistAppState();
   document.getElementById('reviewsTab').click();
 };
 
@@ -483,6 +625,7 @@ document.getElementById('ideaForm').onsubmit=event=>{
   document.getElementById('ideaList').prepend(makeIdeaRow(value));
   input.value='';
   document.querySelector('#todoIdeasTab span').textContent=document.querySelectorAll('#ideaList .idea-row').length;
+  persistAppState();
 };
 
 function compareRows(a,b,order){
@@ -552,6 +695,7 @@ function addTaskToList(){
   document.getElementById('newTaskTitle').value='';
   updateCounts();
   applyTodoFilters();
+  persistAppState();
 }
 document.querySelector('#todoSheet form').onsubmit=event=>{event.preventDefault();addTaskToList()};
 document.getElementById('newTodo').onclick=()=>openTaskForm('');
@@ -591,7 +735,9 @@ applyTodoFilters();
 applyDoneFilters();
 renderReviewList();
 loadDailyRecommendations();
+if(!loadLocalAppState())saveLocalAppState();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+initAuth();
 </script>
 </body>
 </html>
