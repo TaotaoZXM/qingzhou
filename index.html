@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#f7f8f6" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="轻舟" />
+<link rel="manifest" href="./manifest.json" />
+<link rel="icon" href="./icon.svg" type="image/svg+xml" />
+<title>轻舟 · 任务管理</title>
+<style>
+:root{--canvas:#eef0ed;--surface:#fff;--soft:#f4f5f3;--text:#252a26;--muted:#7e887f;--quiet:#a9b0aa;--line:#e5e8e3;--accent:#367769;--accent-soft:#e4f0ec;--easy:#4c8c78;--medium:#9a7651;--hard:#9a5f5d}
+*{box-sizing:border-box}html,body{margin:0;background:var(--canvas);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif}body{padding:28px}button,input,textarea{font:inherit}button{cursor:pointer}h1,h2,h3,p{margin:0}
+.heading{width:min(100%,390px);margin:0 auto 15px}.heading h1{font-size:18px;letter-spacing:-.04em}.heading p{margin-top:6px;color:var(--muted);font-size:11px;line-height:1.5}
+.phone{position:relative;width:min(100%,390px);height:820px;margin:0 auto;overflow:hidden;background:var(--surface);box-shadow:0 15px 36px rgba(39,49,59,.1);display:flex;flex-direction:column}.status{height:24px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;color:var(--muted);font-size:9px}.appbar{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 1px 0 var(--line)}.brand{font-size:13px;font-weight:600;letter-spacing:-.04em}.top-note{color:var(--quiet);font-size:13px}
+.screen{flex:1;overflow:auto;padding:31px 17px 90px}.hidden{display:none!important}.screen.start{text-align:center}.date{color:var(--muted);font-size:10px;margin-bottom:28px}.greeting{font-size:24px;line-height:1.25;letter-spacing:-.05em;font-weight:600}.sub{max-width:235px;margin:12px auto 0;color:var(--muted);font-size:11px;line-height:1.55}.start-button{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:48px;margin-top:30px;padding:0 15px;background:var(--accent);color:#fff;border:0;border-radius:7px;font-size:12px;font-weight:600}.start-button svg{width:17px}.state-block{text-align:left;margin-top:34px}.section-label{color:var(--muted);font-size:10px}.states{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:9px}.state{padding:10px 4px;background:#fafbfa;color:var(--muted);border:0;font-size:10px}.state.active{background:var(--soft);color:var(--text);box-shadow:inset 0 -2px 0 var(--accent)}.state-hint{margin-top:9px;color:var(--quiet);font-size:10px}.return-note{margin-top:47px;color:var(--muted);font-size:10px;line-height:1.6}.return-note strong{color:var(--text);font-weight:500}.delay-row{display:flex;justify-content:center;gap:16px;margin-top:18px;color:var(--muted);font-size:10px}.delay-row span:last-child{color:var(--accent)}
+.recommendations{margin-top:30px;text-align:left}.recommendations h2{margin-top:4px;font-size:16px;letter-spacing:-.03em}.recommendations small{color:var(--muted);font-size:10px}.recommendation-head{display:flex;align-items:end;justify-content:space-between;gap:12px}.refresh-recommendations{flex:none;padding:4px 0;color:var(--accent);background:transparent;border:0;font-size:10px}.refresh-recommendations:hover{text-decoration:underline}.recommendation-row{width:100%;display:flex;align-items:center;gap:9px;padding:10px 0;text-align:left;color:var(--text);background:transparent;border:0;border-bottom:1px solid var(--line)}.recommendation-copy{flex:1}.recommendation-copy strong{display:block;font-size:12px;font-weight:400}.recommendation-copy small{display:block;margin-top:4px;color:var(--muted);font-size:10px}
+.screen.work{text-align:left}.work-head{display:flex;align-items:end;justify-content:space-between}.work-head h1{margin-top:4px;font-size:27px;letter-spacing:-.06em}.eyebrow{color:var(--muted);font-size:10px;letter-spacing:.06em}.add{display:flex;align-items:center;gap:5px;padding:0 0 3px;color:var(--accent);background:transparent;border:0;font-size:12px}
+.tabs,.done-tabs{display:flex;gap:21px;margin-top:31px;border-bottom:1px solid var(--line)}.tab,.done-tab{position:relative;padding:0 0 10px;color:var(--muted);background:transparent;border:0;font-size:13px}.tab.active,.done-tab.active{color:var(--text)}.tab.active:after,.done-tab.active:after{content:"";position:absolute;right:0;bottom:-1px;left:0;height:2px;background:var(--accent)}.tab span,.done-tab span{margin-left:4px;color:var(--quiet);font-size:10px}
+.capacity{margin-top:17px;padding:10px 11px;background:var(--soft);border-radius:5px}.capacity-top{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:10px}.capacity-top strong{color:var(--text);font-size:12px;font-weight:500}.capacity-bars{display:flex;gap:4px;margin-top:8px}.bar{height:4px;flex:1;background:#dfe5df}.bar.easy{background:var(--easy)}.bar.medium{background:var(--medium)}.bar.hard{background:var(--hard)}.capacity-detail{display:flex;gap:9px;margin-top:8px;color:var(--quiet);font-size:9px}.capacity-detail .easy{color:var(--easy)}.capacity-detail .medium{color:var(--medium)}.capacity-detail .hard{color:var(--hard)}
+.filters{display:flex;align-items:center;justify-content:space-between;margin-top:16px}.filter-set{display:flex;gap:1px}.filters select{padding:3px 13px 3px 0;color:var(--muted);background:transparent;border:0;font-size:10px}.search{display:flex;align-items:center;gap:5px;color:var(--quiet);font-size:10px}.search input{width:55px;padding:3px 0;color:var(--text);background:transparent;border:0;border-bottom:1px solid var(--line);font-size:10px;outline:0}.summary{display:flex;justify-content:space-between;margin-top:15px;color:var(--quiet);font-size:9px}
+.groups{margin-top:12px}.group+.group{margin-top:17px}.group-title{display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--soft);color:#4b514b;font-size:11px;font-weight:500}.group-title small{color:var(--quiet);font-size:9px;font-weight:400}.task-row{display:flex;align-items:flex-start;gap:7px;min-height:42px;padding:8px 0 6px}.check{display:grid;place-items:center;flex:none;width:18px;height:18px;padding:0;color:var(--quiet);background:transparent;border:0}.task-main{flex:1;min-width:0;padding:0;text-align:left;color:var(--text);background:transparent;border:0}.task-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:400}.meta{display:flex;gap:8px;margin-top:4px;color:var(--muted);font-size:9px}.meta .easy{color:var(--easy)}.meta .medium{color:var(--medium)}.meta .hard{color:var(--hard)}.row-arrow{color:var(--quiet);padding-top:3px}.empty{padding:8px 0 3px 24px;color:var(--quiet);font-size:10px}
+.ideas,.done-content{margin-top:24px}.ideas-intro{display:flex;gap:8px;align-items:flex-start}.ideas-intro h2,.done-intro h2{margin-top:4px;font-size:17px;letter-spacing:-.04em}.ideas-intro p,.done-intro p{margin-top:7px;color:var(--muted);font-size:11px}.idea-input{display:flex;gap:7px;margin-top:22px}.idea-input input{flex:1;padding:10px 0;color:var(--text);background:transparent;border:0;border-bottom:1px solid var(--line);outline:0;font-size:12px}.idea-input button{display:grid;place-items:center;width:31px;height:31px;color:#fff;background:var(--accent);border:0;border-radius:50%}.idea-row{display:flex;gap:8px;padding:11px 0;border-bottom:1px solid var(--line);font-size:12px}.idea-list{margin-top:18px}
+.done-intro{margin-top:24px}.done-tabs{gap:18px;margin-top:25px}.done-tab{font-size:12px}.done-list{margin-top:14px}.done-row{display:flex;align-items:flex-start;gap:9px;padding:11px 0;border-bottom:1px solid var(--line)}.done-copy{flex:1;min-width:0}.done-copy strong{display:block;font-size:12px;font-weight:400}.done-copy small{display:block;margin-top:4px;color:var(--muted);font-size:9px}.review-check{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:9px;background:transparent;border:0}.review-check input{accent-color:var(--accent)}.section-note{margin:12px 0;color:var(--quiet);font-size:9px}.review-list{margin-top:15px}.review-label{color:var(--muted);font-size:10px}.review-row{display:flex;align-items:flex-start;gap:8px;width:100%;padding:12px 0;text-align:left;color:var(--text);background:transparent;border:0;border-bottom:1px solid var(--line)}.review-row strong{display:block;font-size:12px;font-weight:400}.review-row small{display:block;margin-top:4px;color:var(--muted);font-size:9px}.reviewed{margin-top:23px}.reviewed .review-row{color:var(--muted)}
+.bottom-nav{position:absolute;right:0;bottom:0;left:0;display:grid;grid-template-columns:repeat(3,1fr);padding:9px 10px 12px;background:rgba(255,255,255,.96);box-shadow:0 -1px 0 var(--line)}.bottom-item{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);background:transparent;border:0;font-size:9px}.bottom-item.active{color:var(--text)}.count{padding:1px 4px;color:var(--muted);background:var(--soft);border-radius:8px;font-size:8px}
+.sheet,.review-dialog{position:absolute;z-index:5;inset:0;display:flex;align-items:end;background:rgba(37,42,38,.22)}.sheet.hidden,.review-dialog.hidden{display:none}.sheet-panel,.review-card{width:100%;padding:19px 17px 24px;background:#fff;border-radius:15px 15px 0 0;box-shadow:0 -14px 36px rgba(37,42,38,.15)}.review-dialog{z-index:7;align-items:center;padding:18px}.review-card{border-radius:11px;box-shadow:0 14px 40px rgba(37,42,38,.15)}.sheet-head{display:flex;align-items:start;justify-content:space-between}.sheet-head h2{margin-top:4px;font-size:18px;letter-spacing:-.04em}.close{display:grid;place-items:center;width:29px;height:29px;color:var(--muted);background:transparent;border:0}.form{display:grid;gap:14px;margin-top:18px}.form label,.form-field{display:grid;gap:6px;color:var(--muted);font-size:10px}.form input,.form textarea{width:100%;padding:9px 0;color:var(--text);background:transparent;border:0;border-bottom:1px solid var(--line);outline:0;font-size:12px}.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.choice{padding:8px 4px;color:var(--muted);background:var(--soft);border:1px solid transparent;border-radius:5px;font-size:10px}.choice.active{color:var(--text);background:var(--accent-soft);border-color:#c7ded6}.choice small{display:block;margin-top:2px;color:var(--quiet);font-size:8px}.sheet-submit,.review-done{padding:11px;color:#fff;background:var(--accent);border:0;border-radius:6px;font-size:11px}.review-card p{margin-top:10px;color:var(--muted);font-size:11px;line-height:1.5}.review-card textarea{width:100%;min-height:100px;margin-top:17px;padding:10px;color:var(--text);background:var(--soft);border:0;border-radius:6px;outline:0;resize:none;font-size:12px;line-height:1.5}.review-footer{display:flex;align-items:center;justify-content:space-between;margin-top:8px;color:var(--quiet);font-size:9px}.review-done:disabled{color:var(--quiet);background:var(--soft)}
+@media(max-width:430px){html,body{background:#fff}body{padding:0}.heading{display:none}.phone{width:100%;height:100svh;box-shadow:none}}
+.priority-choice{grid-template-columns:repeat(2,1fr)}.datetime-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.project-list{display:flex;flex-wrap:wrap;gap:5px}.project{padding:8px 9px;color:var(--muted);background:var(--soft);border:1px solid transparent;border-radius:5px;font-size:10px}.project.active{color:var(--text);background:var(--accent-soft);border-color:#c7ded6}.project.new-project{color:var(--accent)}.new-project-field{margin-top:8px}.task-entry-form{max-height:520px;overflow:auto;padding-right:2px}.start-button.revealed{background:var(--soft);color:var(--text);border:1px solid var(--line);box-shadow:none}.start-button.revealed span{font-size:11px}.state-block{transition:opacity .18s ease,transform .18s ease}.recommendation-set.hidden{display:none}.recommendation-set h2{margin-bottom:5px}.return-note.hidden{display:none}.done-filter-line{margin-top:16px}.done-filter-line .filter-set{width:100%;justify-content:flex-start}.capacity-blocked{color:var(--quiet)!important;background:#f7f8f6!important;opacity:.58;cursor:not-allowed}.todo-empty-state{display:grid;justify-items:center;gap:10px;padding:54px 12px 30px;text-align:center}.todo-empty-state-mark{display:grid;place-items:center;width:34px;height:34px;color:var(--accent);background:var(--accent-soft);border-radius:50%;font-size:19px}.todo-empty-state strong{font-size:14px;font-weight:500}.todo-empty-state p{color:var(--muted);font-size:10px;line-height:1.5}.todo-empty-state button{padding:8px 14px;color:var(--accent);background:var(--accent-soft);border:0;border-radius:6px;font-size:11px;font-weight:500}.capacity-alert{position:absolute;z-index:12;inset:0;display:flex;align-items:center;padding:20px;background:rgba(37,42,38,.24)}.capacity-alert.hidden{display:none}.capacity-alert-card{width:100%;padding:20px;background:#fff;border-radius:10px;box-shadow:0 16px 40px rgba(37,42,38,.16);text-align:center}.capacity-alert-mark{display:grid;place-items:center;width:27px;height:27px;margin:0 auto 12px;color:#fff;background:var(--medium);border-radius:50%;font-size:15px;font-weight:600}.capacity-alert-card h3{font-size:15px;line-height:1.45;font-weight:500;letter-spacing:-.02em}.capacity-alert-card p{margin-top:9px;color:var(--muted);font-size:11px;line-height:1.5}.capacity-alert-card button{margin-top:17px;padding:9px 18px;color:#fff;background:var(--accent);border:0;border-radius:5px;font-size:11px}.screen.start{padding:0 20px 90px;display:flex;flex-direction:column;text-align:left;background:#fbfcfa}.start-topline{display:flex;align-items:center;justify-content:space-between;padding-top:20px;color:var(--quiet);font-size:10px}.start-topline span:first-child{color:var(--text);font-size:14px;font-weight:600;letter-spacing:-.05em}.start-stage{display:flex;flex:1;flex-direction:column;justify-content:center;padding:0 0 7vh}.start-kicker{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:10px}.start-kicker-line{width:22px;height:1px;background:var(--accent)}.screen.start .greeting{margin-top:17px;font-size:27px;line-height:1.28;letter-spacing:-.055em;font-weight:500}.screen.start .greeting span{color:#596760}.screen.start .sub{max-width:250px;margin:14px 0 0;color:var(--muted);font-size:12px;line-height:1.55}.screen.start .start-button{display:flex;align-items:center;justify-content:space-between;width:min(100%,325px);min-height:56px;margin-top:30px;padding:0 8px 0 18px;color:var(--text);background:var(--surface);border:1px solid #d3dbd5;border-radius:999px;box-shadow:0 8px 22px rgba(57,88,72,.08);font-size:13px;font-weight:500;text-align:left}.screen.start .start-button:hover{border-color:var(--accent)}.start-button-arrow{display:grid;place-items:center;width:40px;height:40px;color:#fff;background:var(--accent);border-radius:50%;font-size:18px;font-weight:400}.screen.start .start-button.revealed{color:var(--text);background:var(--accent-soft);border-color:#c7ded6;box-shadow:none}.screen.start .state-block{margin-top:32px}.screen.start .recommendations{margin-top:27px}.screen.start .return-note{margin-top:auto;padding:20px 0 4px;border-top:1px solid var(--line);font-size:10px}.screen.start .return-note strong{font-weight:500}.screen.start .recommendation-row{padding:11px 0}.screen.start .recommendation-copy strong{font-size:13px}.screen.start .recommendation-copy small{font-size:10px}.idea-row{display:flex;align-items:center;justify-content:space-between;gap:12px}.idea-text{flex:1;min-width:0;line-height:1.45}.idea-to-task{flex:none;min-width:52px;padding:6px 11px;color:var(--accent);background:var(--accent-soft);border:0;border-radius:6px;font-size:10px;font-weight:500}.idea-to-task:hover{background:#d5e8e2}.recommendation-row{cursor:default}.recommendation-check{width:22px;height:22px;color:var(--quiet);border-radius:50%;font-size:16px}.recommendation-check:hover{color:var(--accent);background:var(--accent-soft)}</style>
+<style>
+.screen.start .start-button.revealed .start-button-label{font-size:15px}
+.screen.start .states{gap:12px;margin-top:10px}
+.screen.start .state{padding:10px 2px 11px;color:var(--text);background:transparent;border:1px solid #fff;border-radius:999px;font-size:13px;font-weight:600;line-height:1.2;letter-spacing:0;box-shadow:0 2px 7px rgba(37,42,38,.06);transition:color .16s ease,box-shadow .16s ease,transform .16s ease}
+.screen.start .state[data-state="low"],.screen.start .state[data-state="some"],.screen.start .state[data-state="ready"]{color:var(--text)}
+.screen.start .state:hover{color:var(--text)}
+.screen.start .state.active{color:var(--text);background:transparent;border-color:#fff;box-shadow:0 3px 9px rgba(54,119,105,.14);transform:translateY(-1px);font-weight:700}
+.screen.start .state:focus-visible,.tabs .tab:focus-visible,.bottom-item:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.tabs{gap:18px;margin-top:25px}
+.tabs .tab{min-width:0;padding:0 0 10px;color:var(--muted);background:transparent;border:0;border-radius:0;font-size:12px;font-weight:400;line-height:1.2;letter-spacing:0}
+.tabs .tab span{margin-left:4px;color:var(--quiet);font-size:10px;font-weight:400}
+.tabs .tab.active{color:var(--text);background:transparent;border:0}
+.tabs .tab.active span{color:var(--accent)}
+.tabs .tab.active:after{height:3px;background:var(--accent)}
+.bottom-item{color:var(--text);font-size:18px;font-weight:500;gap:3px}
+.bottom-item span{font-size:10px;font-weight:500}
+.bottom-item.active{color:var(--text)}
+.count{color:#59655e;background:transparent;font-size:9px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="heading"><h1>轻舟 · 手机网页版预览 v31</h1><p>推荐只在每天第一次开始时生成；状态只改变提示，刷新任务才重新抽取。</p></div>
+<div class="phone">
+  <div class="status"><span>9:41</span><span>Wi-Fi&nbsp;&nbsp;100%</span></div>
+  <div class="appbar"><div class="brand">轻舟</div><div class="top-note">···</div></div>
+
+  <section id="startScreen" class="screen start">
+    <div class="start-topline"><span>轻舟</span><span id="startDate"></span></div>
+    <div class="start-stage">
+      <div class="start-kicker"><span class="start-kicker-line"></span><span>先回到这里</span></div>
+      <div class="greeting">今天不用安排好全部，<br><span>只需要先开始一点点。</span></div>
+      <div class="sub">给今天留出一个可以进入的入口。</div>
+      <button class="start-button" id="startAction"><span class="start-button-label">给我一个轻轻的开始</span><span class="start-button-arrow">→</span></button>
+      <div id="stateBlock" class="state-block hidden">
+        <div class="section-label">现在的状态</div>
+        <div class="states"><button class="state" data-state="low">低能量</button><button class="state" data-state="some">中能量</button><button class="state" data-state="ready">高能量</button></div>
+        <div id="stateHint" class="state-hint">选一个最接近现在的状态</div>
+      </div>
+      <div id="recommendations" class="recommendations hidden"><div class="recommendation-set"><div class="recommendation-head"><small id="recommendationCount">按此刻的状态为你挑选 3 件事</small><button id="refreshRecommendations" class="refresh-recommendations" type="button">刷新任务</button></div><h2 id="recommendationHeading">现在适合开始这些</h2><div id="recommendationItems"></div></div></div>
+    </div>
+    <div id="returnNote" class="return-note hidden"><strong>今天已经回来过 2 次。</strong><br>回来本身也是进度。</div>
+  </section>
+
+  <section id="todoScreen" class="screen work hidden">
+    <div class="work-head"><div><div class="eyebrow">WORKSPACE</div><h1>To-do</h1></div><button class="add" id="newTodo">＋ 新任务</button></div>
+    <div class="tabs"><button class="tab active" id="todoTasksTab">任务 <span id="todoTabCount">8</span></button><button class="tab" id="todoIdeasTab">灵感 <span>2</span></button></div>
+    <div id="todoTasksView">
+      <div class="capacity"><div class="capacity-top"><strong>并行任务容量</strong><span id="activeCount">8/10</span></div><div class="capacity-bars" id="capacityBars"><i class="bar easy"></i><i class="bar easy"></i><i class="bar easy"></i><i class="bar medium"></i><i class="bar medium"></i><i class="bar medium"></i><i class="bar hard"></i><i class="bar hard"></i><i class="bar"></i><i class="bar"></i></div><div class="capacity-detail"><span class="easy" id="easyCount">简单 3/4</span><span class="medium" id="mediumCount">适中 3/3</span><span class="hard" id="hardCount">困难 2/3</span></div></div>
+      <div class="filters"><div class="filter-set"><select id="todoProjectFilter"><option value="all">项目</option><option value="工作">工作</option><option value="产品">产品</option><option value="个人成长">个人成长</option><option value="日常">日常</option></select><select id="todoDifficultyFilter"><option value="all">难易程度</option><option value="easy">简单</option><option value="medium">适中</option><option value="hard">困难</option></select><select id="todoOrder"><option value="deadline">排列顺序</option><option value="project">项目</option><option value="deadline">截止时间</option><option value="difficulty">难易程度</option></select></div><label class="search">⌕ <input placeholder="搜索"></label></div><div class="summary"><span id="todoSummary">8 项进行中</span><span>完成后进入 Done</span></div>
+      <div id="todoGroups" class="groups"><section class="group"><div class="group-title">重要且紧急 <small>2</small></div><div class="task-row" data-project="产品" data-difficulty="hard" data-deadline="2026-09-30T14:00"><button class="check todo-check" data-title="完成项目方案的第一版" data-project="产品" data-difficulty="hard" data-deadline="2026-09-30T14:00" data-display="9月30日 14:00">○</button><button class="task-main"><span class="task-title">完成项目方案的第一版</span><span class="meta"><span>产品</span><span class="hard">困难</span><span>9月30日 14:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="工作" data-difficulty="medium" data-deadline="2026-09-29T18:00"><button class="check todo-check" data-title="向同事同步项目当前风险" data-project="工作" data-difficulty="medium" data-deadline="2026-09-29T18:00" data-display="9月29日 18:00">○</button><button class="task-main"><span class="task-title">向同事同步项目当前风险</span><span class="meta"><span>工作</span><span class="medium">适中</span><span>9月29日 18:00</span></span></button><span class="row-arrow">›</span></div></section><section class="group"><div class="group-title">重要不紧急 <small>3</small></div><div class="task-row" data-project="个人成长" data-difficulty="hard" data-deadline="2026-10-02T20:00"><button class="check todo-check" data-title="确定个人主页的内容结构" data-project="个人成长" data-difficulty="hard" data-deadline="2026-10-02T20:00" data-display="10月2日 20:00">○</button><button class="task-main"><span class="task-title">确定个人主页的内容结构</span><span class="meta"><span>个人成长</span><span class="hard">困难</span><span>10月2日 20:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="工作" data-difficulty="medium" data-deadline="2026-10-03T16:00"><button class="check todo-check" data-title="整理下季度的工作重点" data-project="工作" data-difficulty="medium" data-deadline="2026-10-03T16:00" data-display="10月3日 16:00">○</button><button class="task-main"><span class="task-title">整理下季度的工作重点</span><span class="meta"><span>工作</span><span class="medium">适中</span><span>10月3日 16:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="个人成长" data-difficulty="medium" data-deadline="2026-10-06T21:00"><button class="check todo-check" data-title="更新个人作品集首页" data-project="个人成长" data-difficulty="medium" data-deadline="2026-10-06T21:00" data-display="10月6日 21:00">○</button><button class="task-main"><span class="task-title">更新个人作品集首页</span><span class="meta"><span>个人成长</span><span class="medium">适中</span><span>10月6日 21:00</span></span></button><span class="row-arrow">›</span></div></section><section class="group"><div class="group-title">紧急不重要 <small>1</small></div><div class="task-row" data-project="工作" data-difficulty="easy" data-deadline="2026-09-28T10:00"><button class="check todo-check" data-title="确认本周会议时间" data-project="工作" data-difficulty="easy" data-deadline="2026-09-28T10:00" data-display="9月28日 10:00">○</button><button class="task-main"><span class="task-title">确认本周会议时间</span><span class="meta"><span>工作</span><span class="easy">简单</span><span>9月28日 10:00</span></span></button><span class="row-arrow">›</span></div></section><section class="group"><div class="group-title">其他 <small>2</small></div><div class="task-row" data-project="日常" data-difficulty="easy" data-deadline="2026-09-28T18:00"><button class="check todo-check" data-title="整理收件箱里需要回复的消息" data-project="日常" data-difficulty="easy" data-deadline="2026-09-28T18:00" data-display="9月28日 18:00">○</button><button class="task-main"><span class="task-title">整理收件箱里需要回复的消息</span><span class="meta"><span>日常</span><span class="easy">简单</span><span>9月28日 18:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="日常" data-difficulty="easy" data-deadline=""><button class="check todo-check" data-title="清理桌面和下载文件夹" data-project="日常" data-difficulty="easy" data-deadline="" data-display="未设置截止时间">○</button><button class="task-main"><span class="task-title">清理桌面和下载文件夹</span><span class="meta"><span>日常</span><span class="easy">简单</span><span>未设置截止时间</span></span></button><span class="row-arrow">›</span></div></section></div><div id="todoEmptyState" class="todo-empty-state hidden"><span class="todo-empty-state-mark">＋</span><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置。</p><button id="emptyNewTodo" type="button">＋新任务</button></div>
+    </div>
+    <div id="todoIdeasView" class="ideas hidden"><div class="ideas-intro"><span>✦</span><div><h2>先记下来，之后再安排</h2><p>灵感先放在这里，准备好时再变成任务。</p></div></div><form class="idea-input" id="ideaForm"><input id="ideaInput" placeholder="刚刚想到什么？"><button type="submit" aria-label="保存灵感">→</button></form><div class="idea-list" id="ideaList"><div class="idea-row"><span class="idea-text">把每周复盘变成一张很短的卡片</span><button class="idea-to-task" type="button">Task</button></div><div class="idea-row"><span class="idea-text">给常见任务准备可复用的下一步</span><button class="idea-to-task" type="button">Task</button></div></div></div>
+  </section>
+
+  <section id="doneScreen" class="screen work hidden">
+    <div class="work-head"><div><div class="eyebrow">CLOSED LOOP</div><h1>Done</h1></div><button class="add" id="newEvent">＋ 完成事件</button></div>
+    <div class="done-intro"><p>做完只是完成第一步，留下点什么才算结束。</p></div>
+    <div class="done-tabs"><button class="done-tab active" id="completedTab">已完成任务 <span id="completedTabCount">3</span></button><button class="done-tab" id="reviewsTab">任务复盘 <span id="reviewsTabCount">1</span></button></div>
+    <div id="completedView" class="done-content"><div class="filters done-filter-line"><div class="filter-set"><select id="doneProjectFilter"><option value="all">项目</option><option value="工作">工作</option><option value="产品">产品</option><option value="生活">生活</option></select><select id="doneDifficultyFilter"><option value="all">难易程度</option><option value="easy">简单</option><option value="medium">适中</option><option value="hard">困难</option></select><select id="doneOrder"><option value="completed">完成顺序</option><option value="project">项目</option><option value="deadline">截止时间</option><option value="difficulty">难易程度</option></select></div></div><div id="doneList" class="done-list"><div class="done-row" data-task-id="done_seed_weekly" data-project="工作" data-difficulty="medium" data-deadline="2026-09-28T18:00" data-completed="3"><div class="done-copy"><strong>完成周报发送</strong><small>工作 · 适中 · 9月28日 18:00</small></div><label class="review-check"><input type="checkbox" checked>需要复盘</label></div><div class="done-row" data-task-id="done_seed_room" data-project="生活" data-difficulty="easy" data-deadline="2026-09-28T20:00" data-completed="2"><div class="done-copy"><strong>整理了一次房间</strong><small>生活 · 简单 · 9月28日 20:00</small></div><label class="review-check"><input type="checkbox">需要复盘</label></div><div class="done-row" data-task-id="done_seed_meeting" data-project="工作" data-difficulty="easy" data-deadline="2026-09-28T10:00" data-completed="1"><div class="done-copy"><strong>确认了本周会议时间</strong><small>工作 · 简单 · 9月28日 10:00</small></div><label class="review-check"><input type="checkbox">需要复盘</label></div></div><p class="section-note">勾选“需要复盘”后，任务会进入任务复盘。</p></div>
+    <div id="reviewsView" class="done-content hidden"><div class="review-label">新增且未完成复盘</div><div id="pendingReviews" class="review-list"></div><div class="reviewed"><div class="review-label">已经复盘完成</div><div id="reviewedList"><div class="review-row"><span><strong>整理用户反馈</strong><small>产品 · 适中 · 9月27日 17:00 · 下次提前准备问题清单。</small></span></div></div></div></div>
+  </section>
+
+  <nav class="bottom-nav"><button id="startNav" class="bottom-item active">✦<span>Start</span></button><button id="todoNav" class="bottom-item">☷<span>To-do <b class="count">8</b></span></button><button id="doneNav" class="bottom-item">✓<span>Done <b class="count">3</b></span></button></nav>
+  <div id="todoSheet" class="sheet hidden"><div class="sheet-panel"><div class="sheet-head"><div><div class="eyebrow">NEW TO-DO</div><h2>添加任务</h2></div><button class="close" data-close="todoSheet">×</button></div><div class="mobile-note" id="capacitySummary">当前进行中 8/10 · 困难 2/3 · 适中 3/3 · 简单 3/4</div><form class="form task-entry-form"><label>任务内容<input id="newTaskTitle" placeholder="例如：给客户确认最终版本"></label><div class="form-field"><span>难易程度</span><div class="choices"><button type="button" class="choice active" data-task-difficulty="easy">简单<small>3/4</small></button><button type="button" class="choice" data-task-difficulty="medium">适中<small>3/3</small></button><button type="button" class="choice" data-task-difficulty="hard">困难<small>2/3</small></button></div></div><div class="form-field"><span>优先级</span><div class="choices priority-choice"><button type="button" class="choice active">重要且紧急</button><button type="button" class="choice">重要不紧急</button><button type="button" class="choice">紧急不重要</button><button type="button" class="choice">其他</button></div></div><div class="form-field"><span>截止时间（可选）</span><div class="datetime-row"><input type="date" value="2026-09-30"><input type="time" value="14:00"></div></div><div class="form-field"><span>项目</span><div class="project-list"><button type="button" class="project active">工作</button><button type="button" class="project">产品</button><button type="button" class="project">个人成长</button><button type="button" class="project">生活</button><button type="button" class="project new-project" data-project-new="newProjectFieldTodo">＋ 新增项目</button></div><div id="newProjectFieldTodo" class="new-project-field hidden"><input placeholder="输入新项目名称"></div></div><button class="sheet-submit">加入 To-do</button></form></div></div>
+  <div id="eventSheet" class="sheet hidden"><div class="sheet-panel"><div class="sheet-head"><div><div class="eyebrow">NEW DONE EVENT</div><h2>记录完成事件</h2></div><button class="close" data-close="eventSheet">×</button></div><form class="form task-entry-form"><label>完成内容<input placeholder="例如：整理完了房间"></label><div class="form-field"><span>难易程度</span><div class="choices"><button type="button" class="choice active">简单<small>完成事件</small></button><button type="button" class="choice">适中<small>完成事件</small></button><button type="button" class="choice">困难<small>完成事件</small></button></div></div><div class="form-field"><span>优先级</span><div class="choices priority-choice"><button type="button" class="choice active">重要且紧急</button><button type="button" class="choice">重要不紧急</button><button type="button" class="choice">紧急不重要</button><button type="button" class="choice">其他</button></div></div><div class="form-field"><span>截止时间（可选）</span><div class="datetime-row"><input type="date" value="2026-09-28"><input type="time" value="18:00"></div></div><div class="form-field"><span>项目</span><div class="project-list"><button type="button" class="project active">工作</button><button type="button" class="project">产品</button><button type="button" class="project">个人成长</button><button type="button" class="project">生活</button><button type="button" class="project new-project" data-project-new="newProjectFieldEvent">＋ 新增项目</button></div><div id="newProjectFieldEvent" class="new-project-field hidden"><input placeholder="输入新项目名称"></div></div><button class="sheet-submit">加入 Done</button></form></div></div>
+  <div id="reviewDialog" class="review-dialog hidden"><div class="review-card"><div class="sheet-head"><div><div class="eyebrow">TASK REVIEW</div><h2 id="reviewDialogTitle"></h2></div><button class="close" data-close="reviewDialog">×</button></div><p>留下一句话就够了。完成文字输入，即完成这次复盘。</p><textarea id="reviewText" maxlength="200" placeholder="这次有什么值得记住的？"></textarea><div class="review-footer"><span><b id="reviewCount">0</b>/200</span><button class="review-done" id="reviewDone" disabled>完成复盘</button></div></div></div>
+  <div id="taskLimitAlert" class="capacity-alert hidden"><div class="capacity-alert-card"><div class="capacity-alert-mark">!</div><h3>当下囤积任务过多，请先一件一件事情来，或者先生成灵感</h3><button id="goIdeasFromLimit">生成灵感</button></div></div>
+  <div id="capacityAlert" class="capacity-alert hidden"><div class="capacity-alert-card"><div class="capacity-alert-mark">!</div><h3>任务分配尚未达到最优解，请重新对任务进行合并或拆解</h3><p>当前难度容量已经达到上限，这项任务暂时无法加入 To-do。</p><button id="closeCapacityAlert">知道了</button></div></div>
+</div>
+<script>
+const screens={start:document.getElementById('startScreen'),todo:document.getElementById('todoScreen'),done:document.getElementById('doneScreen')};
+const navs={start:document.getElementById('startNav'),todo:document.getElementById('todoNav'),done:document.getElementById('doneNav')};
+const stateBlock=document.getElementById('stateBlock');
+const startAction=document.getElementById('startAction');
+const stateHint=document.getElementById('stateHint');
+const priorityLabels={'urgent-important':'重要且紧急',important:'重要不紧急',urgent:'紧急不重要',other:'其他'};
+const priorityIds={'重要且紧急':'urgent-important','重要不紧急':'important','紧急不重要':'urgent','其他':'other'};
+const priorityRank={'urgent-important':4,important:3,urgent:2,other:1};
+const difficultyLabels={easy:'简单',medium:'适中',hard:'困难'};
+const difficultyRank={easy:1,medium:2,hard:3};
+let activeEnergy=null;
+let taskIdCounter=0;
+let currentReviewId=null;
+const completedReviewNotes=new Map();
+let recommendedTaskIds=[];
+let recommendedTaskIdsByState={};
+let recommendationsGenerated=false;
+let recommendationState=null;
+const recommendationStorageKey='lightboat-recommendations-'+new Date().toLocaleDateString('sv-SE');
+const recommendationRuleVersion='difficulty-priority-v5';
+const recommendationRules={
+  low:{target:'easy',order:['easy','medium','hard']},
+  some:{target:'medium',order:['medium','easy','hard']},
+  ready:{target:'hard',order:['hard','medium','easy']}
+};
+
+function loadDailyRecommendations(){
+  try{
+    const stored=JSON.parse(localStorage.getItem(recommendationStorageKey)||'null');
+    if(stored&&stored.version===recommendationRuleVersion&&stored.taskIdsByState&&typeof stored.taskIdsByState==='object'){
+      recommendedTaskIdsByState=stored.taskIdsByState;
+      recommendationState=stored.state||null;
+      recommendedTaskIds=Array.isArray(recommendedTaskIdsByState[recommendationState])?recommendedTaskIdsByState[recommendationState]:[];
+      recommendationsGenerated=Boolean(recommendationState&&recommendedTaskIds.length);
+    }
+  }catch(error){recommendedTaskIds=[]}
+}
+function saveDailyRecommendations(){
+  try{localStorage.setItem(recommendationStorageKey,JSON.stringify({version:recommendationRuleVersion,state:recommendationState,taskIdsByState:recommendedTaskIdsByState}))}catch(error){}
+}
+
+function updateStartDate(){
+  const now=new Date();
+  const weekdays=['日','一','二','三','四','五','六'];
+  document.getElementById('startDate').textContent=(now.getMonth()+1)+'月'+now.getDate()+'日 · 周'+weekdays[now.getDay()];
+}
+updateStartDate();
+setInterval(updateStartDate,60000);
+
+function showScreen(name){
+  Object.keys(screens).forEach(key=>screens[key].classList.toggle('hidden',key!==name));
+  Object.keys(navs).forEach(key=>navs[key].classList.toggle('active',key===name));
+}
+navs.start.onclick=()=>showScreen('start');
+navs.todo.onclick=()=>{showScreen('todo');showTodoTab('tasks')};
+navs.done.onclick=()=>showScreen('done');
+
+function allTodoButtons(){return [...document.querySelectorAll('#todoTasksView .todo-check')]}
+allTodoButtons().forEach((button,index)=>{button.dataset.taskId='seed_'+index;const row=button.closest('.task-row');const groupName=row.closest('.group').querySelector('.group-title').childNodes[0].textContent.trim();row.dataset.priority=priorityIds[groupName]||'other'});
+function taskMeta(button){
+  const row=button.closest('.task-row');
+  const groupName=row.closest('.group').querySelector('.group-title').childNodes[0].textContent.trim();
+  const difficulty=button.dataset.difficulty;
+  const project=button.dataset.project||row.dataset.project||'未分类';
+  const deadline=button.dataset.deadline||row.dataset.deadline||'';
+  return {
+    id:button.dataset.taskId||'task_'+(++taskIdCounter),
+    title:button.dataset.title||row.querySelector('.task-title').textContent.trim(),
+    project:project,
+    difficulty:difficulty,
+    deadline:deadline,
+    display:button.dataset.display||row.querySelector('.meta span:last-child').textContent.trim(),
+    priority:row.dataset.priority||priorityIds[groupName]||'other',
+    row:row,
+    button:button
+  };
+}
+function allTodoItems(){return allTodoButtons().map(taskMeta)}
+function difficultyCounts(){
+  return allTodoItems().reduce((counts,item)=>{counts[item.difficulty]+=1;return counts},{easy:0,medium:0,hard:0});
+}
+function updateCounts(){
+  const items=allTodoItems();
+  const counts=difficultyCounts();
+  const total=items.length;
+  document.getElementById('activeCount').textContent=total+'/10';
+  document.getElementById('todoSummary').textContent=total+' 项进行中';
+  document.getElementById('todoTabCount').textContent=total;
+  document.querySelector('#todoNav .count').textContent=total;
+  document.getElementById('easyCount').textContent='简单 '+counts.easy+'/4';
+  document.getElementById('mediumCount').textContent='适中 '+counts.medium+'/3';
+  document.getElementById('hardCount').textContent='困难 '+counts.hard+'/3';
+  document.getElementById('capacitySummary').textContent='当前进行中 '+total+'/10 · 困难 '+counts.hard+'/3 · 适中 '+counts.medium+'/3 · 简单 '+counts.easy+'/4';
+  const bars=document.getElementById('capacityBars');
+  bars.innerHTML='';
+  for(let i=0;i<10;i++){
+    const bar=document.createElement('i');
+    bar.className='bar '+(i<counts.easy?'easy':i<counts.easy+counts.medium?'medium':i<counts.easy+counts.medium+counts.hard?'hard':'');
+    bars.appendChild(bar);
+  }
+  document.querySelectorAll('#todoTasksView .group').forEach(group=>group.querySelector('.group-title small').textContent=group.querySelectorAll('.task-row').length);
+  updateDifficultyChoices();
+  updateTodoEmptyState();
+}
+function updateTodoEmptyState(){
+  const empty=allTodoItems().length===0;
+  document.getElementById('todoGroups').classList.toggle('hidden',empty);
+  document.getElementById('todoEmptyState').classList.toggle('hidden',!empty);
+  document.querySelector('#todoTasksView > .filters').classList.toggle('hidden',empty);
+  document.querySelector('#todoTasksView > .summary').classList.toggle('hidden',empty);
+}
+function updateDifficultyChoices(){
+  const counts=difficultyCounts();
+  const limits={easy:4,medium:3,hard:3};
+  document.querySelectorAll('#todoSheet [data-task-difficulty]').forEach(button=>{
+    const level=button.dataset.taskDifficulty;
+    const full=counts[level]>=limits[level];
+    button.disabled=full;
+    button.classList.toggle('capacity-blocked',full);
+    button.innerHTML=difficultyLabels[level]+'<small>'+counts[level]+'/'+limits[level]+(full?' · 已满':'')+'</small>';
+    if(full)button.classList.remove('active');
+  });
+  if(!document.querySelector('#todoSheet [data-task-difficulty].active')){
+    document.querySelector('#todoSheet [data-task-difficulty]:not(:disabled)')?.classList.add('active');
+  }
+}
+function chooseRecommendationIds(state=activeEnergy||'some'){
+  const rule=recommendationRules[state]||recommendationRules.some;
+  const pools={easy:[],medium:[],hard:[]};
+  allTodoItems().forEach(item=>pools[item.difficulty].push(item));
+  Object.keys(pools).forEach(level=>{
+    const priorityGroups={};
+    pools[level].forEach(item=>(priorityGroups[item.priority]||(priorityGroups[item.priority]=[])).push(item));
+    pools[level]=Object.entries(priorityGroups)
+      .sort(([a],[b])=>(priorityRank[b]||0)-(priorityRank[a]||0))
+      .flatMap(([,items])=>{
+        for(let i=items.length-1;i>0;i--){
+          const j=Math.floor(Math.random()*(i+1));
+          [items[i],items[j]]=[items[j],items[i]];
+        }
+        return items;
+      });
+  });
+  const chosen=[];
+  const levels=[rule.target,...rule.order.filter(level=>level!==rule.target)];
+  for(const level of levels){
+    const remaining=3-chosen.length;
+    if(remaining<=0)break;
+    chosen.push(...pools[level].slice(0,remaining));
+  }
+  return chosen.map(item=>item.id);
+}
+function refreshRecommendationIds(state=activeEnergy||'some'){
+  recommendedTaskIds=chooseRecommendationIds(state);
+  recommendedTaskIdsByState[state]=recommendedTaskIds;
+  recommendationState=state;
+  recommendationsGenerated=true;
+  saveDailyRecommendations();
+}
+function renderRecommendations(state){
+  activeEnergy=state;
+  const currentItems=allTodoItems();
+  const chosen=recommendedTaskIds.map(id=>currentItems.find(item=>item.id===id)).filter(Boolean);
+  const displayState=state;
+  const stateNames={low:'低能量',some:'中能量',ready:'高能量'};
+  const headings={low:'先从轻一点的开始',some:'现在适合往前推一点',ready:'现在适合处理关键事项'};
+  document.getElementById('recommendationCount').textContent=chosen.length?stateNames[displayState]+' · 为你挑了 '+chosen.length+' 件':'当前没有待办任务';
+  document.getElementById('recommendationHeading').textContent=chosen.length?headings[displayState]:'可以先去灵感里记下想法';
+  const list=document.getElementById('recommendationItems');
+  list.innerHTML='';
+  chosen.forEach(item=>{
+    const row=document.createElement('div');
+    row.className='recommendation-row';
+    const check=document.createElement('button');
+    check.className='check recommendation-check';
+    check.type='button';
+    check.dataset.completeTask=item.id;
+    check.setAttribute('aria-label','完成任务');
+    check.textContent='○';
+    const copy=document.createElement('span');
+    copy.className='recommendation-copy';
+    const title=document.createElement('strong');
+    title.textContent=item.title;
+    const meta=document.createElement('small');
+    meta.textContent=priorityLabels[item.priority]+' · '+difficultyLabels[item.difficulty]+' · '+item.project+(item.display?' · '+item.display:'');
+    copy.append(title,meta);
+    row.append(check,copy);
+    list.appendChild(row);
+  });
+  document.getElementById('recommendations').classList.remove('hidden');
+  document.getElementById('returnNote').classList.remove('hidden');
+}
+function completeTask(button){
+  const item=taskMeta(button);
+  const doneRow=document.createElement('div');
+  doneRow.className='done-row';
+  doneRow.dataset.taskId=item.id;
+  doneRow.dataset.project=item.project;
+  doneRow.dataset.difficulty=item.difficulty;
+  doneRow.dataset.deadline=item.deadline;
+  doneRow.dataset.completed=String(Date.now());
+  const copy=document.createElement('div');
+  copy.className='done-copy';
+  const title=document.createElement('strong');
+  title.textContent=item.title;
+  const meta=document.createElement('small');
+  meta.textContent=item.project+' · '+difficultyLabels[item.difficulty]+' · '+item.display;
+  copy.append(title,meta);
+  const review=document.createElement('label');
+  review.className='review-check';
+  review.innerHTML='<input type="checkbox">需要复盘';
+  doneRow.append(copy,review);
+  document.getElementById('doneList').prepend(doneRow);
+  item.row.remove();
+  updateCounts();
+  applyDoneFilters();
+  renderReviewList();
+  if(activeEnergy)renderRecommendations(activeEnergy);
+}
+document.addEventListener('click',event=>{
+  const target=event.target.closest('.todo-check,[data-complete-task]');
+  if(!target)return;
+  if(target.matches('.todo-check')){completeTask(target);return}
+  const item=allTodoItems().find(task=>task.id===target.dataset.completeTask);
+  if(item)completeTask(item.button);
+});
+
+startAction.onclick=()=>{
+  stateBlock.classList.remove('hidden');
+  startAction.classList.add('revealed');
+  startAction.innerHTML='<span class="start-button-label">选择你现在的状态</span><span class="start-button-arrow">↓</span>';
+};
+document.querySelectorAll('[data-state]').forEach(button=>button.onclick=()=>{
+  document.querySelectorAll('[data-state]').forEach(item=>item.classList.toggle('active',item===button));
+  stateHint.textContent={low:'先从低负担的事情开始',some:'选一件值得推进的事情',ready:'把精力放到最关键的事情上'}[button.dataset.state];
+  if(!Array.isArray(recommendedTaskIdsByState[button.dataset.state]))refreshRecommendationIds(button.dataset.state);
+  else{
+    recommendedTaskIds=recommendedTaskIdsByState[button.dataset.state];
+    recommendationState=button.dataset.state;
+  }
+  renderRecommendations(button.dataset.state);
+});
+document.getElementById('refreshRecommendations').onclick=()=>{
+  refreshRecommendationIds(activeEnergy||'some');
+  renderRecommendations(activeEnergy||'some');
+};
+
+function showTodoTab(tab){
+  const ideas=tab==='ideas';
+  document.getElementById('todoTasksTab').classList.toggle('active',!ideas);
+  document.getElementById('todoIdeasTab').classList.toggle('active',ideas);
+  document.getElementById('todoTasksView').classList.toggle('hidden',ideas);
+  document.getElementById('todoIdeasView').classList.toggle('hidden',!ideas);
+  document.getElementById('newTodo').classList.toggle('hidden',ideas);
+}
+document.getElementById('todoTasksTab').onclick=()=>showTodoTab('tasks');
+document.getElementById('todoIdeasTab').onclick=()=>showTodoTab('ideas');
+document.getElementById('completedTab').onclick=()=>{
+  document.getElementById('completedTab').classList.add('active');
+  document.getElementById('reviewsTab').classList.remove('active');
+  document.getElementById('completedView').classList.remove('hidden');
+  document.getElementById('reviewsView').classList.add('hidden');
+};
+document.getElementById('reviewsTab').onclick=()=>{
+  document.getElementById('reviewsTab').classList.add('active');
+  document.getElementById('completedTab').classList.remove('active');
+  document.getElementById('reviewsView').classList.remove('hidden');
+  document.getElementById('completedView').classList.add('hidden');
+};
+
+function doneReviewItems(){
+  return [...document.querySelectorAll('#doneList .done-row')]
+    .filter(row=>row.querySelector('.review-check input')?.checked)
+    .map(row=>({id:row.dataset.taskId,title:row.querySelector('.done-copy strong').textContent.trim(),meta:row.querySelector('.done-copy small').textContent.trim()}));
+}
+function createReviewRow(item,reviewed=false){
+  const row=document.createElement(reviewed?'div':'button');
+  row.className='review-row';
+  row.dataset.reviewId=item.id;
+  if(!reviewed){
+    row.type='button';
+  }
+  const copy=document.createElement('span');
+  const title=document.createElement('strong');
+  title.textContent=item.title;
+  const detail=document.createElement('small');
+  detail.textContent=item.meta+(reviewed?' · '+completedReviewNotes.get(item.id):' · 点击打开复盘');
+  copy.append(title,detail);
+  row.append(copy);
+  if(!reviewed){
+    const arrow=document.createElement('span');
+    arrow.textContent='→';
+    row.append(arrow);
+  }
+  return row;
+}
+function renderReviewList(){
+  const pending=document.getElementById('pendingReviews');
+  const reviewed=document.getElementById('reviewedList');
+  pending.innerHTML='';
+  reviewed.querySelectorAll('[data-review-id]').forEach(row=>row.remove());
+  const items=doneReviewItems();
+  items.forEach(item=>pending.appendChild(createReviewRow(item)));
+  items.filter(item=>completedReviewNotes.has(item.id)).forEach(item=>{
+    pending.querySelectorAll('[data-review-id]').forEach(row=>{if(row.dataset.reviewId===item.id)row.remove()});
+    reviewed.appendChild(createReviewRow(item,true));
+  });
+  document.getElementById('reviewsTabCount').textContent=items.filter(item=>!completedReviewNotes.has(item.id)).length;
+  document.getElementById('completedTabCount').textContent=document.querySelectorAll('#doneList .done-row').length;
+  document.querySelector('#doneNav .count').textContent=document.querySelectorAll('#doneList .done-row').length;
+}
+document.getElementById('doneList').addEventListener('change',event=>{
+  if(!event.target.matches('.review-check input'))return;
+  const row=event.target.closest('.done-row');
+  if(!event.target.checked)completedReviewNotes.delete(row.dataset.taskId);
+  renderReviewList();
+});
+document.getElementById('pendingReviews').addEventListener('click',event=>{
+  const row=event.target.closest('[data-review-id]');
+  if(!row)return;
+  const item=doneReviewItems().find(review=>review.id===row.dataset.reviewId);
+  if(!item)return;
+  currentReviewId=item.id;
+  document.getElementById('reviewDialogTitle').textContent=item.title;
+  document.getElementById('reviewText').value='';
+  document.getElementById('reviewCount').textContent='0';
+  document.getElementById('reviewDone').disabled=true;
+  document.getElementById('reviewDialog').classList.remove('hidden');
+});
+
+function openTaskForm(idea){
+  if(allTodoItems().length>=10){
+    document.getElementById('taskLimitAlert').classList.remove('hidden');
+    return;
+  }
+  document.getElementById('newTaskTitle').value=idea||'';
+  updateCounts();
+  document.getElementById('todoSheet').classList.remove('hidden');
+}
+document.getElementById('newTodo').onclick=()=>openTaskForm('');
+document.getElementById('emptyNewTodo').onclick=()=>openTaskForm('');
+document.getElementById('newEvent').onclick=()=>document.getElementById('eventSheet').classList.remove('hidden');
+document.getElementById('goIdeasFromLimit').onclick=()=>{
+  document.getElementById('taskLimitAlert').classList.add('hidden');
+  showScreen('todo');
+  showTodoTab('ideas');
+  document.getElementById('ideaInput').focus();
+};
+document.querySelectorAll('[data-close]').forEach(button=>button.onclick=()=>document.getElementById(button.dataset.close).classList.add('hidden'));
+document.getElementById('reviewText').oninput=event=>{
+  document.getElementById('reviewCount').textContent=event.target.value.length;
+  document.getElementById('reviewDone').disabled=!event.target.value.trim();
+};
+document.getElementById('reviewDone').onclick=()=>{
+  if(!currentReviewId)return;
+  completedReviewNotes.set(currentReviewId,document.getElementById('reviewText').value.trim());
+  document.getElementById('reviewDialog').classList.add('hidden');
+  currentReviewId=null;
+  renderReviewList();
+  document.getElementById('reviewsTab').click();
+};
+
+function makeIdeaRow(text){
+  const row=document.createElement('div');
+  row.className='idea-row';
+  const label=document.createElement('span');
+  label.className='idea-text';
+  label.textContent=text;
+  const action=document.createElement('button');
+  action.className='idea-to-task';
+  action.type='button';
+  action.textContent='Task';
+  action.onclick=()=>openTaskForm(text);
+  row.append(label,action);
+  return row;
+}
+document.querySelectorAll('.idea-to-task').forEach(button=>button.onclick=()=>openTaskForm(button.closest('.idea-row').querySelector('.idea-text').textContent.trim()));
+document.getElementById('ideaForm').onsubmit=event=>{
+  event.preventDefault();
+  const input=document.getElementById('ideaInput');
+  const value=input.value.trim();
+  if(!value)return;
+  document.getElementById('ideaList').prepend(makeIdeaRow(value));
+  input.value='';
+  document.querySelector('#todoIdeasTab span').textContent=document.querySelectorAll('#ideaList .idea-row').length;
+};
+
+function compareRows(a,b,order){
+  if(order==='project')return(a.dataset.project||'').localeCompare(b.dataset.project||'','zh-CN');
+  if(order==='difficulty')return(difficultyRank[a.dataset.difficulty]||0)-(difficultyRank[b.dataset.difficulty]||0);
+  if(order==='deadline')return(a.dataset.deadline||'').localeCompare(b.dataset.deadline||'');
+  return Number(b.dataset.completed||0)-Number(a.dataset.completed||0);
+}
+function applyTodoFilters(){
+  const project=document.getElementById('todoProjectFilter').value;
+  const difficulty=document.getElementById('todoDifficultyFilter').value;
+  const order=document.getElementById('todoOrder').value;
+  document.querySelectorAll('#todoTasksView .task-row').forEach(row=>row.classList.toggle('hidden',(project!=='all'&&row.dataset.project!==project)||(difficulty!=='all'&&row.dataset.difficulty!==difficulty)));
+  document.querySelectorAll('#todoTasksView .group').forEach(group=>[...group.querySelectorAll('.task-row')].sort((a,b)=>compareRows(a,b,order)).forEach(row=>group.appendChild(row)));
+}
+function applyDoneFilters(){
+  const project=document.getElementById('doneProjectFilter').value;
+  const difficulty=document.getElementById('doneDifficultyFilter').value;
+  const order=document.getElementById('doneOrder').value;
+  document.querySelectorAll('#doneList .done-row').forEach(row=>row.classList.toggle('hidden',(project!=='all'&&row.dataset.project!==project)||(difficulty!=='all'&&row.dataset.difficulty!==difficulty)));
+  [...document.querySelectorAll('#doneList .done-row')].sort((a,b)=>compareRows(a,b,order)).forEach(row=>document.getElementById('doneList').appendChild(row));
+}
+function addTaskToList(){
+  const title=document.getElementById('newTaskTitle').value.trim();
+  if(!title)return;
+  const difficulty=document.querySelector('#todoSheet [data-task-difficulty].active')?.dataset.taskDifficulty||'easy';
+  const counts=difficultyCounts();
+  const limits={easy:4,medium:3,hard:3};
+  if(allTodoItems().length>=10||counts[difficulty]>=limits[difficulty]){
+    document.getElementById('capacityAlert').classList.remove('hidden');
+    return;
+  }
+  const priorityLabel=document.querySelector('#todoSheet .priority-choice .choice.active')?.textContent.trim()||'其他';
+  const priority=priorityIds[priorityLabel]||'other';
+  const projectButton=document.querySelector('#todoSheet .project-list .project.active');
+  const project=projectButton?projectButton.textContent.trim():'未分类';
+  const date=document.querySelector('#todoSheet input[type="date"]').value;
+  const time=document.querySelector('#todoSheet input[type="time"]').value;
+  const deadline=date?date+'T'+(time||'23:59'):'';
+  const display=date?new Date(deadline).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'未设置截止时间';
+  const group=[...document.querySelectorAll('#todoTasksView .group')].find(item=>item.querySelector('.group-title').childNodes[0].textContent.trim()===priorityLabels[priority]);
+  if(!group)return;
+  const row=document.createElement('div');
+  row.className='task-row';
+  row.dataset.project=project;
+  row.dataset.difficulty=difficulty;
+  row.dataset.deadline=deadline;
+  row.dataset.priority=priority;
+  const check=document.createElement('button');
+  check.className='check todo-check';
+  check.dataset.taskId='task_'+Date.now();
+  check.dataset.title=title;
+  check.dataset.project=project;
+  check.dataset.difficulty=difficulty;
+  check.dataset.deadline=deadline;
+  check.dataset.display=display;
+  check.textContent='○';
+  const main=document.createElement('button');
+  main.className='task-main';
+  main.innerHTML='<span class="task-title"></span><span class="meta"><span></span><span class="'+difficulty+'">'+difficultyLabels[difficulty]+'</span><span></span></span>';
+  main.querySelector('.task-title').textContent=title;
+  main.querySelector('.meta span').textContent=project;
+  main.querySelector('.meta span:last-child').textContent=display;
+  row.append(check,main);
+  group.appendChild(row);
+  document.getElementById('todoSheet').classList.add('hidden');
+  document.getElementById('newTaskTitle').value='';
+  updateCounts();
+  applyTodoFilters();
+}
+document.querySelector('#todoSheet form').onsubmit=event=>{event.preventDefault();addTaskToList()};
+document.getElementById('newTodo').onclick=()=>openTaskForm('');
+['todoProjectFilter','todoDifficultyFilter','todoOrder'].forEach(id=>document.getElementById(id).onchange=applyTodoFilters);
+['doneProjectFilter','doneDifficultyFilter','doneOrder'].forEach(id=>document.getElementById(id).onchange=applyDoneFilters);
+document.querySelectorAll('.choices').forEach(group=>group.querySelectorAll('.choice:not([data-task-difficulty])').forEach(choice=>choice.onclick=()=>{
+  group.querySelectorAll('.choice').forEach(item=>item.classList.remove('active'));
+  choice.classList.add('active');
+}));
+document.querySelectorAll('#todoSheet [data-task-difficulty]').forEach(button=>button.onclick=()=>{
+  if(button.disabled){document.getElementById('capacityAlert').classList.remove('hidden');return}
+  document.querySelectorAll('#todoSheet [data-task-difficulty]').forEach(item=>item.classList.remove('active'));
+  button.classList.add('active');
+});
+document.querySelectorAll('.project-list .project:not(.new-project)').forEach(project=>project.onclick=()=>{
+  project.closest('.project-list').querySelectorAll('.project').forEach(item=>item.classList.remove('active'));
+  project.classList.add('active');
+});
+document.querySelectorAll('[data-project-new]').forEach(button=>button.onclick=()=>document.getElementById(button.dataset.projectNew).classList.toggle('hidden'));
+const newProjectInput=document.querySelector('#newProjectFieldTodo input');
+newProjectInput.addEventListener('change',event=>{
+  const name=event.target.value.trim();
+  if(!name)return;
+  const list=event.target.closest('.form-field').querySelector('.project-list');
+  const project=document.createElement('button');
+  project.type='button';
+  project.className='project active';
+  project.textContent=name;
+  list.querySelectorAll('.project').forEach(item=>item.classList.remove('active'));
+  list.insertBefore(project,list.lastElementChild);
+  project.onclick=()=>{list.querySelectorAll('.project').forEach(item=>item.classList.remove('active'));project.classList.add('active')};
+});
+document.getElementById('closeCapacityAlert').onclick=()=>document.getElementById('capacityAlert').classList.add('hidden');
+document.querySelectorAll('#todoSheet [data-capacity="full"]').forEach(button=>button.onclick=()=>document.getElementById('capacityAlert').classList.remove('hidden'));
+updateCounts();
+applyTodoFilters();
+applyDoneFilters();
+renderReviewList();
+loadDailyRecommendations();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body>
+</html>
