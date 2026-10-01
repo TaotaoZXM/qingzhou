@@ -49,11 +49,76 @@
 .account-button{padding:0;color:var(--muted);background:transparent;border:0;font-size:11px}.account-button.authenticated{color:var(--accent)}
 .auth-dialog{position:absolute;z-index:20;inset:0;display:flex;align-items:center;padding:18px;background:rgba(37,42,38,.24)}.auth-dialog.hidden{display:none}.auth-card{width:100%;padding:21px 18px;background:#fff;border-radius:11px;box-shadow:0 16px 40px rgba(37,42,38,.16)}.auth-card h2{margin-top:5px;font-size:20px;letter-spacing:-.04em}.auth-card p{margin-top:9px;color:var(--muted);font-size:11px;line-height:1.5}.auth-form{display:grid;gap:12px;margin-top:19px}.auth-form label{display:grid;gap:6px;color:var(--muted);font-size:10px}.auth-form input{width:100%;padding:10px 0;color:var(--text);background:transparent;border:0;border-bottom:1px solid var(--line);outline:0;font-size:12px}.auth-primary{padding:11px;color:#fff;background:var(--accent);border:0;border-radius:6px;font-size:11px}.auth-secondary{padding:4px 0;color:var(--accent);background:transparent;border:0;font-size:10px}.auth-status{min-height:16px;margin-top:10px!important;color:var(--accent)!important;font-size:10px!important}.auth-status.error{color:var(--hard)!important}.auth-account{display:flex;align-items:center;justify-content:space-between;margin-top:17px;padding-top:13px;border-top:1px solid var(--line);color:var(--muted);font-size:10px}
 </style>
+<style>
+/* Larger reading scale for the phone UI; the Start greeting remains intentionally compact. */
+.phone .appbar .brand{font-size:26px}
+.phone .account-button{font-size:20px}
+.phone .start-topline{font-size:20px}
+.phone .start-topline span:first-child{font-size:28px}
+.phone .start-kicker{font-size:20px}
+.phone .screen.start .greeting{font-size:27px}
+.phone .screen.start .sub{font-size:24px}
+.phone .screen.start .start-button{font-size:26px}
+.phone .screen.start .start-button.revealed .start-button-label{font-size:30px}
+.phone .section-label{font-size:20px}
+.phone .state{font-size:26px}
+.phone .state-hint{font-size:20px}
+.phone .recommendations h2{font-size:32px}
+.phone .recommendation-head small,.phone .refresh-recommendations{font-size:20px}
+.phone .recommendation-copy strong{font-size:26px}
+.phone .recommendation-copy small{font-size:20px}
+.phone .return-note{font-size:20px}
+.phone .work-head h1{font-size:54px}
+.phone .eyebrow{font-size:20px}
+.phone .add{font-size:24px}
+.phone .tab,.phone .done-tab{font-size:24px}
+.phone .tab span,.phone .done-tab span{font-size:20px}
+.phone .capacity-top{font-size:20px}
+.phone .capacity-top strong{font-size:24px}
+.phone .capacity-detail{font-size:18px}
+.phone .filters select,.phone .search,.phone .search input{font-size:20px}
+.phone .summary{font-size:18px}
+.phone .group-title{font-size:22px}
+.phone .group-title small{font-size:18px}
+.phone .task-title{font-size:24px}
+.phone .meta{font-size:18px}
+.phone .empty{font-size:20px}
+.phone .ideas-intro h2,.phone .done-intro h2{font-size:34px}
+.phone .ideas-intro p,.phone .done-intro p{font-size:22px}
+.phone .idea-input input{font-size:24px}
+.phone .idea-input button{font-size:20px}
+.phone .idea-row{font-size:24px}
+.phone .idea-to-task{font-size:20px}
+.phone .done-copy strong{font-size:24px}
+.phone .done-copy small,.phone .review-check,.phone .section-note,.phone .review-label{font-size:18px}
+.phone .review-row strong{font-size:24px}
+.phone .review-row small{font-size:18px}
+.phone .sheet-head h2{font-size:36px}
+.phone .form label,.phone .form-field{font-size:20px}
+.phone .form input,.phone .form textarea{font-size:24px}
+.phone .choice{font-size:20px}
+.phone .choice small{font-size:16px}
+.phone .project{font-size:20px}
+.phone .sheet-submit,.phone .review-done{font-size:22px}
+.phone .review-card p{font-size:22px}
+.phone .review-footer{font-size:18px}
+.phone .capacity-alert-card h3{font-size:30px}
+.phone .capacity-alert-card p{font-size:22px}
+.phone .capacity-alert-card button{font-size:22px}
+.phone .auth-card h2{font-size:40px}
+.phone .auth-card p{font-size:22px}
+.phone .auth-form label{font-size:20px}
+.phone .auth-form input{font-size:24px}
+.phone .auth-primary,.phone .auth-secondary{font-size:22px}
+.phone .auth-status{font-size:20px!important}
+.phone .auth-account{font-size:20px}
+.phone .bottom-item span{font-size:20px}
+.phone .bottom-item .count{font-size:18px}
+</style>
 </head>
 <body>
 <div class="heading"><h1>轻舟 · 手机网页版预览 v31</h1><p>推荐只在每天第一次开始时生成；状态只改变提示，刷新任务才重新抽取。</p></div>
 <div class="phone">
-  <div class="status"><span>9:41</span><span>Wi-Fi&nbsp;&nbsp;100%</span></div>
   <div class="appbar"><div class="brand">轻舟</div><button id="accountButton" class="account-button" type="button">账户</button></div>
 
   <section id="startScreen" class="screen start">
@@ -78,7 +143,7 @@
     <div class="tabs"><button class="tab active" id="todoTasksTab">任务 <span id="todoTabCount">8</span></button><button class="tab" id="todoIdeasTab">灵感 <span>2</span></button></div>
     <div id="todoTasksView">
       <div class="capacity"><div class="capacity-top"><strong>并行任务容量</strong><span id="activeCount">8/10</span></div><div class="capacity-bars" id="capacityBars"><i class="bar easy"></i><i class="bar easy"></i><i class="bar easy"></i><i class="bar medium"></i><i class="bar medium"></i><i class="bar medium"></i><i class="bar hard"></i><i class="bar hard"></i><i class="bar"></i><i class="bar"></i></div><div class="capacity-detail"><span class="easy" id="easyCount">简单 3/4</span><span class="medium" id="mediumCount">适中 3/3</span><span class="hard" id="hardCount">困难 2/3</span></div></div>
-      <div class="filters"><div class="filter-set"><select id="todoProjectFilter"><option value="all">项目</option><option value="工作">工作</option><option value="产品">产品</option><option value="个人成长">个人成长</option><option value="日常">日常</option></select><select id="todoDifficultyFilter"><option value="all">难易程度</option><option value="easy">简单</option><option value="medium">适中</option><option value="hard">困难</option></select><select id="todoOrder"><option value="deadline">排列顺序</option><option value="project">项目</option><option value="deadline">截止时间</option><option value="difficulty">难易程度</option></select></div><label class="search">⌕ <input placeholder="搜索"></label></div><div class="summary"><span id="todoSummary">8 项进行中</span><span>完成后进入 Done</span></div>
+      <div class="filters"><div class="filter-set"><select id="todoProjectFilter"><option value="all">全部项目</option><option value="工作">工作</option><option value="产品">产品</option><option value="个人成长">个人成长</option><option value="日常">日常</option></select><select id="todoDifficultyFilter"><option value="all">全部难度</option><option value="easy">简单</option><option value="medium">适中</option><option value="hard">困难</option></select></div><label class="search">⌕ <input placeholder="搜索"></label></div><div class="summary"><span id="todoSummary">8 项进行中</span><span>完成后进入 Done</span></div>
       <div id="todoGroups" class="groups"><section class="group"><div class="group-title">重要且紧急 <small>2</small></div><div class="task-row" data-project="产品" data-difficulty="hard" data-deadline="2026-09-30T14:00"><button class="check todo-check" data-title="完成项目方案的第一版" data-project="产品" data-difficulty="hard" data-deadline="2026-09-30T14:00" data-display="9月30日 14:00">○</button><button class="task-main"><span class="task-title">完成项目方案的第一版</span><span class="meta"><span>产品</span><span class="hard">困难</span><span>9月30日 14:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="工作" data-difficulty="medium" data-deadline="2026-09-29T18:00"><button class="check todo-check" data-title="向同事同步项目当前风险" data-project="工作" data-difficulty="medium" data-deadline="2026-09-29T18:00" data-display="9月29日 18:00">○</button><button class="task-main"><span class="task-title">向同事同步项目当前风险</span><span class="meta"><span>工作</span><span class="medium">适中</span><span>9月29日 18:00</span></span></button><span class="row-arrow">›</span></div></section><section class="group"><div class="group-title">重要不紧急 <small>3</small></div><div class="task-row" data-project="个人成长" data-difficulty="hard" data-deadline="2026-10-02T20:00"><button class="check todo-check" data-title="确定个人主页的内容结构" data-project="个人成长" data-difficulty="hard" data-deadline="2026-10-02T20:00" data-display="10月2日 20:00">○</button><button class="task-main"><span class="task-title">确定个人主页的内容结构</span><span class="meta"><span>个人成长</span><span class="hard">困难</span><span>10月2日 20:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="工作" data-difficulty="medium" data-deadline="2026-10-03T16:00"><button class="check todo-check" data-title="整理下季度的工作重点" data-project="工作" data-difficulty="medium" data-deadline="2026-10-03T16:00" data-display="10月3日 16:00">○</button><button class="task-main"><span class="task-title">整理下季度的工作重点</span><span class="meta"><span>工作</span><span class="medium">适中</span><span>10月3日 16:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="个人成长" data-difficulty="medium" data-deadline="2026-10-06T21:00"><button class="check todo-check" data-title="更新个人作品集首页" data-project="个人成长" data-difficulty="medium" data-deadline="2026-10-06T21:00" data-display="10月6日 21:00">○</button><button class="task-main"><span class="task-title">更新个人作品集首页</span><span class="meta"><span>个人成长</span><span class="medium">适中</span><span>10月6日 21:00</span></span></button><span class="row-arrow">›</span></div></section><section class="group"><div class="group-title">紧急不重要 <small>1</small></div><div class="task-row" data-project="工作" data-difficulty="easy" data-deadline="2026-09-28T10:00"><button class="check todo-check" data-title="确认本周会议时间" data-project="工作" data-difficulty="easy" data-deadline="2026-09-28T10:00" data-display="9月28日 10:00">○</button><button class="task-main"><span class="task-title">确认本周会议时间</span><span class="meta"><span>工作</span><span class="easy">简单</span><span>9月28日 10:00</span></span></button><span class="row-arrow">›</span></div></section><section class="group"><div class="group-title">其他 <small>2</small></div><div class="task-row" data-project="日常" data-difficulty="easy" data-deadline="2026-09-28T18:00"><button class="check todo-check" data-title="整理收件箱里需要回复的消息" data-project="日常" data-difficulty="easy" data-deadline="2026-09-28T18:00" data-display="9月28日 18:00">○</button><button class="task-main"><span class="task-title">整理收件箱里需要回复的消息</span><span class="meta"><span>日常</span><span class="easy">简单</span><span>9月28日 18:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="日常" data-difficulty="easy" data-deadline=""><button class="check todo-check" data-title="清理桌面和下载文件夹" data-project="日常" data-difficulty="easy" data-deadline="" data-display="未设置截止时间">○</button><button class="task-main"><span class="task-title">清理桌面和下载文件夹</span><span class="meta"><span>日常</span><span class="easy">简单</span><span>未设置截止时间</span></span></button><span class="row-arrow">›</span></div></section></div><div id="todoEmptyState" class="todo-empty-state hidden"><span class="todo-empty-state-mark">＋</span><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置。</p><button id="emptyNewTodo" type="button">＋新任务</button></div>
     </div>
     <div id="todoIdeasView" class="ideas hidden"><div class="ideas-intro"><span>✦</span><div><h2>先记下来，之后再安排</h2><p>灵感先放在这里，准备好时再变成任务。</p></div></div><form class="idea-input" id="ideaForm"><input id="ideaInput" placeholder="刚刚想到什么？"><button type="submit" aria-label="保存灵感">→</button></form><div class="idea-list" id="ideaList"><div class="idea-row"><span class="idea-text">把每周复盘变成一张很短的卡片</span><button class="idea-to-task" type="button">Task</button></div><div class="idea-row"><span class="idea-text">给常见任务准备可复用的下一步</span><button class="idea-to-task" type="button">Task</button></div></div></div>
@@ -637,9 +702,7 @@ function compareRows(a,b,order){
 function applyTodoFilters(){
   const project=document.getElementById('todoProjectFilter').value;
   const difficulty=document.getElementById('todoDifficultyFilter').value;
-  const order=document.getElementById('todoOrder').value;
   document.querySelectorAll('#todoTasksView .task-row').forEach(row=>row.classList.toggle('hidden',(project!=='all'&&row.dataset.project!==project)||(difficulty!=='all'&&row.dataset.difficulty!==difficulty)));
-  document.querySelectorAll('#todoTasksView .group').forEach(group=>[...group.querySelectorAll('.task-row')].sort((a,b)=>compareRows(a,b,order)).forEach(row=>group.appendChild(row)));
 }
 function applyDoneFilters(){
   const project=document.getElementById('doneProjectFilter').value;
@@ -699,7 +762,7 @@ function addTaskToList(){
 }
 document.querySelector('#todoSheet form').onsubmit=event=>{event.preventDefault();addTaskToList()};
 document.getElementById('newTodo').onclick=()=>openTaskForm('');
-['todoProjectFilter','todoDifficultyFilter','todoOrder'].forEach(id=>document.getElementById(id).onchange=applyTodoFilters);
+['todoProjectFilter','todoDifficultyFilter'].forEach(id=>document.getElementById(id).onchange=applyTodoFilters);
 ['doneProjectFilter','doneDifficultyFilter','doneOrder'].forEach(id=>document.getElementById(id).onchange=applyDoneFilters);
 document.querySelectorAll('.choices').forEach(group=>group.querySelectorAll('.choice:not([data-task-difficulty])').forEach(choice=>choice.onclick=()=>{
   group.querySelectorAll('.choice').forEach(item=>item.classList.remove('active'));
