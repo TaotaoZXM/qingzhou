@@ -165,6 +165,40 @@
 .phone #doneScreen .review-row small{font-size:13px}
 .phone .bottom-item span,
 .phone .bottom-item .count{font-size:14px}
+.bottom-nav{grid-template-columns:repeat(4,1fr)}
+.screen.cal{text-align:left;padding:0 20px 90px;background:#fbfcfa}
+.cal-header{padding-top:20px}
+.cal-header-row{display:flex;align-items:center;justify-content:space-between}
+.cal-header h1{font-size:27px;letter-spacing:-.06em}
+.cal-header p{margin-top:7px;color:var(--muted);font-size:12px}
+.cal-month{margin-top:27px;padding:16px 0 14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.cal-month-head{display:flex;align-items:center;justify-content:space-between}
+.cal-month-title{font-size:18px;font-weight:600;letter-spacing:-.03em}
+.cal-month-actions{display:flex;gap:5px}
+.cal-month-actions button{display:grid;place-items:center;width:29px;height:29px;color:var(--muted);background:transparent;border:0;border-radius:50%;font-size:20px;line-height:1}
+.cal-month-actions button:hover{color:var(--accent);background:var(--accent-soft)}
+.cal-weekdays,.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
+.cal-weekdays{margin-top:17px;color:var(--quiet);font-size:10px}
+.cal-days{margin-top:8px}
+.cal-day{position:relative;display:grid;place-items:center;width:100%;aspect-ratio:1;color:var(--text);background:transparent;border:0;border-radius:50%;font-size:12px}
+.cal-day.muted{color:#c6ccc7}
+.cal-day:not(.muted):hover{background:var(--soft)}
+.cal-day.selected{color:#fff;background:var(--accent);font-weight:600}
+.cal-day.today:not(.selected)::after{content:"";position:absolute;bottom:4px;width:3px;height:3px;background:var(--accent);border-radius:50%}
+.cal-day.has-record:not(.selected)::before{content:"";position:absolute;bottom:4px;left:calc(50% + 4px);width:3px;height:3px;background:var(--medium);border-radius:50%}
+.cal-day.selected.has-record::after{content:"";position:absolute;bottom:4px;width:3px;height:3px;background:#fff;border-radius:50%}
+.cal-selected{padding:24px 0 0}
+.cal-selected h2{font-size:17px;font-weight:600;letter-spacing:-.03em}
+.cal-selected p{margin-top:5px;color:var(--muted);font-size:12px}
+.cal-record-group{margin-top:21px}
+.cal-record-label{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12px}
+.cal-record-label i{width:5px;height:5px;background:var(--accent);border-radius:50%}
+.cal-record-row{display:flex;align-items:flex-start;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}
+.cal-record-mark{flex:none;width:19px;color:var(--quiet);font-size:14px;line-height:1.4;text-align:center}
+.cal-record-copy{min-width:0;flex:1}
+.cal-record-copy strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:400}
+.cal-record-copy small{display:block;margin-top:4px;color:var(--muted);font-size:13px;line-height:1.4}
+.cal-empty{padding:10px 0 2px 26px;color:var(--quiet);font-size:12px}
 </style>
 </head>
 <body>
@@ -207,7 +241,14 @@
     <div id="reviewsView" class="done-content hidden"><div class="filters done-filter-line"><div class="filter-set"><div class="filter-control" id="reviewProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="生活">生活</button></div></div><div class="filter-control" id="reviewDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div><div class="review-label">新增且未完成复盘</div><div id="pendingReviews" class="review-list"></div><div class="reviewed"><div class="review-label">已经复盘完成</div><div id="reviewedList"><div class="review-row" data-project="产品" data-difficulty="medium"><span><strong>整理用户反馈</strong><small>产品 · 适中 · 9月27日 17:00 · 下次提前准备问题清单。</small></span></div></div></div></div>
   </section>
 
-  <nav class="bottom-nav"><button id="startNav" class="bottom-item active">✦<span>Start</span></button><button id="todoNav" class="bottom-item">☷<span>To-do <b class="count">8</b></span></button><button id="doneNav" class="bottom-item">✓<span>Done <b class="count">3</b></span></button></nav>
+  <section id="calScreen" class="screen cal hidden">
+    <div class="cal-header"><div class="cal-header-row"><h1>Cal</h1></div><p>回看那些已经发生的事。</p></div>
+    <div class="cal-month"><div class="cal-month-head"><h2 id="calMonthTitle" class="cal-month-title"></h2><div class="cal-month-actions"><button id="calPrevMonth" type="button" aria-label="上个月">‹</button><button id="calNextMonth" type="button" aria-label="下个月">›</button></div></div><div class="cal-weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div><div id="calDays" class="cal-days"></div></div>
+    <div class="cal-selected"><h2 id="calSelectedTitle"></h2><p id="calSelectedSubtitle">这一天留下的记录</p></div>
+    <div id="calRecords"></div>
+  </section>
+
+  <nav class="bottom-nav"><button id="startNav" class="bottom-item active">✦<span>Start</span></button><button id="todoNav" class="bottom-item">☷<span>To-do <b class="count">8</b></span></button><button id="doneNav" class="bottom-item">✓<span>Done <b class="count">3</b></span></button><button id="calNav" class="bottom-item">▦<span>Cal</span></button></nav>
   <div id="todoSheet" class="sheet hidden"><div class="sheet-panel"><div class="sheet-head"><div><div class="eyebrow">NEW TO-DO</div><h2>添加任务</h2></div><button class="close" data-close="todoSheet">×</button></div><div class="mobile-note" id="capacitySummary">当前进行中 8/10 · 困难 2/3 · 适中 3/3 · 简单 3/4</div><form class="form task-entry-form"><label>任务内容<input id="newTaskTitle" placeholder="例如：给客户确认最终版本"></label><div class="form-field"><span>难易程度</span><div class="choices"><button type="button" class="choice active" data-task-difficulty="easy">简单<small>3/4</small></button><button type="button" class="choice" data-task-difficulty="medium">适中<small>3/3</small></button><button type="button" class="choice" data-task-difficulty="hard">困难<small>2/3</small></button></div></div><div class="form-field"><span>优先级</span><div class="choices priority-choice"><button type="button" class="choice active">重要且紧急</button><button type="button" class="choice">重要不紧急</button><button type="button" class="choice">紧急不重要</button><button type="button" class="choice">其他</button></div></div><div class="form-field"><span>截止时间（可选）</span><div class="datetime-row"><input type="date" value="2026-09-30"><input type="time" value="14:00"></div></div><div class="form-field"><span>项目</span><div class="project-list"><button type="button" class="project active">工作</button><button type="button" class="project">产品</button><button type="button" class="project">个人成长</button><button type="button" class="project">生活</button><button type="button" class="project new-project" data-project-new="newProjectFieldTodo">＋ 新增项目</button></div><div id="newProjectFieldTodo" class="new-project-field hidden"><input placeholder="输入新项目名称"></div></div><button class="sheet-submit">加入 To-do</button></form></div></div>
   <div id="eventSheet" class="sheet hidden"><div class="sheet-panel"><div class="sheet-head"><div><div class="eyebrow">NEW DONE EVENT</div><h2>记录完成事件</h2></div><button class="close" data-close="eventSheet">×</button></div><form class="form task-entry-form"><label>完成内容<input placeholder="例如：整理完了房间"></label><div class="form-field"><span>难易程度</span><div class="choices"><button type="button" class="choice active">简单<small>完成事件</small></button><button type="button" class="choice">适中<small>完成事件</small></button><button type="button" class="choice">困难<small>完成事件</small></button></div></div><div class="form-field"><span>优先级</span><div class="choices priority-choice"><button type="button" class="choice active">重要且紧急</button><button type="button" class="choice">重要不紧急</button><button type="button" class="choice">紧急不重要</button><button type="button" class="choice">其他</button></div></div><div class="form-field"><span>截止时间（可选）</span><div class="datetime-row"><input type="date" value="2026-09-28"><input type="time" value="18:00"></div></div><div class="form-field"><span>项目</span><div class="project-list"><button type="button" class="project active">工作</button><button type="button" class="project">产品</button><button type="button" class="project">个人成长</button><button type="button" class="project">生活</button><button type="button" class="project new-project" data-project-new="newProjectFieldEvent">＋ 新增项目</button></div><div id="newProjectFieldEvent" class="new-project-field hidden"><input placeholder="输入新项目名称"></div></div><button class="sheet-submit">加入 Done</button></form></div></div>
   <div id="reviewDialog" class="review-dialog hidden"><div class="review-card"><div class="sheet-head"><div><div class="eyebrow">TASK REVIEW</div><h2 id="reviewDialogTitle"></h2></div><button class="close" data-close="reviewDialog">×</button></div><p>留下一句话就够了。完成文字输入，即完成这次复盘。</p><textarea id="reviewText" maxlength="200" placeholder="这次有什么值得记住的？"></textarea><div class="review-footer"><span><b id="reviewCount">0</b>/200</span><button class="review-done" id="reviewDone" disabled>完成复盘</button></div></div></div>
@@ -218,8 +259,8 @@
 <script src="./supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const screens={start:document.getElementById('startScreen'),todo:document.getElementById('todoScreen'),done:document.getElementById('doneScreen')};
-const navs={start:document.getElementById('startNav'),todo:document.getElementById('todoNav'),done:document.getElementById('doneNav')};
+const screens={start:document.getElementById('startScreen'),todo:document.getElementById('todoScreen'),done:document.getElementById('doneScreen'),cal:document.getElementById('calScreen')};
+const navs={start:document.getElementById('startNav'),todo:document.getElementById('todoNav'),done:document.getElementById('doneNav'),cal:document.getElementById('calNav')};
 const stateBlock=document.getElementById('stateBlock');
 const startAction=document.getElementById('startAction');
 const stateHint=document.getElementById('stateHint');
@@ -250,6 +291,27 @@ const supabaseClient=window.supabase&&supabaseUrl&&supabaseAnonKey?window.supaba
 let currentUser=null;
 let stateHydrated=false;
 let cloudSyncTimer=null;
+let calViewDate=new Date();
+let calSelectedDate=new Date();
+
+function dateKey(date){
+  const value=date instanceof Date?date:new Date(date);
+  if(Number.isNaN(value.getTime()))return '';
+  return value.getFullYear()+'-'+String(value.getMonth()+1).padStart(2,'0')+'-'+String(value.getDate()).padStart(2,'0');
+}
+function dateFromKey(key){
+  const [year,month,day]=String(key).split('-').map(Number);
+  return new Date(year,month-1,day);
+}
+function dateLabel(key){
+  const date=dateFromKey(key);
+  const weekdays=['日','一','二','三','四','五','六'];
+  return (date.getMonth()+1)+'月'+date.getDate()+'日 · 周'+weekdays[date.getDay()];
+}
+function normalizeIdeas(ideas){
+  const today=new Date().toISOString();
+  return (Array.isArray(ideas)?ideas:[]).map(idea=>typeof idea==='string'?{text:idea,createdAt:today}:{text:String(idea?.text||''),createdAt:idea?.createdAt||today}).filter(idea=>idea.text.trim());
+}
 
 function loadDailyRecommendations(){
   try{
@@ -310,7 +372,7 @@ function readAppState(){
   const done=[...document.querySelectorAll('#doneList .done-row')].map(row=>({
     id:row.dataset.taskId,title:row.querySelector('.done-copy strong').textContent.trim(),project:row.dataset.project||'未分类',difficulty:row.dataset.difficulty||'easy',deadline:row.dataset.deadline||'',display:row.querySelector('.done-copy small').textContent.trim().split(' · ').slice(2).join(' · '),completed:Number(row.dataset.completed||Date.now()),reviewRequired:Boolean(row.querySelector('.review-check input')?.checked),reviewNote:completedReviewNotes.get(row.dataset.taskId)||''
   }));
-  const ideas=[...document.querySelectorAll('#ideaList .idea-text')].map(item=>item.textContent.trim()).filter(Boolean);
+  const ideas=[...document.querySelectorAll('#ideaList .idea-row')].map(row=>({text:row.querySelector('.idea-text')?.textContent.trim()||'',createdAt:row.dataset.createdAt||new Date().toISOString()})).filter(idea=>idea.text);
   return {version:1,todo,done,ideas,updatedAt:new Date().toISOString()};
 }
 function saveLocalAppState(){
@@ -344,12 +406,17 @@ function applyAppState(state){
   const groups={};document.querySelectorAll('#todoTasksView .group').forEach(group=>{groups[group.querySelector('.group-title').childNodes[0].textContent.trim()]=group});
   (Array.isArray(state.todo)?state.todo:[]).forEach(item=>{const group=groups[priorityLabels[item.priority]||'其他'];if(group)group.appendChild(createTodoRow(item))});
   (Array.isArray(state.done)?state.done:[]).forEach(item=>document.getElementById('doneList').appendChild(createDoneRow(item)));
-  const ideas=document.getElementById('ideaList');ideas.innerHTML='';(Array.isArray(state.ideas)?state.ideas:[]).forEach(text=>ideas.appendChild(makeIdeaRow(text)));
-  updateCounts();applyTodoFilters();applyDoneFilters();renderReviewList();
+  const ideas=document.getElementById('ideaList');ideas.innerHTML='';normalizeIdeas(state.ideas).forEach(idea=>ideas.appendChild(makeIdeaRow(idea.text,idea.createdAt)));
+  updateCounts();applyTodoFilters();applyDoneFilters();renderReviewList();renderCal();
   return true;
 }
 function loadLocalAppState(){
-  try{const state=JSON.parse(localStorage.getItem(appStateStorageKey)||'null');return state&&applyAppState(state)}catch(error){return false}
+  try{
+    const state=JSON.parse(localStorage.getItem(appStateStorageKey)||'null');
+    const loaded=state&&applyAppState(state);
+    if(loaded&&Array.isArray(state.ideas)&&state.ideas.some(idea=>typeof idea==='string'))saveLocalAppState();
+    return loaded;
+  }catch(error){return false}
 }
 async function loadCloudAppState(){
   if(!supabaseClient||!currentUser)return false;
@@ -404,10 +471,12 @@ setInterval(updateStartDate,60000);
 function showScreen(name){
   Object.keys(screens).forEach(key=>screens[key].classList.toggle('hidden',key!==name));
   Object.keys(navs).forEach(key=>navs[key].classList.toggle('active',key===name));
+  if(name==='cal')renderCal();
 }
 navs.start.onclick=()=>showScreen('start');
 navs.todo.onclick=()=>{showScreen('todo');showTodoTab('tasks')};
 navs.done.onclick=()=>showScreen('done');
+navs.cal.onclick=()=>showScreen('cal');
 
 function allTodoButtons(){return [...document.querySelectorAll('#todoTasksView .todo-check')]}
 allTodoButtons().forEach((button,index)=>{button.dataset.taskId='seed_'+index;const row=button.closest('.task-row');const groupName=row.closest('.group').querySelector('.group-title').childNodes[0].textContent.trim();row.dataset.priority=priorityIds[groupName]||'other'});
@@ -723,9 +792,10 @@ document.getElementById('reviewDone').onclick=()=>{
   document.getElementById('reviewsTab').click();
 };
 
-function makeIdeaRow(text){
+function makeIdeaRow(text,createdAt=new Date().toISOString()){
   const row=document.createElement('div');
   row.className='idea-row';
+  row.dataset.createdAt=createdAt;
   const label=document.createElement('span');
   label.className='idea-text';
   label.textContent=text;
@@ -737,13 +807,14 @@ function makeIdeaRow(text){
   row.append(label,action);
   return row;
 }
+document.querySelectorAll('#ideaList .idea-row').forEach(row=>{if(!row.dataset.createdAt)row.dataset.createdAt=new Date().toISOString()});
 document.querySelectorAll('.idea-to-task').forEach(button=>button.onclick=()=>openTaskForm(button.closest('.idea-row').querySelector('.idea-text').textContent.trim()));
 document.getElementById('ideaForm').onsubmit=event=>{
   event.preventDefault();
   const input=document.getElementById('ideaInput');
   const value=input.value.trim();
   if(!value)return;
-  document.getElementById('ideaList').prepend(makeIdeaRow(value));
+  document.getElementById('ideaList').prepend(makeIdeaRow(value,new Date().toISOString()));
   input.value='';
   document.querySelector('#todoIdeasTab span').textContent=document.querySelectorAll('#ideaList .idea-row').length;
   persistAppState();
@@ -754,6 +825,88 @@ function applyTodoFilters(){
   const difficulty=document.getElementById('todoDifficultyFilter').dataset.value;
   document.querySelectorAll('#todoTasksView .task-row').forEach(row=>row.classList.toggle('hidden',(project&&row.dataset.project!==project)||(difficulty&&row.dataset.difficulty!==difficulty)));
 }
+
+function completedDateKey(row){
+  const completed=Number(row.dataset.completed||0);
+  if(completed>100000000000)return dateKey(new Date(completed));
+  return dateKey(row.dataset.deadline||'');
+}
+function calData(){
+  const completed=[];
+  const reviews=[];
+  [...document.querySelectorAll('#doneList .done-row')].forEach(row=>{
+    const key=completedDateKey(row);
+    if(!key)return;
+    const title=row.querySelector('.done-copy strong')?.textContent.trim()||'';
+    const meta=row.querySelector('.done-copy small')?.textContent.trim()||'';
+    completed.push({key,title,detail:meta,project:row.dataset.project||'',difficulty:row.dataset.difficulty||''});
+    if(row.querySelector('.review-check input')?.checked){
+      reviews.push({key,title,detail:completedReviewNotes.has(row.dataset.taskId)?completedReviewNotes.get(row.dataset.taskId):'点击打开复盘',project:row.dataset.project||'',difficulty:row.dataset.difficulty||'',pending:!completedReviewNotes.has(row.dataset.taskId)});
+    }
+  });
+  const ideas=[...document.querySelectorAll('#ideaList .idea-row')].map(row=>({key:dateKey(row.dataset.createdAt),title:row.querySelector('.idea-text')?.textContent.trim()||'',detail:'记录于当天'})).filter(item=>item.key&&item.title);
+  return {completed,reviews,ideas};
+}
+function calRecordsFor(key){
+  const data=calData();
+  return {completed:data.completed.filter(item=>item.key===key),reviews:data.reviews.filter(item=>item.key===key),ideas:data.ideas.filter(item=>item.key===key)};
+}
+function calRecordGroup(title,items,mark,emptyText){
+  const section=document.createElement('section');
+  section.className='cal-record-group';
+  const label=document.createElement('div');label.className='cal-record-label';label.innerHTML='<i></i><span></span>';label.querySelector('span').textContent=title;section.appendChild(label);
+  if(!items.length){const empty=document.createElement('div');empty.className='cal-empty';empty.textContent=emptyText;section.appendChild(empty);return section}
+  items.forEach(item=>{
+    const row=document.createElement('div');row.className='cal-record-row';
+    const icon=document.createElement('span');icon.className='cal-record-mark';icon.textContent=mark;
+    const copy=document.createElement('div');copy.className='cal-record-copy';
+    const strong=document.createElement('strong');strong.textContent=item.title;
+    const detail=document.createElement('small');detail.textContent=item.detail;
+    copy.append(strong,detail);row.append(icon,copy);section.appendChild(row);
+  });
+  return section;
+}
+function renderCal(){
+  const monthTitle=document.getElementById('calMonthTitle');
+  const days=document.getElementById('calDays');
+  const records=document.getElementById('calRecords');
+  if(!monthTitle||!days||!records)return;
+  const year=calViewDate.getFullYear();
+  const month=calViewDate.getMonth();
+  monthTitle.textContent=year+'年'+(month+1)+'月';
+  const data=calData();
+  const recordKeys=new Set([...data.completed,...data.reviews,...data.ideas].map(item=>item.key));
+  days.innerHTML='';
+  const firstDay=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const totalCells=42;
+  for(let index=0;index<totalCells;index++){
+    const dayNumber=index-firstDay+1;
+    const date=new Date(year,month,dayNumber);
+    const inMonth=date.getMonth()===month;
+    const key=dateKey(date);
+    const button=document.createElement('button');
+    button.type='button';button.className='cal-day'+(inMonth?'':' muted');button.textContent=String(date.getDate());
+    if(inMonth){
+      if(key===dateKey(new Date()))button.classList.add('today');
+      if(key===dateKey(calSelectedDate))button.classList.add('selected');
+      if(recordKeys.has(key))button.classList.add('has-record');
+      button.dataset.date=key;button.onclick=()=>{calSelectedDate=date;renderCal()};
+    }else button.disabled=true;
+    days.appendChild(button);
+  }
+  const selectedKey=dateKey(calSelectedDate);
+  document.getElementById('calSelectedTitle').textContent=dateLabel(selectedKey);
+  records.innerHTML='';
+  const selected=calRecordsFor(selectedKey);
+  records.append(
+    calRecordGroup('完成任务',selected.completed,'✓','这一天还没有完成的任务'),
+    calRecordGroup('任务复盘',selected.reviews,'↗','这一天还没有记录复盘'),
+    calRecordGroup('灵感',selected.ideas,'✦','这一天还没有记录灵感')
+  );
+}
+document.getElementById('calPrevMonth').onclick=()=>{calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()-1,1);calSelectedDate=new Date(calViewDate);renderCal()};
+document.getElementById('calNextMonth').onclick=()=>{calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()+1,1);calSelectedDate=new Date(calViewDate);renderCal()};
 function applyDoneFilters(){
   const project=document.getElementById('doneProjectFilter').dataset.value;
   const difficulty=document.getElementById('doneDifficultyFilter').dataset.value;
