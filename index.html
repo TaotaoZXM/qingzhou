@@ -122,15 +122,49 @@
 .phone .start-topline #startDate{font-size:12px}
 .phone .start-kicker{font-size:12px}
 .phone .screen.start .sub{font-size:14px}
-.phone .screen.start .start-button{position:relative;justify-content:center;font-size:20px}
+.phone .screen.start .start-button{position:relative;justify-content:flex-start;font-size:20px}
 .phone .screen.start .start-button .start-button-label{font-size:20px}
 .phone .screen.start .start-button.revealed .start-button-label{font-size:20px}
 .phone .screen.start .start-button .start-button-arrow{position:absolute;right:8px}
 .phone .screen.start .section-label{font-size:12px}
 .phone .screen.start .state{font-size:12px}
 .phone .screen.start .state-hint{font-size:12px}
+.phone .screen.start .start-button.revealed{justify-content:flex-start}
+.phone .screen.start .recommendation-head small{font-size:13px}
+.phone .screen.start .recommendation-copy strong{font-size:14px}
+.phone .screen.start .recommendation-copy small{font-size:13px}
 .phone .screen.start .recommendations h2{font-size:13px}
 .phone .screen.start .refresh-recommendations{font-size:13px}
+.phone #todoScreen .work-head h1{font-size:27px}
+.phone #todoScreen .eyebrow{font-size:14px}
+.phone #todoScreen .add{font-size:13px}
+.phone #todoScreen .tabs .tab{font-size:15px}
+.phone #todoScreen .tabs .tab span{font-size:14px}
+.phone #todoScreen .filters .filter-trigger,
+.phone #todoScreen .filters .filter-option,
+.phone #todoScreen .search,
+.phone #todoScreen .search input{font-size:12px}
+.phone #todoScreen .group-title{font-size:14px}
+.phone #todoScreen .group-title small{font-size:13px}
+.phone #todoScreen .task-title{font-size:14px}
+.phone #todoScreen .meta{font-size:13px}
+.phone #doneScreen .work-head h1{font-size:27px}
+.phone #doneScreen .done-intro p{font-size:12px}
+.phone #doneScreen .eyebrow{font-size:14px}
+.phone #doneScreen .add{font-size:13px}
+.phone #doneScreen .done-tabs .done-tab{font-size:15px}
+.phone #doneScreen .done-tabs .done-tab span{font-size:14px}
+.phone #doneScreen .filters .filter-trigger,
+.phone #doneScreen .filters .filter-option{font-size:12px}
+.phone #doneScreen .done-copy strong{font-size:14px}
+.phone #doneScreen .done-copy small{font-size:13px}
+.phone #doneScreen .review-check{font-size:12px}
+.phone #doneScreen .section-note,
+.phone #doneScreen .review-label{font-size:12px}
+.phone #doneScreen .review-row strong{font-size:14px}
+.phone #doneScreen .review-row small{font-size:13px}
+.phone .bottom-item span,
+.phone .bottom-item .count{font-size:14px}
 </style>
 </head>
 <body>
@@ -159,8 +193,7 @@
     <div class="work-head"><div><div class="eyebrow">WORKSPACE</div><h1>To-do</h1></div><button class="add" id="newTodo">＋ 新任务</button></div>
     <div class="tabs"><button class="tab active" id="todoTasksTab">任务 <span id="todoTabCount">8</span></button><button class="tab" id="todoIdeasTab">灵感 <span>2</span></button></div>
     <div id="todoTasksView">
-      <div class="capacity"><div class="capacity-top"><strong>并行任务容量</strong><span id="activeCount">8/10</span></div><div class="capacity-bars" id="capacityBars"><i class="bar easy"></i><i class="bar easy"></i><i class="bar easy"></i><i class="bar medium"></i><i class="bar medium"></i><i class="bar medium"></i><i class="bar hard"></i><i class="bar hard"></i><i class="bar"></i><i class="bar"></i></div><div class="capacity-detail"><span class="easy" id="easyCount">简单 3/4</span><span class="medium" id="mediumCount">适中 3/3</span><span class="hard" id="hardCount">困难 2/3</span></div></div>
-      <div class="filters"><div class="filter-set"><div class="filter-control" id="todoProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="个人成长">个人成长</button><button class="filter-option" type="button" data-value="日常">日常</button></div></div><div class="filter-control" id="todoDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div><label class="search">⌕ <input placeholder="搜索"></label></div><div class="summary"><span id="todoSummary">8 项进行中</span><span>完成后进入 Done</span></div>
+      <div class="filters"><div class="filter-set"><div class="filter-control" id="todoProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="个人成长">个人成长</button><button class="filter-option" type="button" data-value="日常">日常</button></div></div><div class="filter-control" id="todoDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div><label class="search">⌕ <input placeholder="搜索"></label></div>
       <div id="todoGroups" class="groups"><section class="group"><div class="group-title">重要且紧急 <small>2</small></div><div class="task-row" data-project="产品" data-difficulty="hard" data-deadline="2026-09-30T14:00"><button class="check todo-check" data-title="完成项目方案的第一版" data-project="产品" data-difficulty="hard" data-deadline="2026-09-30T14:00" data-display="9月30日 14:00">○</button><button class="task-main"><span class="task-title">完成项目方案的第一版</span><span class="meta"><span>产品</span><span class="hard">困难</span><span>9月30日 14:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="工作" data-difficulty="medium" data-deadline="2026-09-29T18:00"><button class="check todo-check" data-title="向同事同步项目当前风险" data-project="工作" data-difficulty="medium" data-deadline="2026-09-29T18:00" data-display="9月29日 18:00">○</button><button class="task-main"><span class="task-title">向同事同步项目当前风险</span><span class="meta"><span>工作</span><span class="medium">适中</span><span>9月29日 18:00</span></span></button><span class="row-arrow">›</span></div></section><section class="group"><div class="group-title">重要不紧急 <small>3</small></div><div class="task-row" data-project="个人成长" data-difficulty="hard" data-deadline="2026-10-02T20:00"><button class="check todo-check" data-title="确定个人主页的内容结构" data-project="个人成长" data-difficulty="hard" data-deadline="2026-10-02T20:00" data-display="10月2日 20:00">○</button><button class="task-main"><span class="task-title">确定个人主页的内容结构</span><span class="meta"><span>个人成长</span><span class="hard">困难</span><span>10月2日 20:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="工作" data-difficulty="medium" data-deadline="2026-10-03T16:00"><button class="check todo-check" data-title="整理下季度的工作重点" data-project="工作" data-difficulty="medium" data-deadline="2026-10-03T16:00" data-display="10月3日 16:00">○</button><button class="task-main"><span class="task-title">整理下季度的工作重点</span><span class="meta"><span>工作</span><span class="medium">适中</span><span>10月3日 16:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="个人成长" data-difficulty="medium" data-deadline="2026-10-06T21:00"><button class="check todo-check" data-title="更新个人作品集首页" data-project="个人成长" data-difficulty="medium" data-deadline="2026-10-06T21:00" data-display="10月6日 21:00">○</button><button class="task-main"><span class="task-title">更新个人作品集首页</span><span class="meta"><span>个人成长</span><span class="medium">适中</span><span>10月6日 21:00</span></span></button><span class="row-arrow">›</span></div></section><section class="group"><div class="group-title">紧急不重要 <small>1</small></div><div class="task-row" data-project="工作" data-difficulty="easy" data-deadline="2026-09-28T10:00"><button class="check todo-check" data-title="确认本周会议时间" data-project="工作" data-difficulty="easy" data-deadline="2026-09-28T10:00" data-display="9月28日 10:00">○</button><button class="task-main"><span class="task-title">确认本周会议时间</span><span class="meta"><span>工作</span><span class="easy">简单</span><span>9月28日 10:00</span></span></button><span class="row-arrow">›</span></div></section><section class="group"><div class="group-title">其他 <small>2</small></div><div class="task-row" data-project="日常" data-difficulty="easy" data-deadline="2026-09-28T18:00"><button class="check todo-check" data-title="整理收件箱里需要回复的消息" data-project="日常" data-difficulty="easy" data-deadline="2026-09-28T18:00" data-display="9月28日 18:00">○</button><button class="task-main"><span class="task-title">整理收件箱里需要回复的消息</span><span class="meta"><span>日常</span><span class="easy">简单</span><span>9月28日 18:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="日常" data-difficulty="easy" data-deadline=""><button class="check todo-check" data-title="清理桌面和下载文件夹" data-project="日常" data-difficulty="easy" data-deadline="" data-display="未设置截止时间">○</button><button class="task-main"><span class="task-title">清理桌面和下载文件夹</span><span class="meta"><span>日常</span><span class="easy">简单</span><span>未设置截止时间</span></span></button><span class="row-arrow">›</span></div></section></div><div id="todoEmptyState" class="todo-empty-state hidden"><span class="todo-empty-state-mark">＋</span><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置。</p><button id="emptyNewTodo" type="button">＋新任务</button></div>
     </div>
     <div id="todoIdeasView" class="ideas hidden"><div class="ideas-intro"><span>✦</span><div><h2>先记下来，之后再安排</h2><p>灵感先放在这里，准备好时再变成任务。</p></div></div><form class="idea-input" id="ideaForm"><input id="ideaInput" placeholder="刚刚想到什么？"><button type="submit" aria-label="保存灵感">→</button></form><div class="idea-list" id="ideaList"><div class="idea-row"><span class="idea-text">把每周复盘变成一张很短的卡片</span><button class="idea-to-task" type="button">Task</button></div><div class="idea-row"><span class="idea-text">给常见任务准备可复用的下一步</span><button class="idea-to-task" type="button">Task</button></div></div></div>
@@ -170,8 +203,8 @@
     <div class="work-head"><div><div class="eyebrow">CLOSED LOOP</div><h1>Done</h1></div><button class="add" id="newEvent">＋ 完成事件</button></div>
     <div class="done-intro"><p>做完只是完成第一步，留下点什么才算结束。</p></div>
     <div class="done-tabs"><button class="done-tab active" id="completedTab">已完成任务 <span id="completedTabCount">3</span></button><button class="done-tab" id="reviewsTab">任务复盘 <span id="reviewsTabCount">1</span></button></div>
-    <div id="completedView" class="done-content"><div class="filters done-filter-line"><div class="filter-set"><div class="filter-control" id="doneProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="生活">生活</button></div></div><div class="filter-control" id="doneDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div><select id="doneOrder"><option value="completed">完成顺序</option><option value="project">项目</option><option value="deadline">截止时间</option><option value="difficulty">难易程度</option></select></div></div><div id="doneList" class="done-list"><div class="done-row" data-task-id="done_seed_weekly" data-project="工作" data-difficulty="medium" data-deadline="2026-09-28T18:00" data-completed="3"><div class="done-copy"><strong>完成周报发送</strong><small>工作 · 适中 · 9月28日 18:00</small></div><label class="review-check"><input type="checkbox" checked>需要复盘</label></div><div class="done-row" data-task-id="done_seed_room" data-project="生活" data-difficulty="easy" data-deadline="2026-09-28T20:00" data-completed="2"><div class="done-copy"><strong>整理了一次房间</strong><small>生活 · 简单 · 9月28日 20:00</small></div><label class="review-check"><input type="checkbox">需要复盘</label></div><div class="done-row" data-task-id="done_seed_meeting" data-project="工作" data-difficulty="easy" data-deadline="2026-09-28T10:00" data-completed="1"><div class="done-copy"><strong>确认了本周会议时间</strong><small>工作 · 简单 · 9月28日 10:00</small></div><label class="review-check"><input type="checkbox">需要复盘</label></div></div><p class="section-note">勾选“需要复盘”后，任务会进入任务复盘。</p></div>
-    <div id="reviewsView" class="done-content hidden"><div class="review-label">新增且未完成复盘</div><div id="pendingReviews" class="review-list"></div><div class="reviewed"><div class="review-label">已经复盘完成</div><div id="reviewedList"><div class="review-row"><span><strong>整理用户反馈</strong><small>产品 · 适中 · 9月27日 17:00 · 下次提前准备问题清单。</small></span></div></div></div></div>
+    <div id="completedView" class="done-content"><div class="filters done-filter-line"><div class="filter-set"><div class="filter-control" id="doneProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="生活">生活</button></div></div><div class="filter-control" id="doneDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div><div id="doneList" class="done-list"><div class="done-row" data-task-id="done_seed_weekly" data-project="工作" data-difficulty="medium" data-deadline="2026-09-28T18:00" data-completed="3"><div class="done-copy"><strong>完成周报发送</strong><small>工作 · 适中 · 9月28日 18:00</small></div><label class="review-check"><input type="checkbox" checked>需要复盘</label></div><div class="done-row" data-task-id="done_seed_room" data-project="生活" data-difficulty="easy" data-deadline="2026-09-28T20:00" data-completed="2"><div class="done-copy"><strong>整理了一次房间</strong><small>生活 · 简单 · 9月28日 20:00</small></div><label class="review-check"><input type="checkbox">需要复盘</label></div><div class="done-row" data-task-id="done_seed_meeting" data-project="工作" data-difficulty="easy" data-deadline="2026-09-28T10:00" data-completed="1"><div class="done-copy"><strong>确认了本周会议时间</strong><small>工作 · 简单 · 9月28日 10:00</small></div><label class="review-check"><input type="checkbox">需要复盘</label></div></div><p class="section-note">勾选“需要复盘”后，任务会进入任务复盘。</p></div>
+    <div id="reviewsView" class="done-content hidden"><div class="filters done-filter-line"><div class="filter-set"><div class="filter-control" id="reviewProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="生活">生活</button></div></div><div class="filter-control" id="reviewDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div><div class="review-label">新增且未完成复盘</div><div id="pendingReviews" class="review-list"></div><div class="reviewed"><div class="review-label">已经复盘完成</div><div id="reviewedList"><div class="review-row" data-project="产品" data-difficulty="medium"><span><strong>整理用户反馈</strong><small>产品 · 适中 · 9月27日 17:00 · 下次提前准备问题清单。</small></span></div></div></div></div>
   </section>
 
   <nav class="bottom-nav"><button id="startNav" class="bottom-item active">✦<span>Start</span></button><button id="todoNav" class="bottom-item">☷<span>To-do <b class="count">8</b></span></button><button id="doneNav" class="bottom-item">✓<span>Done <b class="count">3</b></span></button></nav>
@@ -404,20 +437,23 @@ function updateCounts(){
   const items=allTodoItems();
   const counts=difficultyCounts();
   const total=items.length;
-  document.getElementById('activeCount').textContent=total+'/10';
-  document.getElementById('todoSummary').textContent=total+' 项进行中';
+  document.getElementById('activeCount')?.replaceChildren(document.createTextNode(total+'/10'));
+  document.getElementById('todoSummary')?.replaceChildren(document.createTextNode(total+' 项进行中'));
   document.getElementById('todoTabCount').textContent=total;
   document.querySelector('#todoNav .count').textContent=total;
-  document.getElementById('easyCount').textContent='简单 '+counts.easy+'/4';
-  document.getElementById('mediumCount').textContent='适中 '+counts.medium+'/3';
-  document.getElementById('hardCount').textContent='困难 '+counts.hard+'/3';
-  document.getElementById('capacitySummary').textContent='当前进行中 '+total+'/10 · 困难 '+counts.hard+'/3 · 适中 '+counts.medium+'/3 · 简单 '+counts.easy+'/4';
+  document.getElementById('easyCount')?.replaceChildren(document.createTextNode('简单 '+counts.easy+'/4'));
+  document.getElementById('mediumCount')?.replaceChildren(document.createTextNode('适中 '+counts.medium+'/3'));
+  document.getElementById('hardCount')?.replaceChildren(document.createTextNode('困难 '+counts.hard+'/3'));
+  const capacitySummary=document.getElementById('capacitySummary');
+  if(capacitySummary)capacitySummary.textContent='当前进行中 '+total+'/10 · 困难 '+counts.hard+'/3 · 适中 '+counts.medium+'/3 · 简单 '+counts.easy+'/4';
   const bars=document.getElementById('capacityBars');
-  bars.innerHTML='';
-  for(let i=0;i<10;i++){
-    const bar=document.createElement('i');
-    bar.className='bar '+(i<counts.easy?'easy':i<counts.easy+counts.medium?'medium':i<counts.easy+counts.medium+counts.hard?'hard':'');
-    bars.appendChild(bar);
+  if(bars){
+    bars.innerHTML='';
+    for(let i=0;i<10;i++){
+      const bar=document.createElement('i');
+      bar.className='bar '+(i<counts.easy?'easy':i<counts.easy+counts.medium?'medium':i<counts.easy+counts.medium+counts.hard?'hard':'');
+      bars.appendChild(bar);
+    }
   }
   document.querySelectorAll('#todoTasksView .group').forEach(group=>group.querySelector('.group-title small').textContent=group.querySelectorAll('.task-row').length);
   updateDifficultyChoices();
@@ -427,8 +463,8 @@ function updateTodoEmptyState(){
   const empty=allTodoItems().length===0;
   document.getElementById('todoGroups').classList.toggle('hidden',empty);
   document.getElementById('todoEmptyState').classList.toggle('hidden',!empty);
-  document.querySelector('#todoTasksView > .filters').classList.toggle('hidden',empty);
-  document.querySelector('#todoTasksView > .summary').classList.toggle('hidden',empty);
+  document.querySelector('#todoTasksView > .filters')?.classList.toggle('hidden',empty);
+  document.querySelector('#todoTasksView > .summary')?.classList.toggle('hidden',empty);
 }
 function updateDifficultyChoices(){
   const counts=difficultyCounts();
@@ -593,12 +629,14 @@ document.getElementById('reviewsTab').onclick=()=>{
 function doneReviewItems(){
   return [...document.querySelectorAll('#doneList .done-row')]
     .filter(row=>row.querySelector('.review-check input')?.checked)
-    .map(row=>({id:row.dataset.taskId,title:row.querySelector('.done-copy strong').textContent.trim(),meta:row.querySelector('.done-copy small').textContent.trim()}));
+    .map(row=>({id:row.dataset.taskId,title:row.querySelector('.done-copy strong').textContent.trim(),meta:row.querySelector('.done-copy small').textContent.trim(),project:row.dataset.project||'',difficulty:row.dataset.difficulty||''}));
 }
 function createReviewRow(item,reviewed=false){
   const row=document.createElement(reviewed?'div':'button');
   row.className='review-row';
   row.dataset.reviewId=item.id;
+  row.dataset.project=item.project||'';
+  row.dataset.difficulty=item.difficulty||'';
   if(!reviewed){
     row.type='button';
   }
@@ -630,6 +668,7 @@ function renderReviewList(){
   document.getElementById('reviewsTabCount').textContent=items.filter(item=>!completedReviewNotes.has(item.id)).length;
   document.getElementById('completedTabCount').textContent=document.querySelectorAll('#doneList .done-row').length;
   document.querySelector('#doneNav .count').textContent=document.querySelectorAll('#doneList .done-row').length;
+  applyReviewFilters();
 }
 document.getElementById('doneList').addEventListener('change',event=>{
   if(!event.target.matches('.review-check input'))return;
@@ -710,12 +749,6 @@ document.getElementById('ideaForm').onsubmit=event=>{
   persistAppState();
 };
 
-function compareRows(a,b,order){
-  if(order==='project')return(a.dataset.project||'').localeCompare(b.dataset.project||'','zh-CN');
-  if(order==='difficulty')return(difficultyRank[a.dataset.difficulty]||0)-(difficultyRank[b.dataset.difficulty]||0);
-  if(order==='deadline')return(a.dataset.deadline||'').localeCompare(b.dataset.deadline||'');
-  return Number(b.dataset.completed||0)-Number(a.dataset.completed||0);
-}
 function applyTodoFilters(){
   const project=document.getElementById('todoProjectFilter').dataset.value;
   const difficulty=document.getElementById('todoDifficultyFilter').dataset.value;
@@ -724,9 +757,12 @@ function applyTodoFilters(){
 function applyDoneFilters(){
   const project=document.getElementById('doneProjectFilter').dataset.value;
   const difficulty=document.getElementById('doneDifficultyFilter').dataset.value;
-  const order=document.getElementById('doneOrder').value;
   document.querySelectorAll('#doneList .done-row').forEach(row=>row.classList.toggle('hidden',(project&&row.dataset.project!==project)||(difficulty&&row.dataset.difficulty!==difficulty)));
-  [...document.querySelectorAll('#doneList .done-row')].sort((a,b)=>compareRows(a,b,order)).forEach(row=>document.getElementById('doneList').appendChild(row));
+}
+function applyReviewFilters(){
+  const project=document.getElementById('reviewProjectFilter')?.dataset.value||'';
+  const difficulty=document.getElementById('reviewDifficultyFilter')?.dataset.value||'';
+  document.querySelectorAll('#reviewsView .review-row').forEach(row=>row.classList.toggle('hidden',(project&&row.dataset.project!==project)||(difficulty&&row.dataset.difficulty!==difficulty)));
 }
 function addTaskToList(){
   const title=document.getElementById('newTaskTitle').value.trim();
@@ -793,11 +829,12 @@ document.querySelectorAll('.filter-control').forEach(control=>{
     trigger.firstChild.textContent=option.textContent;
     control.querySelectorAll('.filter-option').forEach(item=>item.classList.toggle('active',item===option));
     menu.classList.add('hidden');
-    (control.id.startsWith('todo')?applyTodoFilters:applyDoneFilters)();
+    if(control.id.startsWith('todo'))applyTodoFilters();
+    else if(control.id.startsWith('review'))applyReviewFilters();
+    else applyDoneFilters();
   });
 });
 document.addEventListener('click',()=>document.querySelectorAll('.filter-menu').forEach(menu=>menu.classList.add('hidden')));
-document.getElementById('doneOrder').onchange=applyDoneFilters;
 document.querySelectorAll('.choices').forEach(group=>group.querySelectorAll('.choice:not([data-task-difficulty])').forEach(choice=>choice.onclick=()=>{
   group.querySelectorAll('.choice').forEach(item=>item.classList.remove('active'));
   choice.classList.add('active');
