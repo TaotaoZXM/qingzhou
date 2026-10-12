@@ -234,62 +234,75 @@
 </style>
 <style>
 /* Decorative capybaras. Same artwork on every energy state. */
-.title-capy,.peek-capy,.start-capy,.start-capy img,.sheet-capy,.dialog-capy,.day-capy,.cal-loaf,.cal-sit,.cal-boat,.done-boat,.empty-boat,.alert-capy,.nav-capy{pointer-events:none;user-select:none;-webkit-user-drag:none}
+.title-capy,.peek-capy,.start-capy,.start-capy img,.sheet-capy,.dialog-capy,.day-capy,.cal-loaf,.cal-sit,.cal-boat,.done-boat,.empty-boat,.alert-capy,.nav-capy,.ideas-capy,.filter-accent{pointer-events:none;user-select:none;-webkit-user-drag:none}
 .work-head h1{display:flex;align-items:center;gap:8px}
-.title-capy{width:38px;height:auto;flex:none}
+.title-capy{width:42px;height:auto;flex:none}
 #doneScreen:has(#reviewsView:not(.hidden)) .title-capy{display:none}
-.start-capy{position:relative;display:flex;align-items:flex-end;justify-content:center;margin:16px 0 6px;min-height:148px}
-.start-capy img{position:relative;z-index:1;width:132px;height:auto}
-.start-capy-ground{position:absolute;bottom:8px;width:154px;height:18px;border-radius:999px;background:var(--accent-soft)}
+.start-capy{position:relative;display:flex;align-items:flex-end;justify-content:center;margin:12px 0 4px;min-height:168px}
+.start-capy img{position:relative;z-index:1;width:150px;height:auto}
+.start-capy-ground{position:absolute;bottom:10px;width:176px;height:18px;border-radius:999px;background:var(--accent-soft)}
 #startScreen:has(#recommendations:not(.hidden)) .start-capy{display:none}
 .group{position:relative}
-.peek-capy{position:absolute;z-index:2;width:36px;height:auto}
-.group>.peek-capy{right:8px;top:0;transform:translateY(calc(-100% + 6px))}
-#todoGroups>.group:first-child{margin-top:48px}
+.peek-capy{position:absolute;z-index:2;width:44px;height:auto}
+.group>.peek-capy{right:6px;top:0;transform:translateY(calc(-100% + 6px))}
+#todoGroups>.group:first-child{margin-top:60px}
 .group-title{position:relative;z-index:1}
-.review-shelf{position:relative;margin-top:4px;padding-top:42px}
-.review-shelf>.peek-capy{right:4px;top:42px;transform:translateY(calc(-100% + 4px))}
+.review-shelf{position:relative;margin-top:4px;padding-top:52px}
+.review-shelf>.peek-capy{right:4px;top:52px;width:44px;transform:translateY(calc(-100% + 4px))}
 .review-shelf .review-list{margin-top:0}
 .done-boat,.empty-boat{display:block;height:auto}
-.done-boat{width:120px;margin:36px auto 8px}
-.empty-boat{width:110px;margin:0 auto 2px}
-.cal-month{position:relative;padding-bottom:22px}
-.cal-loaf{position:absolute;top:-32px;right:86px;z-index:2;width:46px;height:auto}
-.cal-days{row-gap:16px}
+.done-boat{width:132px;margin:28px auto 8px}
+.empty-boat{width:120px;margin:0 auto 2px}
+.cal-month{position:relative;padding-bottom:32px}
+.cal-loaf{position:absolute;top:-28px;right:96px;z-index:2;width:52px;height:auto}
+.cal-days{row-gap:26px}
 .cal-day{overflow:visible}
-.day-capy{position:absolute;left:50%;bottom:-12px;z-index:1;width:15px;height:11px;object-fit:contain;transform:translateX(-50%)}
+.day-capy{position:absolute;left:50%;bottom:-18px;z-index:1;width:32px;height:24px;object-fit:contain;transform:translateX(-50%)}
 .cal-day.has-record:not(.selected)::before{content:none}
 .cal-selected{position:relative}
-.cal-sit{position:absolute;top:-2px;right:0;width:48px;height:auto;opacity:.92}
-.cal-selected h2,.cal-selected p{position:relative;z-index:1;max-width:calc(100% - 64px)}
-.cal-boat{display:block;width:100px;height:auto;margin:18px auto 2px;opacity:.7}
+.cal-sit{position:absolute;top:0;right:0;width:56px;height:auto;opacity:.92}
+.cal-selected h2,.cal-selected p{position:relative;z-index:1;max-width:calc(100% - 72px)}
+.cal-boat{display:block;width:112px;height:auto;margin:16px auto 2px;opacity:.75}
 .sheet-panel{position:relative;overflow:visible}
-.sheet-capy{position:absolute;top:0;right:78px;z-index:3;width:66px;height:auto;transform:translateY(-70%);filter:drop-shadow(0 4px 6px rgba(0,0,0,.08))}
+.sheet-capy{position:absolute;top:0;right:86px;z-index:3;width:74px;height:auto;transform:translateY(-68%);filter:drop-shadow(0 4px 6px rgba(0,0,0,.08))}
 .review-card,.auth-card{position:relative;overflow:visible}
 .dialog-capy{position:absolute;left:50%;top:0;z-index:1;height:auto}
-.review-card{padding-top:46px}
-.review-card .dialog-capy{width:76px;height:auto;transform:translate(-50%,-64%)}
-.auth-card .dialog-capy{width:96px;transform:translate(-50%,-64%)}
-.auth-card{padding-top:62px}
+.review-card{padding-top:54px}
+.review-card .dialog-capy{width:86px;height:auto;transform:translate(-50%,-62%)}
+.auth-card .dialog-capy{width:108px;transform:translate(-50%,-62%)}
+.auth-card{padding-top:72px}
 .auth-close{z-index:4}
-.alert-capy{display:block;width:80px;height:auto;margin:2px auto 14px}
+.alert-capy{display:block;width:92px;height:auto;margin:2px auto 14px}
 #taskLimitAlert .capacity-alert-card button{width:100%;border-radius:999px}
-.filter-control:first-child:has(.filter-menu:not(.hidden))::before{content:"";position:absolute;left:-16px;top:20px;z-index:6;width:18px;height:14px;background:url("./assets/head.webp") center/contain no-repeat;pointer-events:none}
-#startNav .nav-capy{display:none;width:22px;height:auto}
+#todoIdeasView{position:relative;margin-top:50px}
+.ideas-capy{position:absolute;top:0;right:0;z-index:2;width:52px;height:39px;object-fit:contain;transform:translateY(calc(-100% + 2px))}
+#todoProjectFilter .filter-accent{position:absolute;left:0;bottom:calc(100% + 2px);z-index:3;width:30px;height:22px;object-fit:contain}
+#startNav .nav-capy{display:none;width:26px;height:auto}
 #startNav.active .nav-glyph{display:none}
 #startNav.active .nav-capy{display:block}
 @media(max-height:700px){
-  .start-capy{min-height:112px;margin:8px 0 2px}
-  .start-capy img{width:100px}
-  .start-capy-ground{width:120px}
+  .start-capy{min-height:124px;margin:8px 0 2px}
+  .start-capy img{width:112px}
+  .start-capy-ground{width:132px}
+  .sheet-capy{width:64px;right:76px;transform:translateY(-36%)}
 }
 @media(max-width:340px){
-  .title-capy{width:30px}
-  .cal-loaf{right:70px;width:38px}
-  .cal-sit{width:36px;top:-6px}
-  .cal-selected h2,.cal-selected p{max-width:calc(100% - 48px)}
-  .group>.peek-capy{width:32px}
-  #todoGroups>.group:first-child{margin-top:44px}
+  .title-capy{width:34px}
+  .cal-loaf{right:72px;top:-22px;width:42px}
+  .cal-sit{width:42px;top:-2px}
+  .cal-selected h2,.cal-selected p{max-width:calc(100% - 54px)}
+  .group>.peek-capy{width:36px}
+  #todoGroups>.group:first-child{margin-top:50px}
+  .day-capy{width:24px;height:18px;bottom:-14px}
+  .cal-days{row-gap:20px}
+  .ideas-capy{width:40px;height:30px}
+  #todoIdeasView{margin-top:42px}
+  #todoProjectFilter .filter-accent{width:24px;height:18px}
+  .sheet-capy{width:62px;right:72px}
+  .review-card .dialog-capy{width:72px}
+  .auth-card .dialog-capy{width:88px}
+  .auth-card{padding-top:60px}
+  .alert-capy{width:76px}
 }
 </style>
 </head>
@@ -320,10 +333,10 @@
     <div class="work-head"><div><div class="eyebrow">WORKSPACE</div><h1>To-do<img class="title-capy" src="./assets/loaf.webp" alt="" aria-hidden="true"></h1></div><button class="add" id="newTodo">＋ 新任务</button></div>
     <div class="tabs"><button class="tab active" id="todoTasksTab">任务 <span id="todoTabCount">8</span></button><button class="tab" id="todoIdeasTab">灵感 <span>2</span></button></div>
     <div id="todoTasksView">
-      <div class="filters"><div class="filter-set"><div class="filter-control" id="todoProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="个人成长">个人成长</button><button class="filter-option" type="button" data-value="日常">日常</button></div></div><div class="filter-control" id="todoDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div><label class="search">⌕ <input placeholder="搜索"></label></div>
+      <div class="filters"><div class="filter-set"><div class="filter-control" id="todoProjectFilter" data-value=""><img class="filter-accent" src="./assets/head.webp" alt="" aria-hidden="true"><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="个人成长">个人成长</button><button class="filter-option" type="button" data-value="日常">日常</button></div></div><div class="filter-control" id="todoDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div><label class="search">⌕ <input placeholder="搜索"></label></div>
       <div id="todoGroups" class="groups"><section class="group"><img class="peek-capy" src="./assets/awake.webp" alt="" aria-hidden="true"><div class="group-title">重要且紧急 <small>2</small></div><div class="task-row" data-project="产品" data-difficulty="hard" data-deadline="2026-09-30T14:00"><button class="check todo-check" data-title="完成项目方案的第一版" data-project="产品" data-difficulty="hard" data-deadline="2026-09-30T14:00" data-display="9月30日 14:00">○</button><button class="task-main"><span class="task-title">完成项目方案的第一版</span><span class="meta"><span>产品</span><span class="hard">困难</span><span>9月30日 14:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="工作" data-difficulty="medium" data-deadline="2026-09-29T18:00"><button class="check todo-check" data-title="向同事同步项目当前风险" data-project="工作" data-difficulty="medium" data-deadline="2026-09-29T18:00" data-display="9月29日 18:00">○</button><button class="task-main"><span class="task-title">向同事同步项目当前风险</span><span class="meta"><span>工作</span><span class="medium">适中</span><span>9月29日 18:00</span></span></button><span class="row-arrow">›</span></div></section><section class="group"><div class="group-title">重要不紧急 <small>3</small></div><div class="task-row" data-project="个人成长" data-difficulty="hard" data-deadline="2026-10-02T20:00"><button class="check todo-check" data-title="确定个人主页的内容结构" data-project="个人成长" data-difficulty="hard" data-deadline="2026-10-02T20:00" data-display="10月2日 20:00">○</button><button class="task-main"><span class="task-title">确定个人主页的内容结构</span><span class="meta"><span>个人成长</span><span class="hard">困难</span><span>10月2日 20:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="工作" data-difficulty="medium" data-deadline="2026-10-03T16:00"><button class="check todo-check" data-title="整理下季度的工作重点" data-project="工作" data-difficulty="medium" data-deadline="2026-10-03T16:00" data-display="10月3日 16:00">○</button><button class="task-main"><span class="task-title">整理下季度的工作重点</span><span class="meta"><span>工作</span><span class="medium">适中</span><span>10月3日 16:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="个人成长" data-difficulty="medium" data-deadline="2026-10-06T21:00"><button class="check todo-check" data-title="更新个人作品集首页" data-project="个人成长" data-difficulty="medium" data-deadline="2026-10-06T21:00" data-display="10月6日 21:00">○</button><button class="task-main"><span class="task-title">更新个人作品集首页</span><span class="meta"><span>个人成长</span><span class="medium">适中</span><span>10月6日 21:00</span></span></button><span class="row-arrow">›</span></div></section><section class="group"><div class="group-title">紧急不重要 <small>1</small></div><div class="task-row" data-project="工作" data-difficulty="easy" data-deadline="2026-09-28T10:00"><button class="check todo-check" data-title="确认本周会议时间" data-project="工作" data-difficulty="easy" data-deadline="2026-09-28T10:00" data-display="9月28日 10:00">○</button><button class="task-main"><span class="task-title">确认本周会议时间</span><span class="meta"><span>工作</span><span class="easy">简单</span><span>9月28日 10:00</span></span></button><span class="row-arrow">›</span></div></section><section class="group"><div class="group-title">其他 <small>2</small></div><div class="task-row" data-project="日常" data-difficulty="easy" data-deadline="2026-09-28T18:00"><button class="check todo-check" data-title="整理收件箱里需要回复的消息" data-project="日常" data-difficulty="easy" data-deadline="2026-09-28T18:00" data-display="9月28日 18:00">○</button><button class="task-main"><span class="task-title">整理收件箱里需要回复的消息</span><span class="meta"><span>日常</span><span class="easy">简单</span><span>9月28日 18:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="日常" data-difficulty="easy" data-deadline=""><button class="check todo-check" data-title="清理桌面和下载文件夹" data-project="日常" data-difficulty="easy" data-deadline="" data-display="未设置截止时间">○</button><button class="task-main"><span class="task-title">清理桌面和下载文件夹</span><span class="meta"><span>日常</span><span class="easy">简单</span><span>未设置截止时间</span></span></button><span class="row-arrow">›</span></div></section></div><div id="todoEmptyState" class="todo-empty-state hidden"><img class="empty-boat" src="./assets/boat.webp" alt="" aria-hidden="true"><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置</p><button id="emptyNewTodo" type="button">＋新任务</button></div>
     </div>
-    <div id="todoIdeasView" class="ideas hidden"><div class="ideas-intro"><span>✦</span><div><h2>先记下来，之后再安排</h2><p>灵感先放在这里，准备好时再变成任务</p></div></div><form class="idea-input" id="ideaForm"><input id="ideaInput" placeholder="刚刚想到什么？"><button type="submit" aria-label="保存灵感">→</button></form><div class="idea-list" id="ideaList"><div class="idea-row"><span class="idea-text">把每周复盘变成一张很短的卡片</span><button class="idea-to-task" type="button">Task</button></div><div class="idea-row"><span class="idea-text">给常见任务准备可复用的下一步</span><button class="idea-to-task" type="button">Task</button></div></div></div>
+    <div id="todoIdeasView" class="ideas hidden"><img class="ideas-capy" src="./assets/head.webp" alt="" aria-hidden="true"><div class="ideas-intro"><span>✦</span><div><h2>先记下来，之后再安排</h2><p>灵感先放在这里，准备好时再变成任务</p></div></div><form class="idea-input" id="ideaForm"><input id="ideaInput" placeholder="刚刚想到什么？"><button type="submit" aria-label="保存灵感">→</button></form><div class="idea-list" id="ideaList"><div class="idea-row"><span class="idea-text">把每周复盘变成一张很短的卡片</span><button class="idea-to-task" type="button">Task</button></div><div class="idea-row"><span class="idea-text">给常见任务准备可复用的下一步</span><button class="idea-to-task" type="button">Task</button></div></div></div>
   </section>
 
   <section id="doneScreen" class="screen work hidden">
