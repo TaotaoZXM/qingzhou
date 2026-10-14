@@ -4,33 +4,42 @@
 
 ## 在线使用
 
-GitHub Pages 发布后，可通过以下地址打开：
+应用部署在自己的服务器上，页面和接口使用同一个域名。手机浏览器打开后，可以通过“添加到主屏幕”安装为 PWA。
 
-<https://taotaozxm.github.io/qingzhou/>
+未登录时，任务、灵感、完成记录和复盘保存在当前设备的 `localStorage` 中。登录后会自动同步。第一次登录时，如果这台设备已有本地数据、而云端账号还没有数据，应用会把本地数据迁移到云端；云端已有数据时，以云端为准并覆盖本机。之后可以在其他浏览器用同一个邮箱和密码恢复。
 
-在手机浏览器中打开后，可以通过浏览器的“添加到主屏幕”安装为 PWA。未配置云端账号时，任务、灵感、完成记录和复盘会保存在当前设备的 `localStorage` 中；配置 Supabase 后，登录账号即可在不同浏览器和设备间恢复。
-
-## 云端同步配置
-
-正式使用跨浏览器同步前，需要创建一个 Supabase 项目：
-
-1. 在 Supabase 控制台创建项目，并保持 Email 登录方式开启；本应用不使用手机号或第三方登录。
-2. 在 SQL Editor 中执行 [`supabase-schema.sql`](./supabase-schema.sql)，创建用户数据表和行级安全策略。
-3. 将项目的 URL 和公开 anon key 填入 [`supabase-config.js`](./supabase-config.js)。anon key 可以放在前端，绝对不要放入 service role key。
-4. 提交并推送 `supabase-config.js`，等待 GitHub Pages 自动部署。
-
-用户第一次登录时，如果当前设备已有本地数据而云端账号还没有数据，应用会把本地数据迁移到云端；之后每次新增或修改都会自动同步。用户可以在其他浏览器用同一个邮箱和密码登录恢复数据。
-
-如果启用了邮箱确认，注册后需要先点击邮箱中的确认链接，再回到应用登录。忘记密码可以通过登录窗口发送重置邮件。
+部署步骤见 [`deploy/README.md`](deploy/README.md)。
 
 ## 本地预览
+
+需要一套 MySQL，并在 `server/.env` 中写好连接信息。变量说明见 [`deploy/.env.example`](deploy/.env.example)。本地可以让 API 同时提供页面，把 `SERVE_STATIC` 留空或设为 `1`，`HOST` 使用 `127.0.0.1`。
+
+```bash
+cd server
+npm install
+npm start
+```
+
+然后访问 <http://127.0.0.1:3000/>。
+
+只看静态页面、不连接数据库时，仍可以：
 
 ```bash
 python3 -m http.server 8765
 ```
 
-然后访问 <http://127.0.0.1:8765/>。
+此时 `/api` 不存在，账户登录不可用，数据只留在本机。
 
-## 发布
+## 账号与同步
 
-推送到 `main` 分支后，GitHub Actions 会自动部署到 GitHub Pages。部署配置位于 `.github/workflows/deploy-pages.yml`。
+- 注册和登录使用邮箱加密码，密码至少 8 位。
+- 会话放在 HttpOnly Cookie 里，浏览器请求同源的 `/api`。
+- 每个账号一份应用状态，内容和以前的云端文档一致：待办、完成记录、灵感、项目。
+- 修改后大约 250 毫秒自动同步；离线时继续写 `localStorage`。
+- 忘记密码会记下重置请求。邮件发送还没有接入，接口留在 `POST /api/auth/forgot-password` 和 `POST /api/auth/reset-password`。真正发信时，改 `server/src/index.js` 里的 `sendPasswordResetEmail`。
+
+## GitHub Pages
+
+推送到 `main` 不再自动发布到 GitHub Pages。登录和同步需要同域的 `/api`，Pages 跑不了这个后端。
+
+工作流文件还在 [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)，只能手动运行，而且只上传页面静态文件，用作离线演示。正式使用请部署到 ECS。

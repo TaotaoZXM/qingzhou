@@ -1,0 +1,18 @@
+[Unit]
+Description=Qingzhou API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=qingzhou
+Group=qingzhou
+WorkingDirectory=/opt/qingzhou/server
+EnvironmentFile=/etc/qingzhou.env
+ExecStart=/usr/bin/node src/index.js
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

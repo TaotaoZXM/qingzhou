@@ -374,8 +374,6 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <div id="capacityAlert" class="capacity-alert hidden"><div class="capacity-alert-card"><div class="capacity-alert-mark">!</div><h3>任务分配尚未达到最优解，请重新对任务进行合并或拆解</h3><p>当前难度容量已经达到上限，这项任务暂时无法加入 To-do</p><button id="closeCapacityAlert">知道了</button></div></div>
   <div id="authDialog" class="auth-dialog hidden"><div class="auth-card"><button id="authClose" class="auth-close" type="button" aria-label="关闭账户弹窗">×</button><div class="eyebrow">ACCOUNT</div><h2 id="authTitle">登录轻舟</h2><p id="authDescription">登录后，任务会在不同浏览器和设备间保持同步</p><form id="authForm" class="auth-form"><label>邮箱<input id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label><label>密码<input id="authPassword" type="password" autocomplete="current-password" minlength="8" required placeholder="至少 8 位"></label><button id="authSubmit" class="auth-primary" type="submit">登录</button></form><button id="authModeToggle" class="auth-secondary" type="button">创建新账号</button><button id="resetPassword" class="auth-secondary" type="button">发送密码重置邮件</button><p id="authStatus" class="auth-status"></p><div id="authAccount" class="auth-account hidden"><span id="authEmailLabel"></span><button id="signOut" class="auth-secondary" type="button">退出登录</button></div></div></div>
 </div>
-<script src="./supabase-config.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const screens={start:document.getElementById('startScreen'),todo:document.getElementById('todoScreen'),done:document.getElementById('doneScreen'),cal:document.getElementById('calScreen')};
 const navs={start:document.getElementById('startNav'),todo:document.getElementById('todoNav'),done:document.getElementById('doneNav'),cal:document.getElementById('calNav')};
@@ -405,12 +403,10 @@ const recommendationRules={
   ready:{target:'hard',order:['hard','medium','easy']}
 };
 const appStateStorageKey='lightboat-app-state-v1';
-const supabaseUrl=window.QINGZHOU_SUPABASE_URL||'';
-const supabaseAnonKey=window.QINGZHOU_SUPABASE_ANON_KEY||'';
-const supabaseClient=window.supabase&&supabaseUrl&&supabaseAnonKey?window.supabase.createClient(supabaseUrl,supabaseAnonKey):null;
 let currentUser=null;
 let stateHydrated=false;
 let cloudSyncTimer=null;
+let cloudAvailable=false;
 let calViewDate=new Date();
 let calSelectedDate=new Date();
 
@@ -609,47 +605,94 @@ function loadLocalAppState(){
     return loaded;
   }catch(error){return false}
 }
+async function api(path,options={}){
+  const headers=Object.assign({'Content-Type':'application/json'},options.headers||{});
+  let response;
+  try{response=await fetch(path,Object.assign({},options,{credentials:'same-origin',headers}))}
+  catch(error){const offline=new Error('云端不可用，当前仅保存在本机');offline.offline=true;throw offline}
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok){
+    const error=new Error(data.error||(response.status===404?'云端不可用，当前仅保存在本机':'请求失败'));
+    error.status=response.status;
+    throw error;
+  }
+  return data;
+}
 async function loadCloudAppState(){
-  if(!supabaseClient||!currentUser)return false;
-  const {data,error}=await supabaseClient.from('user_app_state').select('state').eq('user_id',currentUser.id).maybeSingle();
-  if(error)throw error;
-  if(data?.state){applyAppState(data.state);saveLocalAppState();return true}
-  await saveCloudAppState(true);return false;
+  if(!cloudAvailable||!currentUser)return false;
+  const data=await api('/api/state');
+  if(data.state&&data.state.version===1){applyAppState(data.state);saveLocalAppState();return true}
+  return false;
 }
 async function saveCloudAppState(force=false){
-  const state=readAppState();saveLocalAppState();
-  if(!supabaseClient||!currentUser)return;
+  saveLocalAppState();
+  if(!cloudAvailable||!currentUser)return;
   clearTimeout(cloudSyncTimer);
-  const save=async()=>{const {error}=await supabaseClient.from('user_app_state').upsert({user_id:currentUser.id,state,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error)console.warn('Cloud sync failed',error)};
-  if(force)await save();else cloudSyncTimer=setTimeout(save,250);
+  const save=async()=>{
+    if(!currentUser)return;
+    await api('/api/state',{method:'PUT',body:JSON.stringify({state:readAppState()})});
+  };
+  if(force){
+    try{await save()}catch(error){console.warn('Cloud sync failed',error);throw error}
+  }else cloudSyncTimer=setTimeout(()=>{save().catch(error=>console.warn('Cloud sync failed',error))},250);
 }
 function persistAppState(){saveLocalAppState();saveCloudAppState()}
 async function handleAuthSubmit(event){
   event.preventDefault();
-  if(!supabaseClient){setAuthStatus('云端尚未配置，当前仅保存在本机',true);return}
-  const email=document.getElementById('authEmail').value.trim();const password=document.getElementById('authPassword').value;const signup=document.getElementById('authForm').dataset.mode==='signup';
+  const email=document.getElementById('authEmail').value.trim();
+  const password=document.getElementById('authPassword').value;
+  const signup=document.getElementById('authForm').dataset.mode==='signup';
   setAuthStatus(signup?'正在创建账号…':'正在登录…');
-  const result=signup?await supabaseClient.auth.signUp({email,password}):await supabaseClient.auth.signInWithPassword({email,password});
-  if(result.error){setAuthStatus(result.error.message,true);return}
-  if(signup&&!result.data.session){setAuthStatus('账号已创建，请检查邮箱并完成验证后再登录');return}
-  await finishAuth(result.data.session?.user||null);
+  try{
+    const data=await api(signup?'/api/auth/register':'/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
+    cloudAvailable=true;
+    await finishAuth(data.user);
+  }catch(error){setAuthStatus(error.message||'登录失败',true)}
 }
 async function finishAuth(user){
   if(!user)return;
   showAccountState(user);
-  try{const hadLocal=Boolean(localStorage.getItem(appStateStorageKey));const hadCloud=await loadCloudAppState();if(hadLocal&&!hadCloud)await saveCloudAppState(true);setAuthStatus('已同步');setTimeout(closeAuthDialog,700)}catch(error){setAuthStatus('云端同步失败，请稍后重试',true);console.error(error)}
+  try{
+    const hadLocal=Boolean(localStorage.getItem(appStateStorageKey));
+    const hadCloud=await loadCloudAppState();
+    if(hadLocal&&!hadCloud)await saveCloudAppState(true);
+    setAuthStatus('已同步');
+    setTimeout(closeAuthDialog,700);
+  }catch(error){setAuthStatus('云端同步失败，请稍后重试',true);console.error(error)}
 }
 async function initAuth(){
-  document.getElementById('accountButton').onclick=()=>{if(currentUser)openAuthDialog();else openAuthDialog()};
+  document.getElementById('accountButton').onclick=openAuthDialog;
   document.getElementById('authClose').onclick=closeAuthDialog;
   document.getElementById('authForm').onsubmit=handleAuthSubmit;
   document.getElementById('authModeToggle').onclick=()=>setAuthMode(document.getElementById('authForm').dataset.mode!=='signup');
-  document.getElementById('resetPassword').onclick=async()=>{if(!supabaseClient){setAuthStatus('云端尚未配置，当前仅保存在本机',true);return}const email=document.getElementById('authEmail').value.trim();if(!email){setAuthStatus('请先填写邮箱',true);return}const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:location.href});setAuthStatus(error?error.message:'密码重置邮件已发送，请检查邮箱',Boolean(error))};
-  document.getElementById('signOut').onclick=async()=>{if(supabaseClient)await supabaseClient.auth.signOut();showAccountState(null);setAuthStatus('已退出登录');setAuthMode(false)};
+  document.getElementById('resetPassword').onclick=async()=>{
+    const email=document.getElementById('authEmail').value.trim();
+    if(!email){setAuthStatus('请先填写邮箱',true);return}
+    setAuthStatus('正在提交重置请求…');
+    try{
+      const data=await api('/api/auth/forgot-password',{method:'POST',body:JSON.stringify({email})});
+      cloudAvailable=true;
+      setAuthStatus(data.message||'重置请求已记录');
+    }catch(error){setAuthStatus(error.message||'重置请求失败',true)}
+  };
+  document.getElementById('signOut').onclick=async()=>{
+    clearTimeout(cloudSyncTimer);
+    try{if(cloudAvailable)await api('/api/auth/logout',{method:'POST',body:'{}'})}catch(error){}
+    showAccountState(null);
+    setAuthMode(false);
+    setAuthStatus('已退出登录');
+  };
   setAuthMode(false);
-  if(!supabaseClient){document.getElementById('accountButton').title='云端尚未配置';return}
-  const {data}=await supabaseClient.auth.getSession();if(data.session)await finishAuth(data.session.user);else openAuthDialog();
-  supabaseClient.auth.onAuthStateChange((_event,session)=>{if(session&&!currentUser)finishAuth(session.user)});
+  try{
+    const data=await api('/api/auth/me');
+    cloudAvailable=true;
+    if(data.user)await finishAuth(data.user);
+    else openAuthDialog();
+  }catch(error){
+    if(error.status===401){cloudAvailable=true;openAuthDialog();return}
+    cloudAvailable=false;
+    document.getElementById('accountButton').title='云端不可用，当前仅保存在本机';
+  }
 }
 
 function updateStartDate(){
