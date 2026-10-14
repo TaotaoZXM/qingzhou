@@ -6,7 +6,7 @@
 
 应用部署在自己的服务器上，页面和接口使用同一个域名。手机浏览器打开后，可以通过“添加到主屏幕”安装为 PWA。
 
-未登录时，任务、灵感、完成记录和复盘保存在当前设备的 `localStorage` 中。登录后会自动同步。第一次登录时，如果这台设备已有本地数据、而云端账号还没有数据，应用会把本地数据迁移到云端；云端已有数据时，以云端为准并覆盖本机。之后可以在其他浏览器用同一个邮箱和密码恢复。
+未登录时只能浏览 Start 页。登录并完成邮箱验证后会自动同步。第一次登录时，如果这台设备已有本地数据、而云端账号还没有数据，应用会把本地数据迁移到云端；云端已有数据时，以云端为准并覆盖本机。之后可以在其他浏览器用同一个邮箱和密码恢复。
 
 部署步骤见 [`deploy/README.md`](deploy/README.md)。
 
@@ -32,11 +32,11 @@ python3 -m http.server 8765
 
 ## 账号与同步
 
-- 注册和登录使用邮箱加密码，密码至少 8 位。
-- 会话放在 HttpOnly Cookie 里，浏览器请求同源的 `/api`。
-- 每个账号一份应用状态，内容和以前的云端文档一致：待办、完成记录、灵感、项目。
-- 修改后大约 250 毫秒自动同步；离线时继续写 `localStorage`。
-- 忘记密码会记下重置请求。邮件发送还没有接入，接口留在 `POST /api/auth/forgot-password` 和 `POST /api/auth/reset-password`。真正发信时，改 `server/src/index.js` 里的 `sendPasswordResetEmail`。
+- 未登录时只能看 Start。点能量状态、To-do、Done、Cal 或添加，都会打开登录框。
+- 注册后需要打开验证链接，验证成功再设置用户名。用户名显示在右上角，点开可以退出登录。
+- 会话是 HttpOnly Cookie，有效期 15 天。
+- 每个账号一份应用状态：待办、完成记录、灵感、项目。修改后大约 250 毫秒自动同步。
+- 邮件发送还没接上。在接上阿里云邮件推送之前，注册和重置密码的接口会返回链接。验证页是 `/api/auth/verify?token=`，重置页是 `/api/auth/reset?token=`。接上之后设置 `EMAIL_DELIVERY=directmail`，并改 `sendVerificationEmail` 和 `sendPasswordResetEmail`。
 
 ## GitHub Pages
 

@@ -5,14 +5,17 @@ import { fileURLToPath } from 'node:url';
 import bcrypt from 'bcryptjs';
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import { createPool, isoTimestamp, migrate, readJsonColumn } from './db.js';
+import { resetPasswordPage, verifyErrorPage, verifySuccessPage } from './auth-pages.js';
+import { createPool, isoTimestamp, migrate, readJsonColumn, utcDateTime } from './db.js';
 import { loadEnv } from './env.js';
 
 loadEnv();
 
 const SESSION_COOKIE = 'qingzhou_session';
+const SESSION_TTL = '15d';
 const BCRYPT_ROUNDS = 10;
 const RESET_TTL_MS = 60 * 60 * 1000;
+const VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
 const STATE_VERSION = 1;
 const webRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -92,7 +95,7 @@ function cookieSecure(req) {
 }
 
 function writeSessionCookie(req, res, token) {
-  const maxAge = expiresToSeconds(process.env.JWT_EXPIRES_IN || '30d');
+  const maxAge = expiresToSeconds(SESSION_TTL);
   const parts = [
     `${SESSION_COOKIE}=${encodeURIComponent(token)}`,
     'HttpOnly',
@@ -111,13 +114,35 @@ function clearSessionCookie(req, res) {
 }
 
 function publicUser(row) {
-  return { id: row.id, email: row.email };
+  return {
+    id: row.id,
+    email: row.email,
+    username: row.username || null,
+    emailVerified: Boolean(row.email_verified_at)
+  };
 }
 
 function signToken(user) {
   return jwt.sign({ sub: user.id, email: user.email }, requiredEnv('JWT_SECRET'), {
-    expiresIn: process.env.JWT_EXPIRES_IN || '30d'
+    expiresIn: SESSION_TTL
   });
+}
+
+function normalizeUsername(value) {
+  const username = String(value || '').trim().replace(/\s+/g, ' ');
+  if (!username || /[\u0000-\u001f]/.test(username)) return '';
+  if ([...username].length > 20) return '';
+  return username;
+}
+
+function exposeAuthLinks() {
+  if (process.env.EXPOSE_AUTH_LINKS === '0') return false;
+  if (process.env.EXPOSE_AUTH_LINKS === '1') return true;
+  return process.env.EMAIL_DELIVERY !== 'directmail';
+}
+
+function publicOrigin(req) {
+  return `${req.protocol}://${req.get('host')}`;
 }
 
 function hashResetToken(token) {
@@ -129,12 +154,38 @@ function hashResetToken(token) {
 // `token` and `resetUrl` are ready for that message; they are not logged unless
 // PASSWORD_RESET_DELIVERY=log is set for local debugging.
 export async function sendPasswordResetEmail({ email, token, resetUrl }) {
-  if (process.env.PASSWORD_RESET_DELIVERY === 'log') {
+  if (process.env.PASSWORD_RESET_DELIVERY === 'log' || process.env.EMAIL_DELIVERY === 'log') {
     console.info(`[password-reset] ${email} ${resetUrl}`);
   } else {
     console.info(`[password-reset] delivery not configured for ${email}`);
   }
   return { delivered: false, email, token, resetUrl };
+}
+
+// Hook: replace with Alibaba Cloud DirectMail. Until EMAIL_DELIVERY=directmail,
+// the API can return verifyUrl so the link can be opened without a mailbox.
+export async function sendVerificationEmail({ email, token, verifyUrl }) {
+  if (process.env.EMAIL_DELIVERY === 'log') console.info(`[email-verify] ${email} ${verifyUrl}`);
+  else console.info(`[email-verify] delivery not configured for ${email}`);
+  return { delivered: false, email, token, verifyUrl };
+}
+
+async function issueVerificationUrl(pool, userId, req) {
+  const [existing] = await pool.execute(
+    'SELECT id FROM email_verification_tokens WHERE user_id = ? AND used_at IS NULL AND expires_at > UTC_TIMESTAMP(3) LIMIT 1',
+    [userId]
+  );
+  if (existing.length) return '';
+  const rawToken = randomBytes(32).toString('hex');
+  await pool.execute('DELETE FROM email_verification_tokens WHERE user_id = ? AND used_at IS NULL', [userId]);
+  await pool.execute(
+    'INSERT INTO email_verification_tokens (id, user_id, token_hash, expires_at) VALUES (?, ?, ?, ?)',
+    [randomUUID(), userId, hashResetToken(rawToken), utcDateTime(new Date(Date.now() + VERIFY_TTL_MS))]
+  );
+  const verifyUrl = `${publicOrigin(req)}/api/auth/verify?token=${rawToken}`;
+  const [rows] = await pool.execute('SELECT email FROM users WHERE id = ? LIMIT 1', [userId]);
+  await sendVerificationEmail({ email: rows[0]?.email || '', token: rawToken, verifyUrl });
+  return verifyUrl;
 }
 
 function usableState(state) {
@@ -162,7 +213,7 @@ function createApp(pool) {
     }
     const userId = String(payload.sub || '');
     if (!userId) return null;
-    const [rows] = await pool.execute('SELECT id, email FROM users WHERE id = ? LIMIT 1', [userId]);
+    const [rows] = await pool.execute('SELECT id, email, username, email_verified_at FROM users WHERE id = ? LIMIT 1', [userId]);
     return rows[0] || null;
   }
 
@@ -192,15 +243,32 @@ function createApp(pool) {
     if (invalidPassword) return res.status(400).json({ error: invalidPassword });
 
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
-    const user = { id: randomUUID(), email };
+    const user = { id: randomUUID(), email, username: null, email_verified_at: null };
+    const rawToken = randomBytes(32).toString('hex');
+    const connection = await pool.getConnection();
     try {
-      await pool.execute('INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)', [user.id, user.email, passwordHash]);
+      await connection.beginTransaction();
+      await connection.execute('INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)', [user.id, user.email, passwordHash]);
+      await connection.execute(
+        'INSERT INTO email_verification_tokens (id, user_id, token_hash, expires_at) VALUES (?, ?, ?, ?)',
+        [randomUUID(), user.id, hashResetToken(rawToken), utcDateTime(new Date(Date.now() + VERIFY_TTL_MS))]
+      );
+      await connection.commit();
     } catch (error) {
+      await connection.rollback();
       if (error.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: '该邮箱已注册' });
       throw error;
+    } finally {
+      connection.release();
     }
-    writeSessionCookie(req, res, signToken(user));
-    res.status(201).json({ user: publicUser(user) });
+    const verifyUrl = `${publicOrigin(req)}/api/auth/verify?token=${rawToken}`;
+    await sendVerificationEmail({ email: user.email, token: rawToken, verifyUrl });
+    res.status(201).json({
+      user: publicUser(user),
+      verificationRequired: true,
+      message: '账号已创建，请完成邮箱验证',
+      ...(exposeAuthLinks() ? { verifyUrl } : {})
+    });
   }));
 
   app.post('/api/auth/login', asyncRoute(async (req, res) => {
@@ -210,10 +278,16 @@ function createApp(pool) {
     const email = normalizeEmail(req.body?.email);
     const password = String(req.body?.password || '');
     if (!email || !password) return res.status(400).json({ error: '请填写邮箱和密码' });
-    const [rows] = await pool.execute('SELECT id, email, password_hash FROM users WHERE email = ? LIMIT 1', [email]);
+    const [rows] = await pool.execute('SELECT id, email, username, email_verified_at, password_hash FROM users WHERE email = ? LIMIT 1', [email]);
     const user = rows[0];
     const matches = user ? await bcrypt.compare(password, user.password_hash) : false;
     if (!user || !matches) return res.status(401).json({ error: '邮箱或密码不正确' });
+    if (!user.email_verified_at) {
+      const body = { error: '请先完成邮箱验证' };
+      const verifyUrl = await issueVerificationUrl(pool, user.id, req);
+      if (verifyUrl && exposeAuthLinks()) body.verifyUrl = verifyUrl;
+      return res.status(403).json(body);
+    }
     writeSessionCookie(req, res, signToken(user));
     res.json({ user: publicUser(user) });
   }));
@@ -235,25 +309,23 @@ function createApp(pool) {
     }
     const email = normalizeEmail(req.body?.email);
     if (!email) return res.status(400).json({ error: '请先填写邮箱' });
-    const message = '如果该邮箱已注册，重置请求已记录。邮件发送尚未接入，请联系管理员完成重置。';
+    const message = exposeAuthLinks()
+      ? '如果该邮箱已注册，可以使用重置链接。邮件发送尚未接入。'
+      : '如果该邮箱已注册，重置邮件已发送。';
     const [rows] = await pool.execute('SELECT id, email FROM users WHERE email = ? LIMIT 1', [email]);
     const user = rows[0];
+    let resetUrl = '';
     if (user) {
       const rawToken = randomBytes(32).toString('hex');
-      const expiresAt = new Date(Date.now() + RESET_TTL_MS);
       await pool.execute('DELETE FROM password_reset_tokens WHERE user_id = ? AND used_at IS NULL', [user.id]);
       await pool.execute(
         'INSERT INTO password_reset_tokens (id, user_id, token_hash, expires_at) VALUES (?, ?, ?, ?)',
-        [randomUUID(), user.id, hashResetToken(rawToken), expiresAt]
+        [randomUUID(), user.id, hashResetToken(rawToken), utcDateTime(new Date(Date.now() + RESET_TTL_MS))]
       );
-      const origin = `${req.protocol}://${req.get('host')}`;
-      await sendPasswordResetEmail({
-        email: user.email,
-        token: rawToken,
-        resetUrl: `${origin}/?reset_token=${rawToken}`
-      });
+      resetUrl = `${publicOrigin(req)}/api/auth/reset?token=${rawToken}`;
+      await sendPasswordResetEmail({ email: user.email, token: rawToken, resetUrl });
     }
-    res.json({ ok: true, message });
+    res.json({ ok: true, message, ...(user && exposeAuthLinks() ? { resetUrl } : {}) });
   }));
 
   app.post('/api/auth/reset-password', asyncRoute(async (req, res) => {
@@ -264,7 +336,7 @@ function createApp(pool) {
     if (invalidPassword) return res.status(400).json({ error: invalidPassword });
     const [rows] = await pool.execute(
       `SELECT id, user_id FROM password_reset_tokens
-       WHERE token_hash = ? AND used_at IS NULL AND expires_at > NOW(3)
+       WHERE token_hash = ? AND used_at IS NULL AND expires_at > UTC_TIMESTAMP(3)
        LIMIT 1`,
       [hashResetToken(token)]
     );
@@ -272,8 +344,42 @@ function createApp(pool) {
     if (!reset) return res.status(400).json({ error: '重置链接无效或已过期' });
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
     await pool.execute('UPDATE users SET password_hash = ? WHERE id = ?', [passwordHash, reset.user_id]);
-    await pool.execute('UPDATE password_reset_tokens SET used_at = NOW(3) WHERE id = ?', [reset.id]);
+    await pool.execute('UPDATE password_reset_tokens SET used_at = UTC_TIMESTAMP(3) WHERE id = ?', [reset.id]);
     res.json({ ok: true, message: '密码已更新，请使用新密码登录' });
+  }));
+
+  app.get('/api/auth/verify', asyncRoute(async (req, res) => {
+    const token = String(req.query.token || '').trim();
+    const [rows] = await pool.execute(
+      `SELECT t.id, t.user_id, u.email, u.username, u.email_verified_at
+       FROM email_verification_tokens t
+       JOIN users u ON u.id = t.user_id
+       WHERE t.token_hash = ? AND t.used_at IS NULL AND t.expires_at > UTC_TIMESTAMP(3)
+       LIMIT 1`,
+      [hashResetToken(token)]
+    );
+    const match = rows[0];
+    if (!match) {
+      res.status(400).type('html').send(verifyErrorPage('验证链接无效或已过期'));
+      return;
+    }
+    await pool.execute('UPDATE users SET email_verified_at = UTC_TIMESTAMP(3) WHERE id = ? AND email_verified_at IS NULL', [match.user_id]);
+    await pool.execute('UPDATE email_verification_tokens SET used_at = UTC_TIMESTAMP(3) WHERE id = ?', [match.id]);
+    const user = { id: match.user_id, email: match.email, username: match.username, email_verified_at: new Date() };
+    writeSessionCookie(req, res, signToken(user));
+    res.type('html').send(verifySuccessPage());
+  }));
+
+  app.get('/api/auth/reset', (_req, res) => {
+    res.type('html').send(resetPasswordPage());
+  });
+
+  app.post('/api/auth/username', requireUser, asyncRoute(async (req, res) => {
+    if (!req.user.email_verified_at) return res.status(403).json({ error: '请先完成邮箱验证' });
+    const username = normalizeUsername(req.body?.username);
+    if (!username) return res.status(400).json({ error: '请填写 1 到 20 个字符的用户名' });
+    await pool.execute('UPDATE users SET username = ? WHERE id = ?', [username, req.user.id]);
+    res.json({ user: { ...publicUser(req.user), username, emailVerified: true } });
   }));
 
   app.get('/api/state', requireUser, asyncRoute(async (req, res) => {
@@ -293,8 +399,8 @@ function createApp(pool) {
     if (payload.length > 1_000_000) return res.status(413).json({ error: '数据过大' });
     await pool.execute(
       `INSERT INTO user_app_state (user_id, state, updated_at)
-       VALUES (?, CAST(? AS JSON), NOW(3))
-       ON DUPLICATE KEY UPDATE state = CAST(? AS JSON), updated_at = NOW(3)`,
+       VALUES (?, CAST(? AS JSON), UTC_TIMESTAMP(3))
+       ON DUPLICATE KEY UPDATE state = CAST(? AS JSON), updated_at = UTC_TIMESTAMP(3)`,
       [req.user.id, payload, payload]
     );
     const [rows] = await pool.execute('SELECT updated_at FROM user_app_state WHERE user_id = ? LIMIT 1', [req.user.id]);

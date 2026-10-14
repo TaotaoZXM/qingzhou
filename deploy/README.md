@@ -230,8 +230,15 @@ sudo git config --system --add safe.directory /opt/qingzhou
 
 需要一个不能登录的静态演示时，到 GitHub Actions 里手动运行 “Deploy to GitHub Pages”。那个产物只有页面文件。日常使用以这台 ECS 上的域名为准。
 
-## 密码重置
+## 登录会话
 
-登录框里的「发送密码重置邮件」会调用 `POST /api/auth/forgot-password`。账号存在时，服务会在 `password_reset_tokens` 里记下一次性 token，并调用 `sendPasswordResetEmail`。这个函数现在不会发信。
+登录后的 Cookie 固定保留 15 天。旧环境文件里的 `JWT_EXPIRES_IN=30d` 不会再生效。
 
-接上阿里云邮件推送或自己的 SMTP 时，只改 `server/src/index.js` 里的 `sendPasswordResetEmail`。函数参数里已经有收件邮箱、原始 token 和重置链接。用户设置新密码的接口是 `POST /api/auth/reset-password`，请求体为 `{ "token": "...", "password": "..." }`。
+## 邮箱验证和密码重置
+
+注册后账号先处于未验证状态。验证链接打开 `/api/auth/verify?token=`，成功后填写用户名。忘记密码的链接打开 `/api/auth/reset?token=`，改完密码回到登录框。
+
+阿里云邮件推送还没接上。在此之前，接口响应里会带上 `verifyUrl` 或 `resetUrl`，服务日志里也会记下“delivery not configured”。接上之后：
+
+1. 把 `server/src/index.js` 里的 `sendVerificationEmail` 和 `sendPasswordResetEmail` 换成真实发信。
+2. 在 `/etc/qingzhou.env` 设置 `EMAIL_DELIVERY=directmail`，然后重启服务。之后接口不再把链接返回给浏览器。

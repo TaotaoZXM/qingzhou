@@ -318,11 +318,27 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .task-row.swipe-item,.idea-row.swipe-item{display:block}
 .swipe-content{width:100%}
 </style>
+
+<style>
+.auth-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
+.auth-actions .auth-secondary{padding:4px 0}
+.auth-actions .auth-secondary:last-child{margin-left:auto;text-align:right}
+.auth-link{margin-top:8px!important}
+.auth-link a{color:var(--accent);font-size:13px;word-break:break-all}
+.account-menu{position:absolute;z-index:30;top:44px;right:12px;display:grid;min-width:112px;padding:6px;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 20px rgba(37,42,38,.12)}
+.account-menu.hidden{display:none}
+.account-menu button{padding:8px 10px;color:var(--text);background:transparent;border:0;border-radius:6px;text-align:left;font-size:14px}
+.account-menu button:hover{background:var(--soft)}
+.energy-capybara{display:flex;justify-content:center;margin:4px 0 16px}
+.energy-capybara img{width:160px;height:auto}
+.todo-empty-state strong,.todo-empty-state p,.phone .todo-empty-state strong,.phone .todo-empty-state p{font-size:14px;line-height:1.5}
+</style>
 </head>
 <body>
 <div class="heading"><h1>轻舟 · 手机网页版预览 v31</h1><p>推荐只在每天第一次开始时生成；状态只改变提示，刷新任务才重新抽取</p></div>
 <div class="phone">
   <div class="appbar"><div class="brand">轻舟</div><button id="accountButton" class="account-button" type="button">账户</button></div>
+  <div id="accountMenu" class="account-menu hidden"><button id="menuSignOut" type="button">退出登录</button></div>
 
   <section id="startScreen" class="screen start">
     <div class="start-topline"><span id="startDate"></span></div>
@@ -331,30 +347,31 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       <div class="sub">给今天留出一个可以进入的入口</div>
       <button class="start-button" id="startAction"><span class="start-button-label">给我一个轻轻的开始</span><span class="start-button-arrow">→</span></button>
       <div id="stateBlock" class="state-block hidden">
+        <div id="energyCapybara" class="energy-capybara"><img id="energyCapybaraArt" src="./assets/energy-capybara.svg" alt="" width="160" height="96"></div>
         <div class="section-label">现在的状态</div>
         <div class="states"><button class="state" data-state="low">低能量</button><button class="state" data-state="some">中能量</button><button class="state" data-state="ready">高能量</button></div>
         <div id="stateHint" class="state-hint">选一个最接近现在的状态</div>
       </div>
-      <div id="recommendations" class="recommendations hidden"><div class="recommendation-set"><div class="recommendation-head"><small id="recommendationCount">按此刻的状态为你挑选 3 件事</small><button id="refreshRecommendations" class="refresh-recommendations" type="button">刷新任务</button></div><h2 id="recommendationHeading">现在适合开始这些</h2><div id="recommendationItems"></div></div></div>
+      <div id="recommendations" class="recommendations hidden"><div class="recommendation-set"><div class="recommendation-head"><small id="recommendationCount">按此刻的状态为你挑选 3 件事</small><button id="refreshRecommendations" class="refresh-recommendations" type="button">刷新任务</button></div><h2 id="recommendationHeading">现在适合开始这些</h2><div id="startEmptyState" class="todo-empty-state hidden"><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置</p></div><div id="recommendationItems"></div></div></div>
     </div>
     <div id="returnNote" class="return-note hidden"><strong>今天已经回来过 2 次</strong><br>回来本身也是进度</div>
   </section>
 
   <section id="todoScreen" class="screen work hidden">
     <div class="work-head"><div><div class="eyebrow">WORKSPACE</div><h1>To-do<img class="capy capy-loaf" src="./assets/loaf.webp" alt="" width="44" height="28"></h1></div><button class="add" id="newTodo">＋ 新任务</button></div>
-    <div class="tabs"><button class="tab active" id="todoTasksTab">任务 <span id="todoTabCount">8</span></button><button class="tab" id="todoIdeasTab">灵感 <span>2</span></button></div>
+    <div class="tabs"><button class="tab active" id="todoTasksTab">任务 <span id="todoTabCount">0</span></button><button class="tab" id="todoIdeasTab">灵感 <span>0</span></button></div>
     <div id="todoTasksView">
       <div class="filters"><div class="filter-set"><div class="filter-control" id="todoProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="个人成长">个人成长</button><button class="filter-option" type="button" data-value="日常">日常</button></div></div><div class="filter-control" id="todoDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div>
-      <div id="todoGroups" class="groups"><section class="group"><div class="group-title">重要且紧急 <small>2</small></div><div class="task-row" data-project="产品" data-difficulty="hard" data-deadline="2026-09-30T14:00"><button class="check todo-check" data-title="完成项目方案的第一版" data-project="产品" data-difficulty="hard" data-deadline="2026-09-30T14:00" data-display="9月30日 14:00">○</button><button class="task-main"><span class="task-title">完成项目方案的第一版</span><span class="meta"><span>产品</span><span class="hard">困难</span><span>9月30日 14:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="工作" data-difficulty="medium" data-deadline="2026-09-29T18:00"><button class="check todo-check" data-title="向同事同步项目当前风险" data-project="工作" data-difficulty="medium" data-deadline="2026-09-29T18:00" data-display="9月29日 18:00">○</button><button class="task-main"><span class="task-title">向同事同步项目当前风险</span><span class="meta"><span>工作</span><span class="medium">适中</span><span>9月29日 18:00</span></span></button><span class="row-arrow">›</span></div></section><section class="group"><div class="group-title">重要不紧急 <small>3</small></div><div class="task-row" data-project="个人成长" data-difficulty="hard" data-deadline="2026-10-02T20:00"><button class="check todo-check" data-title="确定个人主页的内容结构" data-project="个人成长" data-difficulty="hard" data-deadline="2026-10-02T20:00" data-display="10月2日 20:00">○</button><button class="task-main"><span class="task-title">确定个人主页的内容结构</span><span class="meta"><span>个人成长</span><span class="hard">困难</span><span>10月2日 20:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="工作" data-difficulty="medium" data-deadline="2026-10-03T16:00"><button class="check todo-check" data-title="整理下季度的工作重点" data-project="工作" data-difficulty="medium" data-deadline="2026-10-03T16:00" data-display="10月3日 16:00">○</button><button class="task-main"><span class="task-title">整理下季度的工作重点</span><span class="meta"><span>工作</span><span class="medium">适中</span><span>10月3日 16:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="个人成长" data-difficulty="medium" data-deadline="2026-10-06T21:00"><button class="check todo-check" data-title="更新个人作品集首页" data-project="个人成长" data-difficulty="medium" data-deadline="2026-10-06T21:00" data-display="10月6日 21:00">○</button><button class="task-main"><span class="task-title">更新个人作品集首页</span><span class="meta"><span>个人成长</span><span class="medium">适中</span><span>10月6日 21:00</span></span></button><span class="row-arrow">›</span></div></section><section class="group"><div class="group-title">紧急不重要 <small>1</small></div><div class="task-row" data-project="工作" data-difficulty="easy" data-deadline="2026-09-28T10:00"><button class="check todo-check" data-title="确认本周会议时间" data-project="工作" data-difficulty="easy" data-deadline="2026-09-28T10:00" data-display="9月28日 10:00">○</button><button class="task-main"><span class="task-title">确认本周会议时间</span><span class="meta"><span>工作</span><span class="easy">简单</span><span>9月28日 10:00</span></span></button><span class="row-arrow">›</span></div></section><section class="group"><div class="group-title">其他 <small>2</small></div><div class="task-row" data-project="日常" data-difficulty="easy" data-deadline="2026-09-28T18:00"><button class="check todo-check" data-title="整理收件箱里需要回复的消息" data-project="日常" data-difficulty="easy" data-deadline="2026-09-28T18:00" data-display="9月28日 18:00">○</button><button class="task-main"><span class="task-title">整理收件箱里需要回复的消息</span><span class="meta"><span>日常</span><span class="easy">简单</span><span>9月28日 18:00</span></span></button><span class="row-arrow">›</span></div><div class="task-row" data-project="日常" data-difficulty="easy" data-deadline=""><button class="check todo-check" data-title="清理桌面和下载文件夹" data-project="日常" data-difficulty="easy" data-deadline="" data-display="未设置截止时间">○</button><button class="task-main"><span class="task-title">清理桌面和下载文件夹</span><span class="meta"><span>日常</span><span class="easy">简单</span><span>未设置截止时间</span></span></button><span class="row-arrow">›</span></div></section></div><div id="todoEmptyState" class="todo-empty-state hidden"><span class="todo-empty-state-mark">＋</span><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置</p><button id="emptyNewTodo" type="button">＋新任务</button></div>
+      <div id="todoGroups" class="groups"><section class="group"><div class="group-title">重要且紧急 <small>0</small></div></section><section class="group"><div class="group-title">重要不紧急 <small>0</small></div></section><section class="group"><div class="group-title">紧急不重要 <small>0</small></div></section><section class="group"><div class="group-title">其他 <small>0</small></div></section></div><div id="todoEmptyState" class="todo-empty-state hidden"><span class="todo-empty-state-mark">＋</span><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置</p></div>
     </div>
-    <div id="todoIdeasView" class="ideas hidden"><div class="ideas-intro"><span>✦</span><div><h2>先记下来，之后再安排</h2></div></div><form class="idea-input" id="ideaForm"><input id="ideaInput" placeholder="刚刚想到什么？"><button type="submit" aria-label="保存灵感">→</button></form><div class="idea-list" id="ideaList"><div class="idea-row"><span class="idea-text">把每周复盘变成一张很短的卡片</span><button class="idea-to-task" type="button">Task</button></div><div class="idea-row"><span class="idea-text">给常见任务准备可复用的下一步</span><button class="idea-to-task" type="button">Task</button></div></div></div>
+    <div id="todoIdeasView" class="ideas hidden"><div class="ideas-intro"><span>✦</span><div><h2>先记下来，之后再安排</h2></div></div><form class="idea-input" id="ideaForm"><input id="ideaInput" placeholder="刚刚想到什么？"><button type="submit" aria-label="保存灵感">→</button></form><div class="idea-list" id="ideaList"></div></div>
   </section>
 
   <section id="doneScreen" class="screen work hidden">
     <div class="work-head"><div><div class="eyebrow">CLOSED LOOP</div><h1>Done<img class="capy capy-loaf" src="./assets/loaf.webp" alt="" width="44" height="28"></h1></div><button class="add" id="newEvent">＋ 新增完成事件</button></div>
     <div class="done-intro"><p>做完只是完成第一步，留下点什么才算结束</p></div>
-    <div class="done-tabs"><button class="done-tab active" id="completedTab">已完成任务 <span id="completedTabCount">3</span></button><button class="done-tab" id="reviewsTab">任务复盘 <span id="reviewsTabCount">1</span></button></div>
-    <div id="completedView" class="done-content"><div class="filters done-filter-line"><div class="filter-set"><div class="filter-control" id="doneProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="生活">生活</button></div></div><div class="filter-control" id="doneDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div><div id="doneList" class="done-list"><div class="done-row" data-task-id="done_seed_weekly" data-project="工作" data-difficulty="medium" data-deadline="2026-09-28T18:00" data-completed="3" data-review-required="true"><div class="done-copy"><strong>完成周报发送</strong><small>工作 · 适中 · 9月28日 18:00</small></div></div><div class="done-row" data-task-id="done_seed_room" data-project="生活" data-difficulty="easy" data-deadline="2026-09-28T20:00" data-completed="2"><div class="done-copy"><strong>整理了一次房间</strong><small>生活 · 简单 · 9月28日 20:00</small></div></div><div class="done-row" data-task-id="done_seed_meeting" data-project="工作" data-difficulty="easy" data-deadline="2026-09-28T10:00" data-completed="1"><div class="done-copy"><strong>确认了本周会议时间</strong><small>工作 · 简单 · 9月28日 10:00</small></div></div></div><button id="doneHistoryLink" class="done-history-link" type="button">查看过往完成任务<img class="capy capy-sit-empty" src="./assets/sit.webp" alt="" width="44" height="52"></button></div>
+    <div class="done-tabs"><button class="done-tab active" id="completedTab">已完成任务 <span id="completedTabCount">0</span></button><button class="done-tab" id="reviewsTab">任务复盘 <span id="reviewsTabCount">0</span></button></div>
+    <div id="completedView" class="done-content"><div class="filters done-filter-line"><div class="filter-set"><div class="filter-control" id="doneProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="生活">生活</button></div></div><div class="filter-control" id="doneDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div><div id="doneList" class="done-list"></div><button id="doneHistoryLink" class="done-history-link" type="button">查看过往完成任务<img class="capy capy-sit-empty" src="./assets/sit.webp" alt="" width="44" height="52"></button></div>
     <div id="reviewsView" class="done-content hidden"><div class="filters done-filter-line"><div class="filter-set"><div class="filter-control" id="reviewProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="生活">生活</button></div></div><div class="filter-control" id="reviewDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div><div id="pendingReviews" class="review-list"></div><div class="reviewed"><div id="reviewedList"></div></div></div>
   </section>
 
@@ -372,8 +389,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <div id="deleteDialog" class="review-dialog hidden"><div class="review-card delete-card"><div class="sheet-head"><div><div class="eyebrow">DELETE</div><h2>确认删除</h2></div><button class="close" data-close="deleteDialog" aria-label="关闭删除确认">×</button></div><p id="deleteDialogText">删除后无法恢复，确认删除这项内容吗？</p><div class="delete-actions"><button id="deleteCancel" class="delete-cancel" type="button">取消</button><button id="deleteConfirm" class="delete-confirm" type="button">确认删除</button></div></div></div>
   <div id="taskLimitAlert" class="capacity-alert hidden"><div class="capacity-alert-card"><div class="capacity-alert-mark">!</div><h3>当下囤积任务过多，请先一件一件事情来，或者先生成灵感</h3><button id="goIdeasFromLimit">生成灵感</button></div></div>
   <div id="capacityAlert" class="capacity-alert hidden"><div class="capacity-alert-card"><div class="capacity-alert-mark">!</div><h3>任务分配尚未达到最优解，请重新对任务进行合并或拆解</h3><p>当前难度容量已经达到上限，这项任务暂时无法加入 To-do</p><button id="closeCapacityAlert">知道了</button></div></div>
-  <div id="authDialog" class="auth-dialog hidden"><div class="auth-card"><button id="authClose" class="auth-close" type="button" aria-label="关闭账户弹窗">×</button><div class="eyebrow">ACCOUNT</div><h2 id="authTitle">登录轻舟</h2><p id="authDescription">登录后，任务会在不同浏览器和设备间保持同步</p><form id="authForm" class="auth-form"><label>邮箱<input id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label><label>密码<input id="authPassword" type="password" autocomplete="current-password" minlength="8" required placeholder="至少 8 位"></label><button id="authSubmit" class="auth-primary" type="submit">登录</button></form><button id="authModeToggle" class="auth-secondary" type="button">创建新账号</button><button id="resetPassword" class="auth-secondary" type="button">发送密码重置邮件</button><p id="authStatus" class="auth-status"></p><div id="authAccount" class="auth-account hidden"><span id="authEmailLabel"></span><button id="signOut" class="auth-secondary" type="button">退出登录</button></div></div></div>
-</div>
+  <div id="authDialog" class="auth-dialog hidden"><div class="auth-card"><button id="authClose" class="auth-close" type="button" aria-label="关闭账户弹窗">×</button><div class="eyebrow">ACCOUNT</div><h2 id="authTitle">登录轻舟</h2><p id="authDescription">登录后，任务会在不同浏览器和设备间保持同步</p><form id="authForm" class="auth-form"><label>邮箱<input id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label><label>密码<input id="authPassword" type="password" autocomplete="current-password" minlength="8" required placeholder="至少 8 位"></label><button id="authSubmit" class="auth-primary" type="submit">登录</button></form><form id="usernameForm" class="auth-form hidden"><label>用户名<input id="authUsername" type="text" maxlength="20" required placeholder="怎么称呼你" autocomplete="nickname"></label><button id="usernameSubmit" class="auth-primary" type="submit">完成</button></form><div id="authActions" class="auth-actions"><button id="authModeToggle" class="auth-secondary" type="button">创建新账号</button><button id="resetPassword" class="auth-secondary" type="button">发送密码重置邮件</button></div><p id="authLink" class="auth-link hidden"></p><p id="authStatus" class="auth-status"></p></div></div></div>
 <script>
 const screens={start:document.getElementById('startScreen'),todo:document.getElementById('todoScreen'),done:document.getElementById('doneScreen'),cal:document.getElementById('calScreen')};
 const navs={start:document.getElementById('startNav'),todo:document.getElementById('todoNav'),done:document.getElementById('doneNav'),cal:document.getElementById('calNav')};
@@ -449,38 +465,80 @@ function setAuthStatus(message,error=false){
   status.textContent=message||'';
   status.classList.toggle('error',error);
 }
+function setAuthLink(url,label){
+  const link=document.getElementById('authLink');
+  link.classList.toggle('hidden',!url);
+  link.replaceChildren();
+  if(!url)return;
+  const anchor=document.createElement('a');
+  anchor.href=url;
+  anchor.textContent=label||'打开链接';
+  link.appendChild(anchor);
+}
 function openAuthDialog(){
+  document.getElementById('usernameForm').classList.add('hidden');
+  document.getElementById('authForm').classList.remove('hidden');
+  document.getElementById('authActions').classList.remove('hidden');
   document.getElementById('authDialog').classList.remove('hidden');
   document.getElementById('authEmail').focus();
 }
 function closeAuthDialog(){document.getElementById('authDialog').classList.add('hidden')}
+function closeAccountMenu(){document.getElementById('accountMenu').classList.add('hidden')}
+function toggleAccountMenu(){document.getElementById('accountMenu').classList.toggle('hidden')}
 function setAuthMode(signup){
+  document.getElementById('usernameForm').classList.add('hidden');
+  document.getElementById('authForm').classList.remove('hidden');
+  document.getElementById('authActions').classList.remove('hidden');
   document.getElementById('authTitle').textContent=signup?'创建轻舟账号':'登录轻舟';
   document.getElementById('authDescription').textContent=signup?'使用邮箱和密码保存你的任务，并在其他浏览器恢复':'登录后，任务会在不同浏览器和设备间保持同步';
   document.getElementById('authSubmit').textContent=signup?'创建账号':'登录';
   document.getElementById('authModeToggle').textContent=signup?'已有账号，直接登录':'创建新账号';
   document.getElementById('authForm').dataset.mode=signup?'signup':'login';
   document.getElementById('resetPassword').classList.toggle('hidden',signup);
+  setAuthLink('');
   setAuthStatus('');
+}
+function openUsernameDialog(justVerified){
+  closeAccountMenu();
+  document.getElementById('authForm').classList.add('hidden');
+  document.getElementById('authActions').classList.add('hidden');
+  document.getElementById('usernameForm').classList.remove('hidden');
+  document.getElementById('authTitle').textContent=justVerified?'邮箱验证成功':'设置用户名';
+  document.getElementById('authDescription').textContent='起一个名字，它会显示在右上角';
+  setAuthLink('');
+  setAuthStatus('');
+  document.getElementById('authDialog').classList.remove('hidden');
+  document.getElementById('authUsername').focus();
 }
 function showAccountState(user){
   currentUser=user||null;
   const button=document.getElementById('accountButton');
-  button.textContent=user?(user.email||'已登录'):'账户';
-  button.classList.toggle('authenticated',Boolean(user));
-  document.getElementById('authAccount').classList.toggle('hidden',!user);
-  document.getElementById('authEmailLabel').textContent=user?.email||'';
-  if(user){
-    document.getElementById('authForm').classList.add('hidden');
-    document.getElementById('authModeToggle').classList.add('hidden');
-    document.getElementById('resetPassword').classList.add('hidden');
-    document.getElementById('authTitle').textContent='账号已登录';
-    document.getElementById('authDescription').textContent='你的任务会自动保存到云端';
-  }else{
-    document.getElementById('authForm').classList.remove('hidden');
-    document.getElementById('authModeToggle').classList.remove('hidden');
-    setAuthMode(false);
-  }
+  button.textContent=user?(user.username||'设置名字'):'账户';
+  button.classList.toggle('authenticated',Boolean(user?.username));
+  closeAccountMenu();
+  if(!user)setAuthMode(false);
+}
+function requireAccount(){
+  if(!currentUser){openAuthDialog();return false}
+  if(!currentUser.username){openUsernameDialog(false);return false}
+  return true;
+}
+function clearVisibleData(){
+  document.querySelectorAll('#todoTasksView .task-row').forEach(row=>row.remove());
+  document.querySelectorAll('#doneList .done-row').forEach(row=>row.remove());
+  document.getElementById('ideaList').replaceChildren();
+  completedReviewNotes.clear();
+  recommendedTaskIds=[];
+  recommendedTaskIdsByState={};
+  recommendationsGenerated=false;
+  setEnergyOpen(false);
+  document.getElementById('recommendations').classList.add('hidden');
+  document.getElementById('returnNote').classList.add('hidden');
+  updateCounts();
+  applyDoneFilters();
+  renderReviewList();
+  renderCal();
+  try{localStorage.removeItem(appStateStorageKey)}catch(error){}
 }
 
 function readAppState(){
@@ -597,11 +655,21 @@ function applyAppState(state){
   updateCounts();applyTodoFilters();applyDoneFilters();renderReviewList();renderCal();
   return true;
 }
+const demoIdeaText=new Set(['把每周复盘变成一张很短的卡片','给常见任务准备可复用的下一步']);
+function stripSeedState(state){
+  if(!state||state.version!==1)return {state,changed:false};
+  const todo=(Array.isArray(state.todo)?state.todo:[]).filter(item=>!String(item.id||'').startsWith('seed_'));
+  const done=(Array.isArray(state.done)?state.done:[]).filter(item=>!String(item.id||'').startsWith('done_seed_'));
+  const ideas=normalizeIdeas(state.ideas).filter(idea=>!demoIdeaText.has(idea.text));
+  const changed=todo.length!==(Array.isArray(state.todo)?state.todo.length:0)||done.length!==(Array.isArray(state.done)?state.done.length:0)||ideas.length!==normalizeIdeas(state.ideas).length;
+  return {state:{...state,todo,done,ideas},changed};
+}
 function loadLocalAppState(){
   try{
-    const state=JSON.parse(localStorage.getItem(appStateStorageKey)||'null');
-    const loaded=state&&applyAppState(state);
-    if(loaded&&Array.isArray(state.ideas)&&state.ideas.some(idea=>typeof idea==='string'))saveLocalAppState();
+    const stored=JSON.parse(localStorage.getItem(appStateStorageKey)||'null');
+    const stripped=stripSeedState(stored);
+    const loaded=stripped.state&&applyAppState(stripped.state);
+    if(loaded&&(stripped.changed||(Array.isArray(stored?.ideas)&&stored.ideas.some(idea=>typeof idea==='string'))))saveLocalAppState();
     return loaded;
   }catch(error){return false}
 }
@@ -614,6 +682,7 @@ async function api(path,options={}){
   if(!response.ok){
     const error=new Error(data.error||(response.status===404?'云端不可用，当前仅保存在本机':'请求失败'));
     error.status=response.status;
+    error.payload=data;
     throw error;
   }
   return data;
@@ -621,7 +690,13 @@ async function api(path,options={}){
 async function loadCloudAppState(){
   if(!cloudAvailable||!currentUser)return false;
   const data=await api('/api/state');
-  if(data.state&&data.state.version===1){applyAppState(data.state);saveLocalAppState();return true}
+  if(data.state&&data.state.version===1){
+    const stripped=stripSeedState(data.state);
+    applyAppState(stripped.state);
+    saveLocalAppState();
+    if(stripped.changed)await saveCloudAppState(true);
+    return true;
+  }
   return false;
 }
 async function saveCloudAppState(force=false){
@@ -643,11 +718,32 @@ async function handleAuthSubmit(event){
   const password=document.getElementById('authPassword').value;
   const signup=document.getElementById('authForm').dataset.mode==='signup';
   setAuthStatus(signup?'正在创建账号…':'正在登录…');
+  setAuthLink('');
   try{
     const data=await api(signup?'/api/auth/register':'/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
     cloudAvailable=true;
+    if(signup){
+      setAuthMode(false);
+      setAuthStatus(data.message||'账号已创建，请完成邮箱验证');
+      setAuthLink(data.verifyUrl,'打开验证链接');
+      return;
+    }
     await finishAuth(data.user);
-  }catch(error){setAuthStatus(error.message||'登录失败',true)}
+    if(!data.user.username)openUsernameDialog(false);
+  }catch(error){
+    setAuthStatus(error.message||'登录失败',true);
+    setAuthLink(error.payload?.verifyUrl,'打开验证链接');
+  }
+}
+async function handleUsernameSubmit(event){
+  event.preventDefault();
+  const username=document.getElementById('authUsername').value.trim();
+  setAuthStatus('正在保存…');
+  try{
+    const data=await api('/api/auth/username',{method:'POST',body:JSON.stringify({username})});
+    showAccountState(data.user);
+    closeAuthDialog();
+  }catch(error){setAuthStatus(error.message||'保存失败',true)}
 }
 async function finishAuth(user){
   if(!user)return;
@@ -657,42 +753,64 @@ async function finishAuth(user){
     const hadCloud=await loadCloudAppState();
     if(hadLocal&&!hadCloud)await saveCloudAppState(true);
     setAuthStatus('已同步');
-    setTimeout(closeAuthDialog,700);
+    if(user.username)setTimeout(closeAuthDialog,700);
   }catch(error){setAuthStatus('云端同步失败，请稍后重试',true);console.error(error)}
 }
+async function signOut(){
+  clearTimeout(cloudSyncTimer);
+  if(currentUser&&cloudAvailable){try{await saveCloudAppState(true)}catch(error){}}
+  try{if(cloudAvailable)await api('/api/auth/logout',{method:'POST',body:'{}'})}catch(error){}
+  showAccountState(null);
+  clearVisibleData();
+  showScreen('start');
+  setAuthStatus('已退出登录');
+}
 async function initAuth(){
-  document.getElementById('accountButton').onclick=openAuthDialog;
+  document.getElementById('accountButton').onclick=event=>{
+    event.stopPropagation();
+    if(!requireAccount())return;
+    toggleAccountMenu();
+  };
   document.getElementById('authClose').onclick=closeAuthDialog;
   document.getElementById('authForm').onsubmit=handleAuthSubmit;
+  document.getElementById('usernameForm').onsubmit=handleUsernameSubmit;
   document.getElementById('authModeToggle').onclick=()=>setAuthMode(document.getElementById('authForm').dataset.mode!=='signup');
   document.getElementById('resetPassword').onclick=async()=>{
     const email=document.getElementById('authEmail').value.trim();
     if(!email){setAuthStatus('请先填写邮箱',true);return}
     setAuthStatus('正在提交重置请求…');
+    setAuthLink('');
     try{
       const data=await api('/api/auth/forgot-password',{method:'POST',body:JSON.stringify({email})});
       cloudAvailable=true;
       setAuthStatus(data.message||'重置请求已记录');
+      setAuthLink(data.resetUrl,'打开重置页面');
     }catch(error){setAuthStatus(error.message||'重置请求失败',true)}
   };
-  document.getElementById('signOut').onclick=async()=>{
-    clearTimeout(cloudSyncTimer);
-    try{if(cloudAvailable)await api('/api/auth/logout',{method:'POST',body:'{}'})}catch(error){}
-    showAccountState(null);
-    setAuthMode(false);
-    setAuthStatus('已退出登录');
-  };
+  document.getElementById('menuSignOut').onclick=event=>{event.stopPropagation();signOut()};
+  document.addEventListener('click',event=>{
+    if(event.target.closest('#accountMenu')||event.target.closest('#accountButton'))return;
+    closeAccountMenu();
+  });
   setAuthMode(false);
+  const launchParams=new URLSearchParams(location.search);
   try{
     const data=await api('/api/auth/me');
     cloudAvailable=true;
-    if(data.user)await finishAuth(data.user);
-    else openAuthDialog();
+    if(data.user){
+      await finishAuth(data.user);
+      if(!data.user.username)openUsernameDialog(launchParams.get('verified')==='1');
+    }else if(launchParams.get('login')==='1')openAuthDialog();
   }catch(error){
-    if(error.status===401){cloudAvailable=true;openAuthDialog();return}
-    cloudAvailable=false;
-    document.getElementById('accountButton').title='云端不可用，当前仅保存在本机';
+    if(error.status===401){
+      cloudAvailable=true;
+      if(launchParams.get('login')==='1')openAuthDialog();
+    }else{
+      cloudAvailable=false;
+      document.getElementById('accountButton').title='云端不可用，当前仅保存在本机';
+    }
   }
+  if(location.search)history.replaceState(null,'',location.pathname);
 }
 
 function updateStartDate(){
@@ -704,6 +822,7 @@ updateStartDate();
 setInterval(updateStartDate,60000);
 
 function showScreen(name){
+  if(name!=='start'&&!requireAccount())return;
   Object.keys(screens).forEach(key=>screens[key].classList.toggle('hidden',key!==name));
   Object.keys(navs).forEach(key=>navs[key].classList.toggle('active',key===name));
   if(name==='cal')renderCal();
@@ -827,8 +946,12 @@ function renderRecommendations(state){
   const displayState=state;
   const stateNames={low:'低能量',some:'中能量',ready:'高能量'};
   const headings={low:'先从轻一点的开始',some:'现在适合往前推一点',ready:'现在适合处理关键事项'};
-  document.getElementById('recommendationCount').textContent=chosen.length?stateNames[displayState]+' · 为你挑了 '+chosen.length+' 件':'当前没有待办任务';
-  document.getElementById('recommendationHeading').textContent=chosen.length?headings[displayState]:'可以先去灵感里记下想法';
+  const empty=!chosen.length;
+  document.querySelector('#recommendations .recommendation-head')?.classList.toggle('hidden',empty);
+  document.getElementById('recommendationHeading').classList.toggle('hidden',empty);
+  document.getElementById('startEmptyState').classList.toggle('hidden',!empty);
+  document.getElementById('recommendationCount').textContent=empty?'':stateNames[displayState]+' · 为你挑了 '+chosen.length+' 件';
+  document.getElementById('recommendationHeading').textContent=empty?'':headings[displayState];
   const list=document.getElementById('recommendationItems');
   list.innerHTML='';
   chosen.forEach(item=>{
@@ -851,7 +974,7 @@ function renderRecommendations(state){
     list.appendChild(row);
   });
   document.getElementById('recommendations').classList.remove('hidden');
-  document.getElementById('returnNote').classList.remove('hidden');
+  document.getElementById('returnNote').classList.toggle('hidden', empty);
 }
 function completeTask(button){
   const item=taskMeta(button);
@@ -887,13 +1010,20 @@ document.addEventListener('click',event=>{
   if(item)completeTask(item.button);
 });
 
+let energyOpen=false;
+function setEnergyOpen(open){
+  energyOpen=open;
+  document.getElementById('startScreen').classList.toggle('is-engaged',open);
+  stateBlock.classList.toggle('hidden',!open);
+  startAction.classList.toggle('revealed',open);
+  startAction.innerHTML=open?'<span class="start-button-label">选择你现在的状态</span><span class="start-button-arrow">↑</span>':'<span class="start-button-label">给我一个轻轻的开始</span><span class="start-button-arrow">→</span>';
+}
 startAction.onclick=()=>{
-  document.getElementById('startScreen').classList.add('is-engaged');
-  stateBlock.classList.remove('hidden');
-  startAction.classList.add('revealed');
-  startAction.innerHTML='<span class="start-button-label">选择你现在的状态</span><span class="start-button-arrow">↓</span>';
+  if(!requireAccount())return;
+  setEnergyOpen(!energyOpen);
 };
 document.querySelectorAll('[data-state]').forEach(button=>button.onclick=()=>{
+  if(!currentUser){openAuthDialog();return}
   document.querySelectorAll('[data-state]').forEach(item=>item.classList.toggle('active',item===button));
   stateHint.textContent='';
   stateHint.classList.add('hidden');
@@ -964,6 +1094,8 @@ function createReviewRow(item,reviewed=false){
   return row;
 }
 function renderReviewList(){
+  const liveIds=new Set([...document.querySelectorAll('#doneList .done-row')].map(row=>row.dataset.taskId));
+  [...completedReviewNotes.keys()].forEach(id=>{if(!liveIds.has(id))completedReviewNotes.delete(id)});
   const pending=document.getElementById('pendingReviews');
   const reviewed=document.getElementById('reviewedList');
   pending.innerHTML='';
@@ -992,6 +1124,7 @@ document.getElementById('pendingReviews').addEventListener('click',event=>{
 });
 
 function openTaskForm(idea){
+  if(!requireAccount())return;
   if(allTodoItems().length>=10){
     document.getElementById('taskLimitAlert').classList.remove('hidden');
     return;
@@ -1002,8 +1135,8 @@ function openTaskForm(idea){
   document.getElementById('todoSheet').classList.remove('hidden');
 }
 document.getElementById('newTodo').onclick=()=>openTaskForm('');
-document.getElementById('emptyNewTodo').onclick=()=>openTaskForm('');
 document.getElementById('newEvent').onclick=()=>{
+  if(!requireAccount())return;
   document.getElementById('newDoneReview').checked=false;
   const now=new Date();
   document.querySelector('#eventSheet input[type="date"]').value=dateKey(now);
@@ -1011,6 +1144,7 @@ document.getElementById('newEvent').onclick=()=>{
   document.getElementById('eventSheet').classList.remove('hidden');
 };
 document.getElementById('goIdeasFromLimit').onclick=()=>{
+  if(!requireAccount())return;
   document.getElementById('taskLimitAlert').classList.add('hidden');
   showScreen('todo');
   showTodoTab('ideas');
@@ -1056,6 +1190,7 @@ document.querySelectorAll('#ideaList .idea-row').forEach(row=>{
 document.querySelectorAll('.idea-to-task').forEach(button=>button.onclick=()=>openTaskForm(button.closest('.idea-row').querySelector('.idea-text').textContent.trim()));
 document.getElementById('ideaForm').onsubmit=event=>{
   event.preventDefault();
+  if(!requireAccount())return;
   const input=document.getElementById('ideaInput');
   const value=input.value.trim();
   if(!value)return;
