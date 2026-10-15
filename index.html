@@ -291,6 +291,12 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .done-history-link.show-capy .capy-sit-empty{display:block}
 #reviewDialog .review-card{position:relative;overflow:visible}
 .capy-review{left:50%;top:0;width:40px;height:47px;transform:translate(-50%,-52%);z-index:2}
+.screen.start .energy-capys{display:none;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px;pointer-events:none}
+.screen.start .states:has(.state.active)+.energy-capys{display:grid}
+.screen.start .energy-capy{display:none;height:38px;width:auto;max-width:100%;justify-self:center;align-self:end;object-fit:contain;filter:drop-shadow(0 3px 5px rgba(80,60,30,.1))}
+.screen.start .states:has(.state[data-state="low"].active)+.energy-capys .energy-capy-low{display:block;grid-column:1}
+.screen.start .states:has(.state[data-state="some"].active)+.energy-capys .energy-capy-mid{display:block;grid-column:2}
+.screen.start .states:has(.state[data-state="ready"].active)+.energy-capys .energy-capy-high{display:block;grid-column:3}
 .phone .sheet-head h2,
 .phone #todoSheet .sheet-head h2,
 .phone #eventSheet .sheet-head h2,
@@ -333,6 +339,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       <div id="stateBlock" class="state-block hidden">
         <div class="section-label">现在的状态</div>
         <div class="states"><button class="state" data-state="low">低能量</button><button class="state" data-state="some">中能量</button><button class="state" data-state="ready">高能量</button></div>
+        <div class="energy-capys" aria-hidden="true"><img class="energy-capy energy-capy-low" src="./assets/energy-low.png" alt="" width="310" height="196"><img class="energy-capy energy-capy-mid" src="./assets/energy-mid.png" alt="" width="251" height="294"><img class="energy-capy energy-capy-high" src="./assets/energy-high.png" alt="" width="468" height="558"></div>
         <div id="stateHint" class="state-hint">选一个最接近现在的状态</div>
       </div>
       <div id="recommendations" class="recommendations hidden"><div class="recommendation-set"><div class="recommendation-head"><small id="recommendationCount">按此刻的状态为你挑选 3 件事</small><button id="refreshRecommendations" class="refresh-recommendations" type="button">刷新任务</button></div><h2 id="recommendationHeading">现在适合开始这些</h2><div id="recommendationItems"></div></div></div>
