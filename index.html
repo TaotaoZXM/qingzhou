@@ -291,6 +291,12 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .done-history-link.show-capy .capy-sit-empty{display:block}
 #reviewDialog .review-card{position:relative;overflow:visible}
 .capy-review{left:50%;top:0;width:40px;height:47px;transform:translate(-50%,-52%);z-index:2}
+.screen.start .energy-capys{display:none;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px;pointer-events:none}
+.screen.start .states:has(.state.active)+.energy-capys{display:grid}
+.screen.start .energy-capy{display:none;height:38px;width:auto;max-width:100%;justify-self:center;align-self:end;object-fit:contain;filter:drop-shadow(0 3px 5px rgba(80,60,30,.1))}
+.screen.start .states:has(.state[data-state="low"].active)+.energy-capys .energy-capy-low{display:block;grid-column:1}
+.screen.start .states:has(.state[data-state="some"].active)+.energy-capys .energy-capy-mid{display:block;grid-column:2}
+.screen.start .states:has(.state[data-state="ready"].active)+.energy-capys .energy-capy-high{display:block;grid-column:3}
 .phone .sheet-head h2,
 .phone #todoSheet .sheet-head h2,
 .phone #eventSheet .sheet-head h2,
@@ -329,8 +335,6 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .account-menu.hidden{display:none}
 .account-menu button{padding:8px 10px;color:var(--text);background:transparent;border:0;border-radius:6px;text-align:left;font-size:14px}
 .account-menu button:hover{background:var(--soft)}
-.energy-capybara{display:flex;justify-content:center;margin:4px 0 16px}
-.energy-capybara img{width:160px;height:auto}
 .todo-empty-state strong,.todo-empty-state p,.phone .todo-empty-state strong,.phone .todo-empty-state p{font-size:14px;line-height:1.5}
 </style>
 </head>
@@ -347,9 +351,9 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       <div class="sub">给今天留出一个可以进入的入口</div>
       <button class="start-button" id="startAction"><span class="start-button-label">给我一个轻轻的开始</span><span class="start-button-arrow">→</span></button>
       <div id="stateBlock" class="state-block hidden">
-        <div id="energyCapybara" class="energy-capybara"><img id="energyCapybaraArt" src="./assets/energy-capybara.svg" alt="" width="160" height="96"></div>
         <div class="section-label">现在的状态</div>
         <div class="states"><button class="state" data-state="low">低能量</button><button class="state" data-state="some">中能量</button><button class="state" data-state="ready">高能量</button></div>
+        <div class="energy-capys" aria-hidden="true"><img class="energy-capy energy-capy-low" src="./assets/energy-low.png" alt="" width="310" height="196"><img class="energy-capy energy-capy-mid" src="./assets/energy-mid.png" alt="" width="251" height="294"><img class="energy-capy energy-capy-high" src="./assets/energy-high.png" alt="" width="468" height="558"></div>
         <div id="stateHint" class="state-hint">选一个最接近现在的状态</div>
       </div>
       <div id="recommendations" class="recommendations hidden"><div class="recommendation-set"><div class="recommendation-head"><small id="recommendationCount">按此刻的状态为你挑选 3 件事</small><button id="refreshRecommendations" class="refresh-recommendations" type="button">刷新任务</button></div><h2 id="recommendationHeading">现在适合开始这些</h2><div id="startEmptyState" class="todo-empty-state hidden"><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置</p></div><div id="recommendationItems"></div></div></div>
