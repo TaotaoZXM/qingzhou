@@ -16,7 +16,9 @@ CREATE TABLE IF NOT EXISTS users (
   UNIQUE KEY uq_users_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Existing databases created before username and verification columns.
+-- Migration for accounts created before username and verification.
+-- email_verified_at being NULL means the address is not verified yet.
+-- These ALTER statements are idempotent: startup ignores duplicate-column errors.
 ALTER TABLE users ADD COLUMN username VARCHAR(64) NULL;
 ALTER TABLE users ADD COLUMN email_verified_at DATETIME(3) NULL;
 

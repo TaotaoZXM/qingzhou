@@ -238,7 +238,6 @@ sudo git config --system --add safe.directory /opt/qingzhou
 
 注册后账号先处于未验证状态。验证链接打开 `/api/auth/verify?token=`，成功后填写用户名。忘记密码的链接打开 `/api/auth/reset?token=`，改完密码回到登录框。
 
-阿里云邮件推送还没接上。在此之前，接口响应里会带上 `verifyUrl` 或 `resetUrl`，服务日志里也会记下“delivery not configured”。接上之后：
+阿里云邮件推送默认关闭。关闭时，验证和重置链接写在服务日志里，生产环境的接口响应不包含 token。本机开发（`NODE_ENV` 不是 `production`）的响应里会带上链接，方便没有邮箱时走通流程。
 
-1. 把 `server/src/index.js` 里的 `sendVerificationEmail` 和 `sendPasswordResetEmail` 换成真实发信。
-2. 在 `/etc/qingzhou.env` 设置 `EMAIL_DELIVERY=directmail`，然后重启服务。之后接口不再把链接返回给浏览器。
+接上邮件推送时，在 `/etc/qingzhou.env` 设置 `EMAIL_DELIVERY=directmail`，以及 `DIRECTMAIL_ACCESS_KEY_ID`、`DIRECTMAIL_ACCESS_KEY_SECRET`、`DIRECTMAIL_ACCOUNT_NAME`（控制台里已验证的发信地址），然后重启服务。发信走 DirectMail `SingleSendMail`。生产环境仍然不会把链接返回给浏览器。

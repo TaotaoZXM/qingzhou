@@ -22,30 +22,10 @@ function page(title, body) {
 }
 
 export function verifySuccessPage() {
-  return page('邮箱验证成功', `
-    <h1>邮箱验证成功</h1>
-    <p>起一个名字，它会显示在右上角。</p>
-    <form id="nameForm">
-      <label>用户名<input id="username" maxlength="20" required placeholder="怎么称呼你" autocomplete="nickname"></label>
-      <button type="submit">完成</button>
-      <p id="status" class="status"></p>
-    </form>
-    <script>
-      document.getElementById('nameForm').onsubmit = async (event) => {
-        event.preventDefault();
-        const status = document.getElementById('status');
-        const username = document.getElementById('username').value.trim();
-        const response = await fetch('/api/auth/username', {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username })
-        });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) { status.textContent = data.error || '保存失败'; return; }
-        location.href = '/';
-      };
-    </script>
+  return page('注册账号成功', `
+    <h1>注册账号成功</h1>
+    <p>邮箱已验证。接下来填写用户名，它会显示在右上角。</p>
+    <p><a class="button" href="/?verified=1">填写用户名</a></p>
   `);
 }
 
@@ -79,7 +59,7 @@ export function resetPasswordPage() {
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok) { status.textContent = data.error || '重置失败'; return; }
-        location.href = '/?login=1';
+        location.href = '/?login=1&reset=1';
       };
     </script>
   `);
