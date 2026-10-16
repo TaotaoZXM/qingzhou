@@ -392,7 +392,15 @@ function createApp(pool) {
   app.put('/api/state', requireUser, asyncRoute(async (req, res) => {
     const incoming = req.body?.state;
     if (!usableState(incoming)) return res.status(400).json({ error: '数据格式不正确' });
-    const state = sanitizeAppState(incoming).state;
+    let state = sanitizeAppState(incoming).state;
+    // Older clients rebuild state without feedback. Keep entries already stored.
+    if (!Object.prototype.hasOwnProperty.call(incoming, 'feedback')) {
+      const [existing] = await pool.execute('SELECT state FROM user_app_state WHERE user_id = ? LIMIT 1', [req.user.id]);
+      const stored = existing[0] ? readJsonColumn(existing[0].state) : null;
+      if (stored && Array.isArray(stored.feedback)) {
+        state = { ...state, feedback: sanitizeAppState({ version: 1, feedback: stored.feedback }).state.feedback };
+      }
+    }
     const payload = JSON.stringify(state);
     if (payload.length > 1_000_000) return res.status(413).json({ error: '数据过大' });
     await pool.execute(

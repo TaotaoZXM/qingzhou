@@ -37,8 +37,21 @@ export function sanitizeAppState(state) {
   const todo = (Array.isArray(state.todo) ? state.todo : []).filter((item) => !isSeedId(item?.id));
   const done = (Array.isArray(state.done) ? state.done : []).filter((item) => !isDemoDoneItem(item));
   const ideas = (Array.isArray(state.ideas) ? state.ideas : []).filter((idea) => !DEMO_IDEAS.has(ideaText(idea)));
+  const next = { ...state, todo, done, ideas };
+  let feedbackChanged = false;
+  if (Array.isArray(state.feedback)) {
+    const feedback = state.feedback.map((item) => {
+      const text = ideaText(item);
+      if (!text) return null;
+      const createdAt = typeof item === 'object' && item?.createdAt ? String(item.createdAt) : new Date().toISOString();
+      return { text, createdAt };
+    }).filter(Boolean);
+    feedbackChanged = JSON.stringify(feedback) !== JSON.stringify(state.feedback);
+    next.feedback = feedback;
+  }
   const changed = todo.length !== (Array.isArray(state.todo) ? state.todo.length : 0)
     || done.length !== (Array.isArray(state.done) ? state.done.length : 0)
-    || ideas.length !== (Array.isArray(state.ideas) ? state.ideas.length : 0);
-  return { state: { ...state, todo, done, ideas }, changed };
+    || ideas.length !== (Array.isArray(state.ideas) ? state.ideas.length : 0)
+    || feedbackChanged;
+  return { state: next, changed };
 }

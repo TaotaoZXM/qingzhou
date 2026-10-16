@@ -325,6 +325,15 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .phone #todoEmptyState strong,.phone #todoEmptyState p,.phone #startEmptyState strong,.phone #startEmptyState p{font-size:14px;line-height:1.5}
 .screen.start .state-capy{display:block;width:88px;height:auto;margin:16px auto 0;pointer-events:none;user-select:none}
 .screen.start .state-block.hidden .state-capy{display:none}
+.start-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;width:100%;margin-top:30px}
+.start-rect{display:flex;align-items:center;justify-content:center;min-width:0;width:100%;min-height:72px;padding:12px 8px;color:var(--text);background:#fff;border:1px solid #d3dbd5;border-radius:8px;box-shadow:0 8px 22px rgba(57,88,72,.08);font-size:15px;font-weight:600;line-height:1.35;text-align:center}
+.start-rect.revealed{color:var(--text);background:var(--accent-soft);border-color:#c7ded6;box-shadow:none}
+.feedback-block{margin-top:22px;text-align:left}
+.feedback-motto{margin-top:14px;color:var(--muted);font-size:14px;line-height:1.5}
+.feedback-row .idea-text{font-size:15px}
+.phone .start-rect{font-size:15px}
+.phone .feedback-motto{font-size:14px}
+.phone #feedbackList .idea-text{font-size:15px}
 </style>
 </head>
 <body>
@@ -338,12 +347,20 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div class="start-stage">
       <div class="greeting">今天不用安排好全部，<br><span>只需要先开始一点点</span></div>
       <div class="sub">给今天留出一个可以进入的入口</div>
-      <button class="start-button" id="startAction"><span class="start-button-label">给我一个轻轻的开始</span><span class="start-button-arrow">→</span></button>
+      <div class="start-actions">
+        <button class="start-rect" id="startAction" type="button" aria-expanded="false">今天请开始吧</button>
+        <button class="start-rect" id="feedbackAction" type="button" aria-expanded="false">今天的正反馈</button>
+      </div>
       <div id="stateBlock" class="state-block hidden">
         <div class="section-label">现在的状态</div>
         <div class="states"><button class="state" data-state="low">低能量</button><button class="state" data-state="some">中能量</button><button class="state" data-state="ready">高能量</button></div>
         <div id="stateHint" class="state-hint">选一个最接近现在的状态</div>
         <img class="state-capy" src="./assets/loaf.webp" alt="" width="120" height="72" aria-hidden="true">
+      </div>
+      <div id="feedbackBlock" class="feedback-block hidden">
+        <form class="idea-input" id="feedbackForm"><input id="feedbackInput" maxlength="200" placeholder="今天有什么正反馈？"><button type="submit" aria-label="保存正反馈">→</button></form>
+        <p class="feedback-motto">成功是成功之母，你只需要成功6次</p>
+        <div class="idea-list" id="feedbackList"></div>
       </div>
       <div id="recommendations" class="recommendations hidden"><div class="recommendation-set"><div class="recommendation-head"><small id="recommendationCount">按此刻的状态为你挑选 3 件事</small><button id="refreshRecommendations" class="refresh-recommendations" type="button">刷新任务</button></div><h2 id="recommendationHeading">现在适合开始这些</h2><div id="startEmptyState" class="todo-empty-state hidden"><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置</p></div><div id="recommendationItems"></div></div></div>
     </div>
@@ -437,6 +454,9 @@ function normalizeIdeas(ideas){
   const today=new Date().toISOString();
   return (Array.isArray(ideas)?ideas:[]).map(idea=>typeof idea==='string'?{text:idea,createdAt:today}:{text:String(idea?.text||''),createdAt:idea?.createdAt||today}).filter(idea=>idea.text.trim());
 }
+function normalizeFeedback(items){
+  return normalizeIdeas(items);
+}
 
 function loadDailyRecommendations(){
   try{
@@ -521,11 +541,12 @@ function clearVisibleData(){
   document.querySelectorAll('#todoTasksView .task-row').forEach(row=>row.remove());
   document.querySelectorAll('#doneList .done-row').forEach(row=>row.remove());
   document.getElementById('ideaList').replaceChildren();
+  document.getElementById('feedbackList').replaceChildren();
   completedReviewNotes.clear();
   recommendedTaskIds=[];
   recommendedTaskIdsByState={};
   recommendationsGenerated=false;
-  setEnergyOpen(false);
+  closeStartPanels();
   document.getElementById('recommendations').classList.add('hidden');
   document.getElementById('returnNote').classList.add('hidden');
   updateCounts();
@@ -541,7 +562,8 @@ function readAppState(){
     id:row.dataset.taskId,title:row.querySelector('.done-copy strong').textContent.trim(),project:row.dataset.project||'未分类',difficulty:row.dataset.difficulty||'easy',deadline:row.dataset.deadline||'',display:row.querySelector('.done-copy small').textContent.trim().split(' · ').slice(2).join(' · '),completed:Number(row.dataset.completed||Date.now()),reviewRequired:row.dataset.reviewRequired==='true',reviewNote:completedReviewNotes.get(row.dataset.taskId)||''
   }));
   const ideas=[...document.querySelectorAll('#ideaList .idea-row')].map(row=>({text:row.querySelector('.idea-text')?.textContent.trim()||'',createdAt:row.dataset.createdAt||new Date().toISOString()})).filter(idea=>idea.text);
-  return stripSeedState({version:1,todo,done,ideas,projects:[...projectNames],updatedAt:new Date().toISOString()}).state;
+  const feedback=[...document.querySelectorAll('#feedbackList .feedback-row')].map(row=>({text:row.querySelector('.idea-text')?.textContent.trim()||'',createdAt:row.dataset.createdAt||new Date().toISOString()})).filter(item=>item.text);
+  return stripSeedState({version:1,todo,done,ideas,feedback,projects:[...projectNames],updatedAt:new Date().toISOString()}).state;
 }
 function saveLocalAppState(){
   try{localStorage.setItem(appStateStorageKey,JSON.stringify(readAppState()))}catch(error){}
@@ -558,16 +580,22 @@ function deleteIdeaRow(row){
   document.querySelector('#todoIdeasTab span').textContent=document.querySelectorAll('#ideaList .idea-row').length;
   persistAppState();
 }
+function deleteFeedbackRow(row){
+  row.remove();
+  persistAppState();
+  renderCal();
+}
 function requestDeleteRow(row,type){
   pendingDeleteRow=row;
   pendingDeleteType=type;
-  const title=type==='idea'?row.querySelector('.idea-text')?.textContent.trim():row.querySelector('.task-title')?.textContent.trim();
+  const title=type==='task'?row.querySelector('.task-title')?.textContent.trim():row.querySelector('.idea-text')?.textContent.trim();
   document.getElementById('deleteDialogText').textContent='删除“'+(title||'这项内容')+'”后无法恢复，确认删除吗？';
   document.getElementById('deleteDialog').classList.remove('hidden');
 }
 function confirmDeleteRow(){
   if(!pendingDeleteRow)return;
   if(pendingDeleteType==='idea')deleteIdeaRow(pendingDeleteRow);
+  else if(pendingDeleteType==='feedback')deleteFeedbackRow(pendingDeleteRow);
   else deleteTodoRow(pendingDeleteRow);
   pendingDeleteRow=null;
   document.getElementById('deleteDialog').classList.add('hidden');
@@ -646,6 +674,7 @@ function applyAppState(state){
   (Array.isArray(state.todo)?state.todo:[]).forEach(item=>{const group=groups[priorityLabels[item.priority]||'其他'];if(group)group.appendChild(createTodoRow(item))});
   (Array.isArray(state.done)?state.done:[]).forEach(item=>document.getElementById('doneList').appendChild(createDoneRow(item)));
   const ideas=document.getElementById('ideaList');ideas.innerHTML='';normalizeIdeas(state.ideas).forEach(idea=>ideas.appendChild(makeIdeaRow(idea.text,idea.createdAt)));
+  const feedbackList=document.getElementById('feedbackList');feedbackList.replaceChildren();normalizeFeedback(state.feedback).forEach(item=>feedbackList.appendChild(makeFeedbackRow(item.text,item.createdAt)));
   updateCounts();applyTodoFilters();applyDoneFilters();renderReviewList();renderCal();
   return true;
 }
@@ -1053,16 +1082,35 @@ document.addEventListener('click',event=>{
 });
 
 let energyOpen=false;
+let feedbackOpen=false;
 function setEnergyOpen(open){
   energyOpen=open;
+  if(open){feedbackOpen=false;document.getElementById('feedbackBlock').classList.add('hidden')}
   stateBlock.classList.toggle('hidden',!open);
   startAction.classList.toggle('revealed',open);
   startAction.setAttribute('aria-expanded',open?'true':'false');
-  startAction.innerHTML=open?'<span class="start-button-label">选择你现在的状态</span><span class="start-button-arrow">↑</span>':'<span class="start-button-label">给我一个轻轻的开始</span><span class="start-button-arrow">→</span>';
+  document.getElementById('feedbackAction').classList.toggle('revealed',false);
+  document.getElementById('feedbackAction').setAttribute('aria-expanded','false');
+}
+function setFeedbackOpen(open){
+  feedbackOpen=open;
+  if(open)setEnergyOpen(false);
+  document.getElementById('feedbackBlock').classList.toggle('hidden',!open);
+  document.getElementById('feedbackAction').classList.toggle('revealed',open);
+  document.getElementById('feedbackAction').setAttribute('aria-expanded',open?'true':'false');
+  if(open)document.getElementById('feedbackInput').focus();
+}
+function closeStartPanels(){
+  setEnergyOpen(false);
+  setFeedbackOpen(false);
 }
 startAction.onclick=()=>{
   if(!requireAccount())return;
   setEnergyOpen(!energyOpen);
+};
+document.getElementById('feedbackAction').onclick=()=>{
+  if(!requireAccount())return;
+  setFeedbackOpen(!feedbackOpen);
 };
 document.addEventListener('click',event=>{
   if(sessionReady())return;
@@ -1251,6 +1299,28 @@ document.getElementById('ideaForm').onsubmit=event=>{
   document.querySelector('#todoIdeasTab span').textContent=document.querySelectorAll('#ideaList .idea-row').length;
   persistAppState();
 };
+function makeFeedbackRow(text,createdAt=new Date().toISOString()){
+  const row=document.createElement('div');
+  row.className='idea-row feedback-row swipe-item';
+  row.dataset.createdAt=createdAt;
+  const label=document.createElement('span');
+  label.className='idea-text';
+  label.textContent=text;
+  row.append(label);
+  enhanceSwipeRow(row,'feedback');
+  return row;
+}
+document.getElementById('feedbackForm').onsubmit=event=>{
+  event.preventDefault();
+  if(!requireAccount())return;
+  const input=document.getElementById('feedbackInput');
+  const value=input.value.trim();
+  if(!value)return;
+  document.getElementById('feedbackList').prepend(makeFeedbackRow(value,new Date().toISOString()));
+  input.value='';
+  persistAppState();
+  renderCal();
+};
 
 function applyTodoFilters(){
   const project=document.getElementById('todoProjectFilter').dataset.value;
@@ -1280,11 +1350,12 @@ function calData(){
     }
   });
   const ideas=[...document.querySelectorAll('#ideaList .idea-row')].map(row=>({key:dateKey(row.dataset.createdAt),title:row.querySelector('.idea-text')?.textContent.trim()||'',detail:''})).filter(item=>item.key&&item.title);
-  return {completed,reviews,ideas};
+  const feedback=[...document.querySelectorAll('#feedbackList .feedback-row')].map(row=>({key:dateKey(row.dataset.createdAt),title:row.querySelector('.idea-text')?.textContent.trim()||'',detail:''})).filter(item=>item.key&&item.title);
+  return {completed,reviews,ideas,feedback};
 }
 function calRecordsFor(key){
   const data=calData();
-  return {completed:data.completed.filter(item=>item.key===key),reviews:data.reviews.filter(item=>item.key===key),ideas:data.ideas.filter(item=>item.key===key)};
+  return {completed:data.completed.filter(item=>item.key===key),reviews:data.reviews.filter(item=>item.key===key),ideas:data.ideas.filter(item=>item.key===key),feedback:data.feedback.filter(item=>item.key===key)};
 }
 function calRecordGroup(title,items,mark,emptyText){
   const section=document.createElement('section');
@@ -1311,7 +1382,7 @@ function renderCal(){
   const month=calViewDate.getMonth();
   monthTitle.textContent=year+'年'+(month+1)+'月';
   const data=calData();
-  const recordKeys=new Set([...data.completed,...data.reviews,...data.ideas].map(item=>item.key));
+  const recordKeys=new Set([...data.completed,...data.reviews,...data.ideas,...data.feedback].map(item=>item.key));
   days.innerHTML='';
   const firstDay=new Date(year,month,1).getDay();
   const daysInMonth=new Date(year,month+1,0).getDate();
@@ -1338,7 +1409,8 @@ function renderCal(){
   records.append(
     calRecordGroup('完成任务',selected.completed,'✓','这一天还没有完成的任务'),
     calRecordGroup('任务复盘',selected.reviews,'↗','这一天还没有记录复盘'),
-    calRecordGroup('灵感',selected.ideas,'✦','这一天还没有记录灵感')
+    calRecordGroup('灵感',selected.ideas,'✦','这一天还没有记录灵感'),
+    calRecordGroup('正反馈',selected.feedback,'✧','这一天还没有记录正反馈')
   );
 }
 document.getElementById('calPrevMonth').onclick=()=>{calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()-1,1);calSelectedDate=new Date(calViewDate);renderCal()};
