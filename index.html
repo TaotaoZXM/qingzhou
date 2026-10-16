@@ -276,27 +276,12 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .sheet,.review-dialog{overscroll-behavior:contain}
 </style>
 <style>
-/* v7 accents: capybaras, dialog type, and tap targets. Layout and copy stay as they are. */
-.phone .screen.start .greeting{position:relative;font-weight:600;color:#252a26}
+/* Dialog type and tap targets. Layout and copy stay as they are. */
+.phone .screen.start .greeting{font-weight:600;color:#252a26}
 .phone .screen.start .greeting span{color:#367769;font-weight:600}
-.phone .work-head h1,.phone .cal-header h1{position:relative;font-weight:650}
+.phone .work-head h1,.phone .cal-header h1{font-weight:650}
 .phone .screen.cal{background:#fff;padding-left:17px;padding-right:17px}
 .phone .cal-header{padding-top:54px}
-.capy{position:absolute;object-fit:contain;pointer-events:none;z-index:1;filter:drop-shadow(0 3px 5px rgba(80,60,30,.1))}
-.capy-boat{left:0;bottom:calc(100% + 13px);width:84px;height:61px}
-.screen.start.is-engaged .capy-boat{display:none}
-.capy-loaf{left:92px;top:7px;width:44px;height:28px}
-.done-history-link{position:relative}
-.capy-sit-empty{left:50%;top:calc(100% + 27px);width:44px;height:52px;transform:translateX(-50%);display:none}
-.done-history-link.show-capy .capy-sit-empty{display:block}
-#reviewDialog .review-card{position:relative;overflow:visible}
-.capy-review{left:50%;top:0;width:40px;height:47px;transform:translate(-50%,-52%);z-index:2}
-.screen.start .energy-capys{display:none;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px;pointer-events:none}
-.screen.start .states:has(.state.active)+.energy-capys{display:grid}
-.screen.start .energy-capy{display:none;height:38px;width:auto;max-width:100%;justify-self:center;align-self:end;object-fit:contain;filter:drop-shadow(0 3px 5px rgba(80,60,30,.1))}
-.screen.start .states:has(.state[data-state="low"].active)+.energy-capys .energy-capy-low{display:block;grid-column:1}
-.screen.start .states:has(.state[data-state="some"].active)+.energy-capys .energy-capy-mid{display:block;grid-column:2}
-.screen.start .states:has(.state[data-state="ready"].active)+.energy-capys .energy-capy-high{display:block;grid-column:3}
 .phone .sheet-head h2,
 .phone #todoSheet .sheet-head h2,
 .phone #eventSheet .sheet-head h2,
@@ -347,13 +332,12 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <section id="startScreen" class="screen start">
     <div class="start-topline"><span id="startDate"></span></div>
     <div class="start-stage">
-      <div class="greeting"><img class="capy capy-boat" src="./assets/boat.webp" alt="" width="84" height="61">今天不用安排好全部，<br><span>只需要先开始一点点</span></div>
+      <div class="greeting">今天不用安排好全部，<br><span>只需要先开始一点点</span></div>
       <div class="sub">给今天留出一个可以进入的入口</div>
       <button class="start-button" id="startAction"><span class="start-button-label">给我一个轻轻的开始</span><span class="start-button-arrow">→</span></button>
       <div id="stateBlock" class="state-block hidden">
         <div class="section-label">现在的状态</div>
         <div class="states"><button class="state" data-state="low">低能量</button><button class="state" data-state="some">中能量</button><button class="state" data-state="ready">高能量</button></div>
-        <div class="energy-capys" aria-hidden="true"><img class="energy-capy energy-capy-low" src="./assets/energy-low.png" alt="" width="310" height="196"><img class="energy-capy energy-capy-mid" src="./assets/energy-mid.png" alt="" width="251" height="294"><img class="energy-capy energy-capy-high" src="./assets/energy-high.png" alt="" width="468" height="558"></div>
         <div id="stateHint" class="state-hint">选一个最接近现在的状态</div>
       </div>
       <div id="recommendations" class="recommendations hidden"><div class="recommendation-set"><div class="recommendation-head"><small id="recommendationCount">按此刻的状态为你挑选 3 件事</small><button id="refreshRecommendations" class="refresh-recommendations" type="button">刷新任务</button></div><h2 id="recommendationHeading">现在适合开始这些</h2><div id="startEmptyState" class="todo-empty-state hidden"><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置</p></div><div id="recommendationItems"></div></div></div>
@@ -362,7 +346,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   </section>
 
   <section id="todoScreen" class="screen work hidden">
-    <div class="work-head"><div><div class="eyebrow">WORKSPACE</div><h1>To-do<img class="capy capy-loaf" src="./assets/loaf.webp" alt="" width="44" height="28"></h1></div><button class="add" id="newTodo">＋ 新任务</button></div>
+    <div class="work-head"><div><div class="eyebrow">WORKSPACE</div><h1>To-do</h1></div><button class="add" id="newTodo">＋ 新任务</button></div>
     <div class="tabs"><button class="tab active" id="todoTasksTab">任务 <span id="todoTabCount">0</span></button><button class="tab" id="todoIdeasTab">灵感 <span>0</span></button></div>
     <div id="todoTasksView">
       <div class="filters"><div class="filter-set"><div class="filter-control" id="todoProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="个人成长">个人成长</button><button class="filter-option" type="button" data-value="日常">日常</button></div></div><div class="filter-control" id="todoDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div>
@@ -372,15 +356,15 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   </section>
 
   <section id="doneScreen" class="screen work hidden">
-    <div class="work-head"><div><div class="eyebrow">CLOSED LOOP</div><h1>Done<img class="capy capy-loaf" src="./assets/loaf.webp" alt="" width="44" height="28"></h1></div><button class="add" id="newEvent">＋ 新增完成事件</button></div>
+    <div class="work-head"><div><div class="eyebrow">CLOSED LOOP</div><h1>Done</h1></div><button class="add" id="newEvent">＋ 新增完成事件</button></div>
     <div class="done-intro"><p>做完只是完成第一步，留下点什么才算结束</p></div>
     <div class="done-tabs"><button class="done-tab active" id="completedTab">已完成任务 <span id="completedTabCount">0</span></button><button class="done-tab" id="reviewsTab">任务复盘 <span id="reviewsTabCount">0</span></button></div>
-    <div id="completedView" class="done-content"><div class="filters done-filter-line"><div class="filter-set"><div class="filter-control" id="doneProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="生活">生活</button></div></div><div class="filter-control" id="doneDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div><div id="doneList" class="done-list"></div><button id="doneHistoryLink" class="done-history-link" type="button">查看过往完成任务<img class="capy capy-sit-empty" src="./assets/sit.webp" alt="" width="44" height="52"></button></div>
+    <div id="completedView" class="done-content"><div class="filters done-filter-line"><div class="filter-set"><div class="filter-control" id="doneProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="生活">生活</button></div></div><div class="filter-control" id="doneDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div><div id="doneList" class="done-list"></div><button id="doneHistoryLink" class="done-history-link" type="button">查看过往完成任务</button></div>
     <div id="reviewsView" class="done-content hidden"><div class="filters done-filter-line"><div class="filter-set"><div class="filter-control" id="reviewProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="生活">生活</button></div></div><div class="filter-control" id="reviewDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div><div id="pendingReviews" class="review-list"></div><div class="reviewed"><div id="reviewedList"></div></div></div>
   </section>
 
   <section id="calScreen" class="screen cal hidden">
-    <div class="cal-header"><div class="cal-header-row"><h1>Cal<img class="capy capy-loaf" src="./assets/loaf.webp" alt="" width="44" height="28"></h1></div><p>回看那些已经发生的事</p></div>
+    <div class="cal-header"><div class="cal-header-row"><h1>Cal</h1></div><p>回看那些已经发生的事</p></div>
     <div class="cal-month"><div class="cal-month-head"><h2 id="calMonthTitle" class="cal-month-title"></h2><div class="cal-month-actions"><button id="calPrevMonth" type="button" aria-label="上个月">‹</button><button id="calNextMonth" type="button" aria-label="下个月">›</button></div></div><div class="cal-weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div><div id="calDays" class="cal-days"></div></div>
     <div class="cal-selected"><h2 id="calSelectedTitle"></h2><p id="calSelectedSubtitle">这一天留下的记录</p></div>
     <div id="calRecords"></div>
@@ -389,7 +373,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <nav class="bottom-nav"><button id="startNav" class="bottom-item active"><span class="bottom-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l1.9 5.6 5.6 1.9-5.6 1.9L12 18.5l-1.9-5.6L4.5 11l5.6-1.9z"></path></svg></span><span>Start</span></button><button id="todoNav" class="bottom-item"><span class="bottom-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7h10M9 12h10M9 17h10"></path><circle cx="5" cy="7" r=".6"></circle><circle cx="5" cy="12" r=".6"></circle><circle cx="5" cy="17" r=".6"></circle></svg></span><span>To-do</span></button><button id="doneNav" class="bottom-item"><span class="bottom-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><span>Done</span></button><button id="calNav" class="bottom-item"><span class="bottom-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="2"></rect><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"></path></svg></span><span>Cal</span></button></nav>
   <div id="todoSheet" class="sheet hidden"><div class="sheet-panel"><div class="sheet-head"><div><div class="eyebrow">NEW TO-DO</div><h2>添加任务</h2></div><button class="close" data-close="todoSheet">×</button></div><form class="form task-entry-form"><label>任务内容<input id="newTaskTitle" placeholder="例如：给客户确认最终版本"></label><div class="form-field"><span>难易程度</span><div class="choices"><button type="button" class="choice active" data-task-difficulty="easy">简单<small>3/4</small></button><button type="button" class="choice" data-task-difficulty="medium">适中<small>3/3</small></button><button type="button" class="choice" data-task-difficulty="hard">困难<small>2/3</small></button></div></div><div class="form-field"><span>优先级</span><div class="choices priority-choice"><button type="button" class="choice active">重要且紧急</button><button type="button" class="choice">重要不紧急</button><button type="button" class="choice">紧急不重要</button><button type="button" class="choice">其他</button></div></div><div class="form-field"><span>截止时间（可选）</span><div class="datetime-row"><input type="date" value="2026-09-30"><input type="time" value="14:00"></div></div><div class="form-field project-picker"><span>项目</span><input class="project-search" type="search" placeholder="搜索项目" autocomplete="off"><div class="project-list"><button type="button" class="project active">工作</button><button type="button" class="project">产品</button><button type="button" class="project">个人成长</button><button type="button" class="project">生活</button><button type="button" class="project new-project" data-project-new="newProjectFieldTodo">＋ 新增项目</button></div><div id="newProjectFieldTodo" class="new-project-field hidden"><input placeholder="输入新项目名称"><button type="button" class="project-create">添加</button></div></div><label class="review-option"><input id="newTaskReview" type="checkbox">需要复盘</label><button class="sheet-submit">加入 To-do</button></form></div></div>
   <div id="eventSheet" class="sheet hidden"><div class="sheet-panel"><div class="sheet-head"><div><div class="eyebrow">NEW DONE EVENT</div><h2>记录完成事件</h2></div><button class="close" data-close="eventSheet">×</button></div><form class="form task-entry-form"><label>完成内容<input id="newDoneTitle" placeholder="例如：整理完了房间"></label><div class="form-field"><span>难易程度</span><div class="choices"><button type="button" class="choice active" data-event-difficulty="easy">简单<small>完成事件</small></button><button type="button" class="choice" data-event-difficulty="medium">适中<small>完成事件</small></button><button type="button" class="choice" data-event-difficulty="hard">困难<small>完成事件</small></button></div></div><div class="form-field"><span>优先级</span><div class="choices priority-choice"><button type="button" class="choice active">重要且紧急</button><button type="button" class="choice">重要不紧急</button><button type="button" class="choice">紧急不重要</button><button type="button" class="choice">其他</button></div></div><div class="form-field"><span>截止时间（可选）</span><div class="datetime-row"><input type="date" value="2026-10-13"><input type="time" value="18:00"></div></div><div class="form-field project-picker"><span>项目</span><input class="project-search" type="search" placeholder="搜索项目" autocomplete="off"><div class="project-list"><button type="button" class="project active">工作</button><button type="button" class="project">产品</button><button type="button" class="project">个人成长</button><button type="button" class="project">生活</button><button type="button" class="project new-project" data-project-new="newProjectFieldEvent">＋ 新增项目</button></div><div id="newProjectFieldEvent" class="new-project-field hidden"><input placeholder="输入新项目名称"><button type="button" class="project-create">添加</button></div></div><label class="review-option"><input id="newDoneReview" type="checkbox">需要复盘</label><button class="sheet-submit">加入 Done</button></form></div></div>
-  <div id="reviewDialog" class="review-dialog hidden"><div class="review-card"><img class="capy capy-review" src="./assets/sit.webp" alt="" width="40" height="47"><div class="sheet-head"><div><div class="eyebrow">TASK REVIEW</div><h2 id="reviewDialogTitle"></h2></div><button class="close" data-close="reviewDialog">×</button></div><p>留下一句话就够了，完成文字输入，即完成这次复盘</p><textarea id="reviewText" maxlength="200" placeholder="这次有什么值得记住的？"></textarea><div class="review-footer"><span><b id="reviewCount">0</b>/200</span><button class="review-done" id="reviewDone" disabled>完成复盘</button></div></div></div>
+  <div id="reviewDialog" class="review-dialog hidden"><div class="review-card"><div class="sheet-head"><div><div class="eyebrow">TASK REVIEW</div><h2 id="reviewDialogTitle"></h2></div><button class="close" data-close="reviewDialog">×</button></div><p>留下一句话就够了，完成文字输入，即完成这次复盘</p><textarea id="reviewText" maxlength="200" placeholder="这次有什么值得记住的？"></textarea><div class="review-footer"><span><b id="reviewCount">0</b>/200</span><button class="review-done" id="reviewDone" disabled>完成复盘</button></div></div></div>
   <div id="deleteDialog" class="review-dialog hidden"><div class="review-card delete-card"><div class="sheet-head"><div><div class="eyebrow">DELETE</div><h2>确认删除</h2></div><button class="close" data-close="deleteDialog" aria-label="关闭删除确认">×</button></div><p id="deleteDialogText">删除后无法恢复，确认删除这项内容吗？</p><div class="delete-actions"><button id="deleteCancel" class="delete-cancel" type="button">取消</button><button id="deleteConfirm" class="delete-confirm" type="button">确认删除</button></div></div></div>
   <div id="taskLimitAlert" class="capacity-alert hidden"><div class="capacity-alert-card"><div class="capacity-alert-mark">!</div><h3>当下囤积任务过多，请先一件一件事情来，或者先生成灵感</h3><button id="goIdeasFromLimit">生成灵感</button></div></div>
   <div id="capacityAlert" class="capacity-alert hidden"><div class="capacity-alert-card"><div class="capacity-alert-mark">!</div><h3>任务分配尚未达到最优解，请重新对任务进行合并或拆解</h3><p>当前难度容量已经达到上限，这项任务暂时无法加入 To-do</p><button id="closeCapacityAlert">知道了</button></div></div>
@@ -1017,7 +1001,6 @@ document.addEventListener('click',event=>{
 let energyOpen=false;
 function setEnergyOpen(open){
   energyOpen=open;
-  document.getElementById('startScreen').classList.toggle('is-engaged',open);
   stateBlock.classList.toggle('hidden',!open);
   startAction.classList.toggle('revealed',open);
   startAction.innerHTML=open?'<span class="start-button-label">选择你现在的状态</span><span class="start-button-arrow">↑</span>':'<span class="start-button-label">给我一个轻轻的开始</span><span class="start-button-arrow">→</span>';
@@ -1299,8 +1282,6 @@ function applyDoneFilters(){
   const project=document.getElementById('doneProjectFilter').dataset.value;
   const difficulty=document.getElementById('doneDifficultyFilter').dataset.value;
   document.querySelectorAll('#doneList .done-row').forEach(row=>row.classList.toggle('hidden',!isDoneToday(row)||(project&&row.dataset.project!==project)||(difficulty&&row.dataset.difficulty!==difficulty)));
-  const todayCount=[...document.querySelectorAll('#doneList .done-row')].filter(isDoneToday).length;
-  document.getElementById('doneHistoryLink').classList.toggle('show-capy',todayCount===0);
 }
 function applyReviewFilters(){
   const project=document.getElementById('reviewProjectFilter')?.dataset.value||'';
