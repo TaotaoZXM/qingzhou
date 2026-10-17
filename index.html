@@ -329,6 +329,48 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .bottom-item .bottom-icon,.bottom-item span:not(.bottom-icon){position:relative;z-index:1}
 .screen,.screen.start,.screen.cal{padding-bottom:120px}
 </style>
+<style>
+/* v15 Start: two entry tiles, energy list, positive-feedback records. Bottom nav unchanged. */
+.phone .screen.start{background:#fff;padding:22px 20px 120px;text-align:left}
+.phone .start-date-block{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+.phone .start-date{color:var(--muted);font-size:12px;line-height:1.2;letter-spacing:.01em}
+.phone .start-date-line{display:block;width:28px;height:2px;background:#367769;border-radius:1px}
+.phone .screen.start .greeting{margin-top:22px}
+.phone .screen.start .sub{max-width:none;margin:12px 0 0}
+.phone .start-tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:26px}
+.phone .start-tile{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;min-height:96px;padding:16px 14px;text-align:left;color:var(--text);background:#fff;border:1px solid #e4e8e4;border-radius:18px;box-shadow:0 1px 2px rgba(37,42,38,.04)}
+.phone .start-tile strong{font-size:15px;font-weight:650;letter-spacing:-.03em;line-height:1.35}
+.phone .start-tile small{color:var(--muted);font-size:12px;font-weight:400;line-height:1.45}
+.phone .start-tile.selected{color:#367769;background:#e7f3ee;border-color:#367769}
+.phone .start-tile.selected small{color:#3d7d6e}
+.phone .start-tile.faded{opacity:.4}
+.phone .screen.start .state-block{margin-top:28px;text-align:center}
+.phone .screen.start .section-label{display:block;text-align:center;color:var(--muted);font-size:12px}
+.phone .screen.start .states{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:12px;padding:4px;background:#eef1ee;border-radius:999px}
+.phone .screen.start .state{padding:9px 4px;color:#8d968f;background:transparent;border:0;border-radius:999px;box-shadow:none;font-size:14px;font-weight:500;line-height:1.2;transform:none}
+.phone .screen.start .state:hover{color:#8d968f}
+.phone .screen.start .state.active{color:#367769;background:#fff;border:0;box-shadow:0 1px 4px rgba(37,42,38,.12);font-weight:700;transform:none}
+.phone .screen.start .state-hint{margin-top:10px;text-align:center;color:var(--muted);font-size:12px}
+.phone .screen.start .recommendations{margin-top:28px}
+.phone .screen.start .recommendation-head{display:none}
+.phone .screen.start .recommendations h2{margin:0;padding-bottom:10px;border-bottom:1px solid var(--line);font-size:15px;font-weight:650;letter-spacing:-.02em}
+.phone .screen.start .recommendation-row{display:flex;align-items:center;gap:10px;width:100%;padding:14px 0;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--text);text-align:left}
+.phone .screen.start .recommendation-copy strong{font-size:15px;font-weight:500}
+.phone .screen.start .recommendation-copy small{margin-top:4px;font-size:13px}
+.phone .recommendation-chevron{flex:none;color:#c5ccc7;font-size:20px;line-height:1}
+.phone .feedback-block{margin-top:28px}
+.phone .feedback-form{display:flex;align-items:flex-end;gap:10px;border-bottom:1.5px solid #367769}
+.phone .feedback-form input{flex:1;min-width:0;padding:8px 0 10px;color:var(--text);background:transparent;border:0;outline:0;font-size:15px}
+.phone .feedback-form input::placeholder{color:#b4bbb6}
+.phone .feedback-form button{display:grid;place-items:center;flex:none;width:32px;height:32px;margin:0 0 6px;padding:0;color:#fff;background:#367769;border:0;border-radius:50%;font-size:16px;line-height:1}
+.phone .feedback-motto{margin:14px 0 0;color:var(--muted);font-size:14px;font-style:italic;line-height:1.55}
+.phone .feedback-list{margin-top:6px}
+.phone .feedback-row{padding:11px 0;border-bottom:1px solid var(--line)}
+.phone .feedback-text{font-size:15px;font-weight:400;line-height:1.45}
+.capacity-dialog{z-index:12}
+.capacity-dialog .sheet-head h2{line-height:1.35}
+.capacity-actions{justify-content:flex-end;margin-top:20px}
+</style>
 </head>
 <body>
 <div class="heading"><h1>轻舟 · 手机网页版预览 v31</h1><p>推荐只在每天第一次开始时生成；状态只改变提示，刷新任务才重新抽取</p></div>
@@ -337,17 +379,23 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <div id="accountMenu" class="account-menu hidden"><button id="menuSignOut" type="button">退出登录</button></div>
 
   <section id="startScreen" class="screen start">
-    <div class="start-topline"><span id="startDate"></span></div>
-    <div class="start-stage">
-      <div class="greeting">今天不用安排好全部，<br><span>只需要先开始一点点</span></div>
-      <div class="sub">给今天留出一个可以进入的入口</div>
-      <button class="start-button" id="startAction"><span class="start-button-label">给我一个轻轻的开始</span><span class="start-button-arrow">→</span></button>
-      <div id="stateBlock" class="state-block hidden">
-        <div class="section-label">现在的状态</div>
-        <div class="states"><button class="state" data-state="low">低能量</button><button class="state" data-state="some">中能量</button><button class="state" data-state="ready">高能量</button></div>
-        <div id="stateHint" class="state-hint">选一个最接近现在的状态</div>
-      </div>
-      <div id="recommendations" class="recommendations hidden"><div class="recommendation-set"><div class="recommendation-head"><small id="recommendationCount">按此刻的状态为你挑选 3 件事</small><button id="refreshRecommendations" class="refresh-recommendations" type="button">刷新任务</button></div><h2 id="recommendationHeading">现在适合开始这些</h2><div id="startEmptyState" class="todo-empty-state hidden"><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置</p></div><div id="recommendationItems"></div></div></div>
+    <div class="start-date-block"><div id="startDate" class="start-date"></div><i class="start-date-line" aria-hidden="true"></i></div>
+    <div class="greeting">今天不用安排好全部，<br><span>只需要先开始一点点</span></div>
+    <div id="startSub" class="sub">给今天留出一个可以进入的入口</div>
+    <div class="start-tiles">
+      <button type="button" class="start-tile" id="beginTile" aria-pressed="false"><strong>今天请开始吧</strong><small>选个状态，挑 3 件小事</small></button>
+      <button type="button" class="start-tile" id="feedbackTile" aria-pressed="false"><strong>今天的正反馈</strong><small>记下一件做成的小事</small></button>
+    </div>
+    <div id="stateBlock" class="state-block hidden">
+      <div class="section-label">现在的状态</div>
+      <div class="states"><button type="button" class="state" data-state="low">低能量</button><button type="button" class="state" data-state="some">中能量</button><button type="button" class="state" data-state="ready">高能量</button></div>
+      <div id="stateHint" class="state-hint">选一个最接近现在的状态</div>
+    </div>
+    <div id="recommendations" class="recommendations hidden"><div class="recommendation-set"><div class="recommendation-head"><small id="recommendationCount">按此刻的状态为你挑选 3 件事</small><button id="refreshRecommendations" class="refresh-recommendations" type="button">刷新任务</button></div><h2 id="recommendationHeading">现在适合开始这些</h2><div id="startEmptyState" class="todo-empty-state hidden"><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置</p></div><div id="recommendationItems"></div></div></div>
+    <div id="feedbackBlock" class="feedback-block hidden">
+      <form class="feedback-form" id="feedbackForm"><input id="feedbackInput" maxlength="200" placeholder="今天有什么正反馈？" autocomplete="off"><button type="submit" aria-label="保存正反馈">→</button></form>
+      <p class="feedback-motto">成功是成功之母，你只需要成功6次</p>
+      <div id="feedbackList" class="feedback-list"></div>
     </div>
   </section>
 
@@ -381,14 +429,13 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <div id="eventSheet" class="sheet hidden"><div class="sheet-panel"><div class="sheet-head"><div><div class="eyebrow">NEW DONE EVENT</div><h2>记录完成事件</h2></div><button class="close" data-close="eventSheet">×</button></div><form class="form task-entry-form"><label>完成内容<input id="newDoneTitle" placeholder="例如：整理完了房间"></label><div class="form-field"><span>难易程度</span><div class="choices"><button type="button" class="choice active" data-event-difficulty="easy">简单<small>完成事件</small></button><button type="button" class="choice" data-event-difficulty="medium">适中<small>完成事件</small></button><button type="button" class="choice" data-event-difficulty="hard">困难<small>完成事件</small></button></div></div><div class="form-field"><span>优先级</span><div class="choices priority-choice"><button type="button" class="choice active">重要且紧急</button><button type="button" class="choice">重要不紧急</button><button type="button" class="choice">紧急不重要</button><button type="button" class="choice">其他</button></div></div><div class="form-field"><span>截止时间（可选）</span><div class="datetime-row"><input type="date" value="2026-10-13"><input type="time" value="18:00"></div></div><div class="form-field project-picker"><span>项目</span><input class="project-search" type="search" placeholder="搜索项目" autocomplete="off"><div class="project-list"><button type="button" class="project active">工作</button><button type="button" class="project">产品</button><button type="button" class="project">个人成长</button><button type="button" class="project">生活</button><button type="button" class="project new-project" data-project-new="newProjectFieldEvent">＋ 新增项目</button></div><div id="newProjectFieldEvent" class="new-project-field hidden"><input placeholder="输入新项目名称"><button type="button" class="project-create">添加</button></div></div><label class="review-option"><input id="newDoneReview" type="checkbox">需要复盘</label><button class="sheet-submit">加入 Done</button></form></div></div>
   <div id="reviewDialog" class="review-dialog hidden"><div class="review-card"><div class="sheet-head"><div><div class="eyebrow">TASK REVIEW</div><h2 id="reviewDialogTitle"></h2></div><button class="close" data-close="reviewDialog">×</button></div><p>留下一句话就够了，完成文字输入，即完成这次复盘</p><textarea id="reviewText" maxlength="200" placeholder="这次有什么值得记住的？"></textarea><div class="review-footer"><span><b id="reviewCount">0</b>/200</span><button class="review-done" id="reviewDone" disabled>完成复盘</button></div></div></div>
   <div id="deleteDialog" class="review-dialog hidden"><div class="review-card delete-card"><div class="sheet-head"><div><div class="eyebrow">DELETE</div><h2>确认删除</h2></div><button class="close" data-close="deleteDialog" aria-label="关闭删除确认">×</button></div><p id="deleteDialogText">删除后无法恢复，确认删除这项内容吗？</p><div class="delete-actions"><button id="deleteCancel" class="delete-cancel" type="button">取消</button><button id="deleteConfirm" class="delete-confirm" type="button">确认删除</button></div></div></div>
-  <div id="taskLimitAlert" class="capacity-alert hidden"><div class="capacity-alert-card"><div class="capacity-alert-mark">!</div><h3>当下囤积任务过多，请先一件一件事情来，或者先生成灵感</h3><button id="goIdeasFromLimit">生成灵感</button></div></div>
-  <div id="capacityAlert" class="capacity-alert hidden"><div class="capacity-alert-card"><div class="capacity-alert-mark">!</div><h3>任务分配尚未达到最优解，请重新对任务进行合并或拆解</h3><p>当前难度容量已经达到上限，这项任务暂时无法加入 To-do</p><button id="closeCapacityAlert">知道了</button></div></div>
+  <div id="taskLimitAlert" class="review-dialog capacity-dialog hidden"><div class="review-card"><div class="sheet-head"><div><div class="eyebrow">TASK LIMIT</div><h2>当下囤积任务过多</h2></div><button class="close" data-close="taskLimitAlert" type="button" aria-label="关闭">×</button></div><p>请先一件一件事情来，或者先生成灵感</p><div class="review-footer capacity-actions"><button class="review-done" id="goIdeasFromLimit" type="button">生成灵感</button></div></div></div>
+  <div id="capacityAlert" class="review-dialog capacity-dialog hidden"><div class="review-card"><div class="sheet-head"><div><div class="eyebrow">CAPACITY</div><h2>任务分配尚未达到最优解</h2></div><button class="close" data-close="capacityAlert" type="button" aria-label="关闭">×</button></div><p>请重新对任务进行合并或拆解。当前难度容量已经达到上限，这项任务暂时无法加入 To-do</p><div class="review-footer capacity-actions"><button class="review-done" id="closeCapacityAlert" type="button">知道了</button></div></div></div>
   <div id="authDialog" class="auth-dialog hidden"><div class="auth-card"><button id="authClose" class="auth-close" type="button" aria-label="关闭账户弹窗">×</button><div class="eyebrow">ACCOUNT</div><h2 id="authTitle">登录轻舟</h2><p id="authDescription">登录后，任务会在不同浏览器和设备间保持同步</p><form id="authForm" class="auth-form"><label>邮箱<input id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label><label>密码<input id="authPassword" type="password" autocomplete="current-password" minlength="8" required placeholder="至少 8 位"></label><button id="authSubmit" class="auth-primary" type="submit">登录</button></form><form id="usernameForm" class="auth-form hidden"><label>用户名<input id="authUsername" type="text" maxlength="20" required placeholder="怎么称呼你" autocomplete="nickname"></label><button id="usernameSubmit" class="auth-primary" type="submit">完成</button></form><div id="authActions" class="auth-actions"><button id="authModeToggle" class="auth-secondary" type="button">创建新账号</button><button id="resetPassword" class="auth-secondary" type="button">发送密码重置邮件</button></div><p id="authLink" class="auth-link hidden"></p><p id="authStatus" class="auth-status"></p></div></div></div>
 <script>
 const screens={start:document.getElementById('startScreen'),todo:document.getElementById('todoScreen'),done:document.getElementById('doneScreen'),cal:document.getElementById('calScreen')};
 const navs={start:document.getElementById('startNav'),todo:document.getElementById('todoNav'),done:document.getElementById('doneNav'),cal:document.getElementById('calNav')};
 const stateBlock=document.getElementById('stateBlock');
-const startAction=document.getElementById('startAction');
 const stateHint=document.getElementById('stateHint');
 const priorityLabels={'urgent-important':'重要且紧急',important:'重要不紧急',urgent:'紧急不重要',other:'其他'};
 const priorityIds={'重要且紧急':'urgent-important','重要不紧急':'important','紧急不重要':'urgent','其他':'other'};
@@ -396,6 +443,7 @@ const priorityRank={'urgent-important':4,important:3,urgent:2,other:1};
 const difficultyLabels={easy:'简单',medium:'适中',hard:'困难'};
 const difficultyRank={easy:1,medium:2,hard:3};
 let activeEnergy=null;
+let startPanel=null;
 let taskIdCounter=0;
 let currentReviewId=null;
 let pendingDeleteRow=null;
@@ -525,7 +573,8 @@ function clearVisibleData(){
   recommendedTaskIds=[];
   recommendedTaskIdsByState={};
   recommendationsGenerated=false;
-  setEnergyOpen(false);
+  document.getElementById('feedbackList').replaceChildren();
+  closeStartPanels();
   document.getElementById('recommendations').classList.add('hidden');
   updateCounts();
   applyDoneFilters();
@@ -540,7 +589,8 @@ function readAppState(){
     id:row.dataset.taskId,title:row.querySelector('.done-copy strong').textContent.trim(),project:row.dataset.project||'未分类',difficulty:row.dataset.difficulty||'easy',deadline:row.dataset.deadline||'',display:row.querySelector('.done-copy small').textContent.trim().split(' · ').slice(2).join(' · '),completed:Number(row.dataset.completed||Date.now()),reviewRequired:row.dataset.reviewRequired==='true',reviewNote:completedReviewNotes.get(row.dataset.taskId)||''
   }));
   const ideas=[...document.querySelectorAll('#ideaList .idea-row')].map(row=>({text:row.querySelector('.idea-text')?.textContent.trim()||'',createdAt:row.dataset.createdAt||new Date().toISOString()})).filter(idea=>idea.text);
-  return {version:1,todo,done,ideas,projects:[...projectNames],updatedAt:new Date().toISOString()};
+  const feedback=[...document.querySelectorAll('#feedbackList .feedback-row')].map(row=>({text:row.querySelector('.feedback-text')?.textContent.trim()||'',createdAt:row.dataset.createdAt||new Date().toISOString()})).filter(item=>item.text);
+  return {version:1,todo,done,ideas,feedback,projects:[...projectNames],updatedAt:new Date().toISOString()};
 }
 function saveLocalAppState(){
   try{localStorage.setItem(appStateStorageKey,JSON.stringify(readAppState()))}catch(error){}
@@ -645,6 +695,7 @@ function applyAppState(state){
   (Array.isArray(state.todo)?state.todo:[]).forEach(item=>{const group=groups[priorityLabels[item.priority]||'其他'];if(group)group.appendChild(createTodoRow(item))});
   (Array.isArray(state.done)?state.done:[]).forEach(item=>document.getElementById('doneList').appendChild(createDoneRow(item)));
   const ideas=document.getElementById('ideaList');ideas.innerHTML='';normalizeIdeas(state.ideas).forEach(idea=>ideas.appendChild(makeIdeaRow(idea.text,idea.createdAt)));
+  const feedbackList=document.getElementById('feedbackList');feedbackList.replaceChildren();normalizeFeedback(state.feedback).forEach(item=>feedbackList.appendChild(makeFeedbackRow(item.text,item.createdAt)));
   updateCounts();applyTodoFilters();applyDoneFilters();renderReviewList();renderCal();
   return true;
 }
@@ -809,7 +860,7 @@ async function initAuth(){
 function updateStartDate(){
   const now=new Date();
   const weekdays=['日','一','二','三','四','五','六'];
-  document.getElementById('startDate').textContent=(now.getMonth()+1)+'月'+now.getDate()+'日 · 周'+weekdays[now.getDay()];
+  document.getElementById('startDate').textContent=dateKey(now)+' 星期'+weekdays[now.getDay()];
 }
 updateStartDate();
 setInterval(updateStartDate,60000);
@@ -938,35 +989,35 @@ function renderRecommendations(state){
   const chosen=recommendedTaskIds.map(id=>currentItems.find(item=>item.id===id)).filter(Boolean);
   const displayState=state;
   const stateNames={low:'低能量',some:'中能量',ready:'高能量'};
-  const headings={low:'先从轻一点的开始',some:'现在适合往前推一点',ready:'现在适合处理关键事项'};
   const empty=!chosen.length;
-  document.querySelector('#recommendations .recommendation-head')?.classList.toggle('hidden',empty);
-  document.getElementById('recommendationHeading').classList.toggle('hidden',empty);
+  document.getElementById('recommendationHeading').classList.remove('hidden');
+  document.getElementById('recommendationHeading').textContent='现在适合开始这些';
   document.getElementById('startEmptyState').classList.toggle('hidden',!empty);
   document.getElementById('recommendationCount').textContent=empty?'':stateNames[displayState]+' · 为你挑了 '+chosen.length+' 件';
-  document.getElementById('recommendationHeading').textContent=empty?'':headings[displayState];
   const list=document.getElementById('recommendationItems');
   list.innerHTML='';
   chosen.forEach(item=>{
-    const row=document.createElement('div');
+    const row=document.createElement('button');
+    row.type='button';
     row.className='recommendation-row';
-    const check=document.createElement('button');
-    check.className='check recommendation-check';
-    check.type='button';
-    check.dataset.completeTask=item.id;
-    check.setAttribute('aria-label','完成任务');
-    check.textContent='○';
+    row.dataset.completeTask=item.id;
     const copy=document.createElement('span');
     copy.className='recommendation-copy';
     const title=document.createElement('strong');
     title.textContent=item.title;
     const meta=document.createElement('small');
-    meta.textContent=priorityLabels[item.priority]+' · '+difficultyLabels[item.difficulty]+' · '+item.project+(item.display?' · '+item.display:'');
+    const bits=[difficultyLabels[item.difficulty]||'',item.project||''].filter(Boolean);
+    if(item.display&&item.display!=='未设置截止时间')bits.unshift(item.display);
+    meta.textContent=bits.join(' · ');
     copy.append(title,meta);
-    row.append(check,copy);
+    const chevron=document.createElement('span');
+    chevron.className='recommendation-chevron';
+    chevron.setAttribute('aria-hidden','true');
+    chevron.textContent='›';
+    row.append(copy,chevron);
     list.appendChild(row);
   });
-  document.getElementById('recommendations').classList.remove('hidden');
+  if(startPanel==='begin')document.getElementById('recommendations').classList.remove('hidden');
 }
 function completeTask(button){
   const item=taskMeta(button);
@@ -1002,29 +1053,48 @@ document.addEventListener('click',event=>{
   if(item)completeTask(item.button);
 });
 
-let energyOpen=false;
-function setEnergyOpen(open){
-  energyOpen=open;
-  stateBlock.classList.toggle('hidden',!open);
-  startAction.classList.toggle('revealed',open);
-  startAction.innerHTML=open?'<span class="start-button-label">选择你现在的状态</span><span class="start-button-arrow">↑</span>':'<span class="start-button-label">给我一个轻轻的开始</span><span class="start-button-arrow">→</span>';
-}
-startAction.onclick=()=>{
-  if(!requireAccount())return;
-  setEnergyOpen(!energyOpen);
-};
-document.querySelectorAll('[data-state]').forEach(button=>button.onclick=()=>{
-  if(!currentUser){openAuthDialog();return}
-  document.querySelectorAll('[data-state]').forEach(item=>item.classList.toggle('active',item===button));
-  stateHint.textContent='';
-  stateHint.classList.add('hidden');
-  if(!Array.isArray(recommendedTaskIdsByState[button.dataset.state]))refreshRecommendationIds(button.dataset.state);
-  else{
-    recommendedTaskIds=recommendedTaskIdsByState[button.dataset.state];
-    recommendationState=button.dataset.state;
+function applyStartPanel(panel){
+  startPanel=panel;
+  const begin=panel==='begin';
+  const feedback=panel==='feedback';
+  const beginTile=document.getElementById('beginTile');
+  const feedbackTile=document.getElementById('feedbackTile');
+  beginTile.classList.toggle('selected',begin);
+  feedbackTile.classList.toggle('selected',feedback);
+  beginTile.classList.toggle('faded',feedback);
+  feedbackTile.classList.toggle('faded',begin);
+  beginTile.setAttribute('aria-pressed',begin?'true':'false');
+  feedbackTile.setAttribute('aria-pressed',feedback?'true':'false');
+  document.getElementById('startSub').classList.toggle('hidden',Boolean(panel));
+  stateBlock.classList.toggle('hidden',!begin);
+  document.getElementById('feedbackBlock').classList.toggle('hidden',!feedback);
+  if(!begin)document.getElementById('recommendations').classList.add('hidden');
+  if(begin){
+    const active=document.querySelector('.screen.start [data-state].active');
+    selectEnergy(active?active.dataset.state:'some');
   }
-  renderRecommendations(button.dataset.state);
-});
+  if(feedback)document.getElementById('feedbackInput').focus();
+}
+function closeStartPanels(){applyStartPanel(null)}
+function setStartPanel(next){
+  if(next&&!requireAccount())return;
+  applyStartPanel(startPanel===next?null:next);
+}
+function selectEnergy(state){
+  if(!currentUser){openAuthDialog();return}
+  document.querySelectorAll('.screen.start [data-state]').forEach(item=>item.classList.toggle('active',item.dataset.state===state));
+  stateHint.textContent='选一个最接近现在的状态';
+  stateHint.classList.remove('hidden');
+  if(!Array.isArray(recommendedTaskIdsByState[state]))refreshRecommendationIds(state);
+  else{
+    recommendedTaskIds=recommendedTaskIdsByState[state];
+    recommendationState=state;
+  }
+  renderRecommendations(state);
+}
+document.getElementById('beginTile').onclick=()=>setStartPanel('begin');
+document.getElementById('feedbackTile').onclick=()=>setStartPanel('feedback');
+document.querySelectorAll('.screen.start [data-state]').forEach(button=>button.onclick=()=>selectEnergy(button.dataset.state));
 document.getElementById('refreshRecommendations').onclick=()=>{
   refreshRecommendationIds(activeEnergy||'some');
   renderRecommendations(activeEnergy||'some');
@@ -1158,6 +1228,34 @@ document.getElementById('reviewDone').onclick=()=>{
   document.getElementById('reviewsTab').click();
 };
 
+function normalizeFeedback(items){
+  return (Array.isArray(items)?items:[]).map(item=>{
+    const text=typeof item==='string'?item:String(item?.text||'');
+    const createdAt=item&&typeof item==='object'&&item.createdAt?String(item.createdAt):new Date().toISOString();
+    return {text:text.trim(),createdAt};
+  }).filter(item=>item.text);
+}
+function makeFeedbackRow(text,createdAt=new Date().toISOString()){
+  const row=document.createElement('div');
+  row.className='feedback-row';
+  row.dataset.createdAt=createdAt;
+  const label=document.createElement('div');
+  label.className='feedback-text';
+  label.textContent=text;
+  row.append(label);
+  return row;
+}
+document.getElementById('feedbackForm').onsubmit=event=>{
+  event.preventDefault();
+  if(!requireAccount())return;
+  const input=document.getElementById('feedbackInput');
+  const value=input.value.trim();
+  if(!value)return;
+  document.getElementById('feedbackList').prepend(makeFeedbackRow(value,new Date().toISOString()));
+  input.value='';
+  persistAppState();
+  renderCal();
+};
 function makeIdeaRow(text,createdAt=new Date().toISOString()){
   const row=document.createElement('div');
   row.className='idea-row swipe-item';
@@ -1219,11 +1317,12 @@ function calData(){
     }
   });
   const ideas=[...document.querySelectorAll('#ideaList .idea-row')].map(row=>({key:dateKey(row.dataset.createdAt),title:row.querySelector('.idea-text')?.textContent.trim()||'',detail:''})).filter(item=>item.key&&item.title);
-  return {completed,reviews,ideas};
+  const feedback=[...document.querySelectorAll('#feedbackList .feedback-row')].map(row=>({key:dateKey(row.dataset.createdAt),title:row.querySelector('.feedback-text')?.textContent.trim()||'',detail:''})).filter(item=>item.key&&item.title);
+  return {completed,reviews,ideas,feedback};
 }
 function calRecordsFor(key){
   const data=calData();
-  return {completed:data.completed.filter(item=>item.key===key),reviews:data.reviews.filter(item=>item.key===key),ideas:data.ideas.filter(item=>item.key===key)};
+  return {completed:data.completed.filter(item=>item.key===key),reviews:data.reviews.filter(item=>item.key===key),ideas:data.ideas.filter(item=>item.key===key),feedback:data.feedback.filter(item=>item.key===key)};
 }
 function calRecordGroup(title,items,mark,emptyText){
   const section=document.createElement('section');
@@ -1250,7 +1349,7 @@ function renderCal(){
   const month=calViewDate.getMonth();
   monthTitle.textContent=year+'年'+(month+1)+'月';
   const data=calData();
-  const recordKeys=new Set([...data.completed,...data.reviews,...data.ideas].map(item=>item.key));
+  const recordKeys=new Set([...data.completed,...data.reviews,...data.ideas,...data.feedback].map(item=>item.key));
   days.innerHTML='';
   const firstDay=new Date(year,month,1).getDay();
   const daysInMonth=new Date(year,month+1,0).getDate();
@@ -1277,7 +1376,8 @@ function renderCal(){
   records.append(
     calRecordGroup('完成任务',selected.completed,'✓','这一天还没有完成的任务'),
     calRecordGroup('任务复盘',selected.reviews,'↗','这一天还没有记录复盘'),
-    calRecordGroup('灵感',selected.ideas,'✦','这一天还没有记录灵感')
+    calRecordGroup('灵感',selected.ideas,'✦','这一天还没有记录灵感'),
+    calRecordGroup('正反馈',selected.feedback,'✧','这一天还没有记录正反馈')
   );
 }
 document.getElementById('calPrevMonth').onclick=()=>{calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()-1,1);calSelectedDate=new Date(calViewDate);renderCal()};
