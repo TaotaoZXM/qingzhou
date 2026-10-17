@@ -322,6 +322,15 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .account-menu button:hover{background:var(--soft)}
 .todo-empty-state strong,.todo-empty-state p,.phone .todo-empty-state strong,.phone .todo-empty-state p{font-size:14px;line-height:1.5}
 </style>
+<style>
+/* Floating bottom nav: outer frame and selected pill only. Icons, labels, type size, and the 4-column grid stay as they are. */
+.bottom-nav{left:14px;right:14px;bottom:20px;z-index:2;align-items:stretch;padding:6px 6px 8px;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 4px 14px rgba(37,42,38,.08)}
+.bottom-item{position:relative;z-index:0;padding:8px 0;color:var(--muted)}
+.bottom-item.active{color:#367769}
+.bottom-item.active::before{content:"";position:absolute;z-index:-1;left:6px;right:6px;top:4px;bottom:4px;background:#e4f0ec;border-radius:14px;pointer-events:none}
+.bottom-item .bottom-icon,.bottom-item span:not(.bottom-icon){position:relative;z-index:1}
+.screen,.screen.start,.screen.cal{padding-bottom:120px}
+</style>
 </head>
 <body>
 <div class="heading"><h1>轻舟 · 手机网页版预览 v31</h1><p>推荐只在每天第一次开始时生成；状态只改变提示，刷新任务才重新抽取</p></div>
