@@ -1,4 +1,4 @@
-const CACHE = "qingzhou-v7";
+const CACHE = "qingzhou-v9";
 self.addEventListener("message", (event) => {
   if (event.data === "SKIP_WAITING") self.skipWaiting();
 });

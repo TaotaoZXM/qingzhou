@@ -8,6 +8,8 @@ import jwt from 'jsonwebtoken';
 import { resetPasswordPage, verifyErrorPage, verifySuccessPage } from './auth-pages.js';
 import { createPool, isoTimestamp, migrate, readJsonColumn, utcDateTime } from './db.js';
 import { loadEnv } from './env.js';
+import { sendPasswordResetEmail, sendVerificationEmail } from './mail.js';
+import { sanitizeAppState } from './state-sanitize.js';
 
 loadEnv();
 
@@ -136,9 +138,12 @@ function normalizeUsername(value) {
 }
 
 function exposeAuthLinks() {
+  // Production responses never include verification or reset tokens.
+  // Local/dev can still open the link without a mailbox. EMAIL_DELIVERY only
+  // chooses whether Aliyun DirectMail sends the message.
+  if (process.env.NODE_ENV === 'production') return false;
   if (process.env.EXPOSE_AUTH_LINKS === '0') return false;
-  if (process.env.EXPOSE_AUTH_LINKS === '1') return true;
-  return process.env.EMAIL_DELIVERY !== 'directmail';
+  return true;
 }
 
 function publicOrigin(req) {
@@ -149,33 +154,7 @@ function hashResetToken(token) {
   return createHash('sha256').update(token).digest('hex');
 }
 
-// Hook: password-reset email is intentionally not sent yet.
-// Replace the body with Alibaba Direct Mail or another SMTP provider.
-// `token` and `resetUrl` are ready for that message; they are not logged unless
-// PASSWORD_RESET_DELIVERY=log is set for local debugging.
-export async function sendPasswordResetEmail({ email, token, resetUrl }) {
-  if (process.env.PASSWORD_RESET_DELIVERY === 'log' || process.env.EMAIL_DELIVERY === 'log') {
-    console.info(`[password-reset] ${email} ${resetUrl}`);
-  } else {
-    console.info(`[password-reset] delivery not configured for ${email}`);
-  }
-  return { delivered: false, email, token, resetUrl };
-}
-
-// Hook: replace with Alibaba Cloud DirectMail. Until EMAIL_DELIVERY=directmail,
-// the API can return verifyUrl so the link can be opened without a mailbox.
-export async function sendVerificationEmail({ email, token, verifyUrl }) {
-  if (process.env.EMAIL_DELIVERY === 'log') console.info(`[email-verify] ${email} ${verifyUrl}`);
-  else console.info(`[email-verify] delivery not configured for ${email}`);
-  return { delivered: false, email, token, verifyUrl };
-}
-
 async function issueVerificationUrl(pool, userId, req) {
-  const [existing] = await pool.execute(
-    'SELECT id FROM email_verification_tokens WHERE user_id = ? AND used_at IS NULL AND expires_at > UTC_TIMESTAMP(3) LIMIT 1',
-    [userId]
-  );
-  if (existing.length) return '';
   const rawToken = randomBytes(32).toString('hex');
   await pool.execute('DELETE FROM email_verification_tokens WHERE user_id = ? AND used_at IS NULL', [userId]);
   await pool.execute(
@@ -184,7 +163,7 @@ async function issueVerificationUrl(pool, userId, req) {
   );
   const verifyUrl = `${publicOrigin(req)}/api/auth/verify?token=${rawToken}`;
   const [rows] = await pool.execute('SELECT email FROM users WHERE id = ? LIMIT 1', [userId]);
-  await sendVerificationEmail({ email: rows[0]?.email || '', token: rawToken, verifyUrl });
+  await sendVerificationEmail({ email: rows[0]?.email || '', verifyUrl });
   return verifyUrl;
 }
 
@@ -262,11 +241,11 @@ function createApp(pool) {
       connection.release();
     }
     const verifyUrl = `${publicOrigin(req)}/api/auth/verify?token=${rawToken}`;
-    await sendVerificationEmail({ email: user.email, token: rawToken, verifyUrl });
+    await sendVerificationEmail({ email: user.email, verifyUrl });
     res.status(201).json({
       user: publicUser(user),
       verificationRequired: true,
-      message: '账号已创建，请完成邮箱验证',
+      message: exposeAuthLinks() ? '账号已创建。请打开验证链接，验证后会显示注册成功。' : '账号已创建，请查收验证邮件',
       ...(exposeAuthLinks() ? { verifyUrl } : {})
     });
   }));
@@ -310,7 +289,7 @@ function createApp(pool) {
     const email = normalizeEmail(req.body?.email);
     if (!email) return res.status(400).json({ error: '请先填写邮箱' });
     const message = exposeAuthLinks()
-      ? '如果该邮箱已注册，可以使用重置链接。邮件发送尚未接入。'
+      ? '如果该邮箱已注册，可以打开下面的重置链接。'
       : '如果该邮箱已注册，重置邮件已发送。';
     const [rows] = await pool.execute('SELECT id, email FROM users WHERE email = ? LIMIT 1', [email]);
     const user = rows[0];
@@ -323,7 +302,7 @@ function createApp(pool) {
         [randomUUID(), user.id, hashResetToken(rawToken), utcDateTime(new Date(Date.now() + RESET_TTL_MS))]
       );
       resetUrl = `${publicOrigin(req)}/api/auth/reset?token=${rawToken}`;
-      await sendPasswordResetEmail({ email: user.email, token: rawToken, resetUrl });
+      await sendPasswordResetEmail({ email: user.email, resetUrl });
     }
     res.json({ ok: true, message, ...(user && exposeAuthLinks() ? { resetUrl } : {}) });
   }));
@@ -385,23 +364,50 @@ function createApp(pool) {
   app.get('/api/state', requireUser, asyncRoute(async (req, res) => {
     const [rows] = await pool.execute('SELECT state, updated_at FROM user_app_state WHERE user_id = ? LIMIT 1', [req.user.id]);
     const row = rows[0];
-    const state = row ? readJsonColumn(row.state) : null;
+    const stored = row ? readJsonColumn(row.state) : null;
+    if (!usableState(stored)) {
+      res.json({ state: null, updatedAt: row ? isoTimestamp(row.updated_at) : null });
+      return;
+    }
+    const cleaned = sanitizeAppState(stored);
+    let updatedAt = row.updated_at;
+    if (cleaned.changed) {
+      const payload = JSON.stringify(cleaned.state);
+      const [result] = await pool.execute(
+        `UPDATE user_app_state SET state = ?, updated_at = UTC_TIMESTAMP(3)
+         WHERE user_id = ? AND updated_at = ?`,
+        [payload, req.user.id, updatedAt]
+      );
+      if (result.affectedRows) {
+        const [fresh] = await pool.execute('SELECT updated_at FROM user_app_state WHERE user_id = ? LIMIT 1', [req.user.id]);
+        updatedAt = fresh[0]?.updated_at || updatedAt;
+      }
+    }
     res.json({
-      state: usableState(state) ? state : null,
-      updatedAt: row ? isoTimestamp(row.updated_at) : null
+      state: cleaned.state,
+      updatedAt: isoTimestamp(updatedAt)
     });
   }));
 
   app.put('/api/state', requireUser, asyncRoute(async (req, res) => {
-    const state = req.body?.state;
-    if (!usableState(state)) return res.status(400).json({ error: '数据格式不正确' });
+    const incoming = req.body?.state;
+    if (!usableState(incoming)) return res.status(400).json({ error: '数据格式不正确' });
+    let state = sanitizeAppState(incoming).state;
+    // Older clients rebuild state without feedback. Keep entries already stored.
+    if (!Object.prototype.hasOwnProperty.call(incoming, 'feedback')) {
+      const [existing] = await pool.execute('SELECT state FROM user_app_state WHERE user_id = ? LIMIT 1', [req.user.id]);
+      const stored = existing[0] ? readJsonColumn(existing[0].state) : null;
+      if (stored && Array.isArray(stored.feedback)) {
+        state = { ...state, feedback: sanitizeAppState({ version: 1, feedback: stored.feedback }).state.feedback };
+      }
+    }
     const payload = JSON.stringify(state);
     if (payload.length > 1_000_000) return res.status(413).json({ error: '数据过大' });
     await pool.execute(
       `INSERT INTO user_app_state (user_id, state, updated_at)
-       VALUES (?, CAST(? AS JSON), UTC_TIMESTAMP(3))
-       ON DUPLICATE KEY UPDATE state = CAST(? AS JSON), updated_at = UTC_TIMESTAMP(3)`,
-      [req.user.id, payload, payload]
+       VALUES (?, ?, UTC_TIMESTAMP(3))
+       ON DUPLICATE KEY UPDATE state = VALUES(state), updated_at = UTC_TIMESTAMP(3)`,
+      [req.user.id, payload]
     );
     const [rows] = await pool.execute('SELECT updated_at FROM user_app_state WHERE user_id = ? LIMIT 1', [req.user.id]);
     res.json({ state, updatedAt: isoTimestamp(rows[0]?.updated_at) });

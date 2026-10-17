@@ -139,6 +139,7 @@
 .phone #todoScreen .work-head h1{font-size:27px}
 .phone #todoScreen .eyebrow{font-size:14px}
 .phone #todoScreen .add{font-size:13px}
+.phone #todoScreen #newTodo{font-size:22px;line-height:1;min-width:36px;min-height:36px;justify-content:center}
 .phone #todoScreen .tabs .tab{font-size:15px}
 .phone #todoScreen .tabs .tab span{font-size:14px}
 .phone #todoScreen .filters .filter-trigger,
@@ -310,7 +311,17 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .account-menu.hidden{display:none}
 .account-menu button{padding:8px 10px;color:var(--text);background:transparent;border:0;border-radius:6px;text-align:left;font-size:14px}
 .account-menu button:hover{background:var(--soft)}
-.todo-empty-state strong,.todo-empty-state p,.phone .todo-empty-state strong,.phone .todo-empty-state p{font-size:14px;line-height:1.5}
+.todo-empty-state strong,.todo-empty-state p,.phone .todo-empty-state strong,.phone .todo-empty-state p,
+.phone #todoEmptyState strong,.phone #todoEmptyState p,.phone #startEmptyState strong,.phone #startEmptyState p{font-size:14px;line-height:1.5}
+.start-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;width:100%;margin-top:30px}
+.start-rect{display:flex;align-items:center;justify-content:center;min-width:0;width:100%;min-height:72px;padding:12px 8px;color:var(--text);background:#fff;border:1px solid #d3dbd5;border-radius:8px;box-shadow:0 8px 22px rgba(57,88,72,.08);font-size:15px;font-weight:600;line-height:1.35;text-align:center}
+.start-rect.revealed{color:var(--text);background:var(--accent-soft);border-color:#c7ded6;box-shadow:none}
+.feedback-block{margin-top:22px;text-align:left}
+.feedback-motto{margin-top:14px;color:var(--muted);font-size:14px;line-height:1.5}
+.feedback-row .idea-text{font-size:15px}
+.phone .start-rect{font-size:15px}
+.phone .feedback-motto{font-size:14px}
+.phone #feedbackList .idea-text{font-size:15px}
 </style>
 <style>
 /* Floating bottom nav: outer frame and selected pill only. Icons, labels, type size, and the 4-column grid stay as they are. */
@@ -333,22 +344,30 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div class="start-stage">
       <div class="greeting">今天不用安排好全部，<br><span>只需要先开始一点点</span></div>
       <div class="sub">给今天留出一个可以进入的入口</div>
-      <button class="start-button" id="startAction"><span class="start-button-label">给我一个轻轻的开始</span><span class="start-button-arrow">→</span></button>
+      <div class="start-actions">
+        <button class="start-rect" id="startAction" type="button" aria-expanded="false">今天请开始吧</button>
+        <button class="start-rect" id="feedbackAction" type="button" aria-expanded="false">今天的正反馈</button>
+      </div>
       <div id="stateBlock" class="state-block hidden">
         <div class="section-label">现在的状态</div>
         <div class="states"><button class="state" data-state="low">低能量</button><button class="state" data-state="some">中能量</button><button class="state" data-state="ready">高能量</button></div>
         <div id="stateHint" class="state-hint">选一个最接近现在的状态</div>
+      </div>
+      <div id="feedbackBlock" class="feedback-block hidden">
+        <form class="idea-input" id="feedbackForm"><input id="feedbackInput" maxlength="200" placeholder="今天有什么正反馈？"><button type="submit" aria-label="保存正反馈">→</button></form>
+        <p class="feedback-motto">成功是成功之母，你只需要成功6次</p>
+        <div class="idea-list" id="feedbackList"></div>
       </div>
       <div id="recommendations" class="recommendations hidden"><div class="recommendation-set"><div class="recommendation-head"><small id="recommendationCount">按此刻的状态为你挑选 3 件事</small><button id="refreshRecommendations" class="refresh-recommendations" type="button">刷新任务</button></div><h2 id="recommendationHeading">现在适合开始这些</h2><div id="startEmptyState" class="todo-empty-state hidden"><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置</p></div><div id="recommendationItems"></div></div></div>
     </div>
   </section>
 
   <section id="todoScreen" class="screen work hidden">
-    <div class="work-head"><div><div class="eyebrow">WORKSPACE</div><h1>To-do</h1></div><button class="add" id="newTodo">＋ 新任务</button></div>
+    <div class="work-head"><div><div class="eyebrow">WORKSPACE</div><h1>To-do</h1></div><button class="add" id="newTodo" type="button" aria-label="新任务">＋</button></div>
     <div class="tabs"><button class="tab active" id="todoTasksTab">任务 <span id="todoTabCount">0</span></button><button class="tab" id="todoIdeasTab">灵感 <span>0</span></button></div>
     <div id="todoTasksView">
       <div class="filters"><div class="filter-set"><div class="filter-control" id="todoProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="个人成长">个人成长</button><button class="filter-option" type="button" data-value="日常">日常</button></div></div><div class="filter-control" id="todoDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div>
-      <div id="todoGroups" class="groups"><section class="group"><div class="group-title">重要且紧急 <small>0</small></div></section><section class="group"><div class="group-title">重要不紧急 <small>0</small></div></section><section class="group"><div class="group-title">紧急不重要 <small>0</small></div></section><section class="group"><div class="group-title">其他 <small>0</small></div></section></div><div id="todoEmptyState" class="todo-empty-state hidden"><span class="todo-empty-state-mark">＋</span><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置</p></div>
+      <div id="todoGroups" class="groups"><section class="group"><div class="group-title">重要且紧急 <small>0</small></div></section><section class="group"><div class="group-title">重要不紧急 <small>0</small></div></section><section class="group"><div class="group-title">紧急不重要 <small>0</small></div></section><section class="group"><div class="group-title">其他 <small>0</small></div></section></div><div id="todoEmptyState" class="todo-empty-state hidden"><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置</p></div>
     </div>
     <div id="todoIdeasView" class="ideas hidden"><div class="ideas-intro"><span>✦</span><div><h2>先记下来，之后再安排</h2></div></div><form class="idea-input" id="ideaForm"><input id="ideaInput" placeholder="刚刚想到什么？"><button type="submit" aria-label="保存灵感">→</button></form><div class="idea-list" id="ideaList"></div></div>
   </section>
@@ -430,6 +449,9 @@ function normalizeIdeas(ideas){
   const today=new Date().toISOString();
   return (Array.isArray(ideas)?ideas:[]).map(idea=>typeof idea==='string'?{text:idea,createdAt:today}:{text:String(idea?.text||''),createdAt:idea?.createdAt||today}).filter(idea=>idea.text.trim());
 }
+function normalizeFeedback(items){
+  return normalizeIdeas(items);
+}
 
 function loadDailyRecommendations(){
   try{
@@ -480,7 +502,7 @@ function setAuthMode(signup){
   document.getElementById('authSubmit').textContent=signup?'创建账号':'登录';
   document.getElementById('authModeToggle').textContent=signup?'已有账号，直接登录':'创建新账号';
   document.getElementById('authForm').dataset.mode=signup?'signup':'login';
-  document.getElementById('resetPassword').classList.toggle('hidden',signup);
+  document.getElementById('resetPassword').classList.remove('hidden');
   setAuthLink('');
   setAuthStatus('');
 }
@@ -489,8 +511,8 @@ function openUsernameDialog(justVerified){
   document.getElementById('authForm').classList.add('hidden');
   document.getElementById('authActions').classList.add('hidden');
   document.getElementById('usernameForm').classList.remove('hidden');
-  document.getElementById('authTitle').textContent=justVerified?'邮箱验证成功':'设置用户名';
-  document.getElementById('authDescription').textContent='起一个名字，它会显示在右上角';
+  document.getElementById('authTitle').textContent=justVerified?'注册账号成功':'填写用户名';
+  document.getElementById('authDescription').textContent='填写用户名，之后每次登录都会显示在右上角';
   setAuthLink('');
   setAuthStatus('');
   document.getElementById('authDialog').classList.remove('hidden');
@@ -504,6 +526,7 @@ function showAccountState(user){
   closeAccountMenu();
   if(!user)setAuthMode(false);
 }
+function sessionReady(){return Boolean(currentUser&&currentUser.username)}
 function requireAccount(){
   if(!currentUser){openAuthDialog();return false}
   if(!currentUser.username){openUsernameDialog(false);return false}
@@ -513,11 +536,12 @@ function clearVisibleData(){
   document.querySelectorAll('#todoTasksView .task-row').forEach(row=>row.remove());
   document.querySelectorAll('#doneList .done-row').forEach(row=>row.remove());
   document.getElementById('ideaList').replaceChildren();
+  document.getElementById('feedbackList').replaceChildren();
   completedReviewNotes.clear();
   recommendedTaskIds=[];
   recommendedTaskIdsByState={};
   recommendationsGenerated=false;
-  setEnergyOpen(false);
+  closeStartPanels();
   document.getElementById('recommendations').classList.add('hidden');
   updateCounts();
   applyDoneFilters();
@@ -532,7 +556,8 @@ function readAppState(){
     id:row.dataset.taskId,title:row.querySelector('.done-copy strong').textContent.trim(),project:row.dataset.project||'未分类',difficulty:row.dataset.difficulty||'easy',deadline:row.dataset.deadline||'',display:row.querySelector('.done-copy small').textContent.trim().split(' · ').slice(2).join(' · '),completed:Number(row.dataset.completed||Date.now()),reviewRequired:row.dataset.reviewRequired==='true',reviewNote:completedReviewNotes.get(row.dataset.taskId)||''
   }));
   const ideas=[...document.querySelectorAll('#ideaList .idea-row')].map(row=>({text:row.querySelector('.idea-text')?.textContent.trim()||'',createdAt:row.dataset.createdAt||new Date().toISOString()})).filter(idea=>idea.text);
-  return {version:1,todo,done,ideas,projects:[...projectNames],updatedAt:new Date().toISOString()};
+  const feedback=[...document.querySelectorAll('#feedbackList .feedback-row')].map(row=>({text:row.querySelector('.idea-text')?.textContent.trim()||'',createdAt:row.dataset.createdAt||new Date().toISOString()})).filter(item=>item.text);
+  return stripSeedState({version:1,todo,done,ideas,feedback,projects:[...projectNames],updatedAt:new Date().toISOString()}).state;
 }
 function saveLocalAppState(){
   try{localStorage.setItem(appStateStorageKey,JSON.stringify(readAppState()))}catch(error){}
@@ -549,16 +574,22 @@ function deleteIdeaRow(row){
   document.querySelector('#todoIdeasTab span').textContent=document.querySelectorAll('#ideaList .idea-row').length;
   persistAppState();
 }
+function deleteFeedbackRow(row){
+  row.remove();
+  persistAppState();
+  renderCal();
+}
 function requestDeleteRow(row,type){
   pendingDeleteRow=row;
   pendingDeleteType=type;
-  const title=type==='idea'?row.querySelector('.idea-text')?.textContent.trim():row.querySelector('.task-title')?.textContent.trim();
+  const title=type==='task'?row.querySelector('.task-title')?.textContent.trim():row.querySelector('.idea-text')?.textContent.trim();
   document.getElementById('deleteDialogText').textContent='删除“'+(title||'这项内容')+'”后无法恢复，确认删除吗？';
   document.getElementById('deleteDialog').classList.remove('hidden');
 }
 function confirmDeleteRow(){
   if(!pendingDeleteRow)return;
   if(pendingDeleteType==='idea')deleteIdeaRow(pendingDeleteRow);
+  else if(pendingDeleteType==='feedback')deleteFeedbackRow(pendingDeleteRow);
   else deleteTodoRow(pendingDeleteRow);
   pendingDeleteRow=null;
   document.getElementById('deleteDialog').classList.add('hidden');
@@ -637,17 +668,52 @@ function applyAppState(state){
   (Array.isArray(state.todo)?state.todo:[]).forEach(item=>{const group=groups[priorityLabels[item.priority]||'其他'];if(group)group.appendChild(createTodoRow(item))});
   (Array.isArray(state.done)?state.done:[]).forEach(item=>document.getElementById('doneList').appendChild(createDoneRow(item)));
   const ideas=document.getElementById('ideaList');ideas.innerHTML='';normalizeIdeas(state.ideas).forEach(idea=>ideas.appendChild(makeIdeaRow(idea.text,idea.createdAt)));
+  const feedbackList=document.getElementById('feedbackList');feedbackList.replaceChildren();normalizeFeedback(state.feedback).forEach(item=>feedbackList.appendChild(makeFeedbackRow(item.text,item.createdAt)));
   updateCounts();applyTodoFilters();applyDoneFilters();renderReviewList();renderCal();
   return true;
 }
 const demoIdeaText=new Set(['把每周复盘变成一张很短的卡片','给常见任务准备可复用的下一步']);
+const demoDoneTitles=new Set(['完成周报发送','整理了一次房间','确认了本周会议时间']);
+function isSeedId(id){const value=String(id||'');return value.startsWith('seed_')||value.startsWith('done_seed_')}
+function isDemoDoneItem(item){
+  if(!item)return false;
+  if(isSeedId(item.id))return true;
+  const completed=Number(item.completed||0);
+  return demoDoneTitles.has(String(item.title||''))&&completed>0&&completed<1e11;
+}
 function stripSeedState(state){
   if(!state||state.version!==1)return {state,changed:false};
-  const todo=(Array.isArray(state.todo)?state.todo:[]).filter(item=>!String(item.id||'').startsWith('seed_'));
-  const done=(Array.isArray(state.done)?state.done:[]).filter(item=>!String(item.id||'').startsWith('done_seed_'));
+  const todo=(Array.isArray(state.todo)?state.todo:[]).filter(item=>!isSeedId(item?.id));
+  const done=(Array.isArray(state.done)?state.done:[]).filter(item=>!isDemoDoneItem(item));
   const ideas=normalizeIdeas(state.ideas).filter(idea=>!demoIdeaText.has(idea.text));
   const changed=todo.length!==(Array.isArray(state.todo)?state.todo.length:0)||done.length!==(Array.isArray(state.done)?state.done.length:0)||ideas.length!==normalizeIdeas(state.ideas).length;
   return {state:{...state,todo,done,ideas},changed};
+}
+function purgeDemoDom(){
+  let removed=0;
+  document.querySelectorAll('#todoTasksView .task-row').forEach(row=>{
+    const id=row.querySelector('.todo-check')?.dataset.taskId||'';
+    if(!isSeedId(id))return;
+    row.remove();
+    removed+=1;
+  });
+  document.querySelectorAll('#doneList .done-row').forEach(row=>{
+    const item={id:row.dataset.taskId,title:row.querySelector('strong')?.textContent.trim()||'',completed:Number(row.dataset.completed||0)};
+    if(!isDemoDoneItem(item))return;
+    completedReviewNotes.delete(row.dataset.taskId);
+    row.remove();
+    removed+=1;
+  });
+  document.querySelectorAll('#ideaList .idea-row').forEach(row=>{
+    const text=row.querySelector('.idea-text')?.textContent.trim()||'';
+    if(!demoIdeaText.has(text))return;
+    row.remove();
+    removed+=1;
+  });
+  if(removed){
+    document.querySelector('#todoIdeasTab span').textContent=document.querySelectorAll('#ideaList .idea-row').length;
+  }
+  return removed;
 }
 function loadLocalAppState(){
   try{
@@ -696,7 +762,16 @@ async function saveCloudAppState(force=false){
     try{await save()}catch(error){console.warn('Cloud sync failed',error);throw error}
   }else cloudSyncTimer=setTimeout(()=>{save().catch(error=>console.warn('Cloud sync failed',error))},250);
 }
-function persistAppState(){saveLocalAppState();saveCloudAppState()}
+function persistAppState(){
+  if(purgeDemoDom()){
+    updateCounts();
+    applyDoneFilters();
+    renderReviewList();
+    renderCal();
+  }
+  saveLocalAppState();
+  saveCloudAppState();
+}
 async function handleAuthSubmit(event){
   event.preventDefault();
   const email=document.getElementById('authEmail').value.trim();
@@ -743,6 +818,7 @@ async function finishAuth(user){
 }
 async function signOut(){
   clearTimeout(cloudSyncTimer);
+  purgeDemoDom();
   if(currentUser&&cloudAvailable){try{await saveCloudAppState(true)}catch(error){}}
   try{if(cloudAvailable)await api('/api/auth/logout',{method:'POST',body:'{}'})}catch(error){}
   showAccountState(null);
@@ -789,7 +865,10 @@ async function initAuth(){
   }catch(error){
     if(error.status===401){
       cloudAvailable=true;
-      if(launchParams.get('login')==='1')openAuthDialog();
+      if(launchParams.get('login')==='1'){
+        openAuthDialog();
+        if(launchParams.get('reset')==='1')setAuthStatus('密码已更新，请登录');
+      }
     }else{
       cloudAvailable=false;
       document.getElementById('accountButton').title='云端不可用，当前仅保存在本机';
@@ -819,7 +898,8 @@ navs.cal.onclick=()=>showScreen('cal');
 document.getElementById('doneHistoryLink').onclick=()=>showScreen('cal');
 
 function allTodoButtons(){return [...document.querySelectorAll('#todoTasksView .todo-check')]}
-allTodoButtons().forEach((button,index)=>{button.dataset.taskId='seed_'+index;const row=button.closest('.task-row');const groupName=row.closest('.group').querySelector('.group-title').childNodes[0].textContent.trim();row.dataset.priority=priorityIds[groupName]||'other'});
+allTodoButtons().forEach((button,index)=>{if(!button.dataset.taskId)button.dataset.taskId='seed_'+index;const row=button.closest('.task-row');const groupName=row.closest('.group').querySelector('.group-title').childNodes[0].textContent.trim();if(!row.dataset.priority)row.dataset.priority=priorityIds[groupName]||'other'});
+purgeDemoDom();
 document.querySelectorAll('#todoTasksView .task-row').forEach(row=>enhanceSwipeRow(row,'task'));
 function taskMeta(button){
   const row=button.closest('.task-row');
@@ -875,6 +955,8 @@ function updateTodoEmptyState(){
   document.getElementById('todoEmptyState').classList.toggle('hidden',!empty);
   document.querySelector('#todoTasksView > .filters')?.classList.toggle('hidden',empty);
   document.querySelector('#todoTasksView > .summary')?.classList.toggle('hidden',empty);
+  const ideas=document.getElementById('todoIdeasTab').classList.contains('active');
+  document.getElementById('newTodo').classList.toggle('hidden',empty||ideas);
 }
 function updateDifficultyChoices(){
   const counts=difficultyCounts();
@@ -995,16 +1077,46 @@ document.addEventListener('click',event=>{
 });
 
 let energyOpen=false;
+let feedbackOpen=false;
 function setEnergyOpen(open){
   energyOpen=open;
+  if(open){feedbackOpen=false;document.getElementById('feedbackBlock').classList.add('hidden')}
   stateBlock.classList.toggle('hidden',!open);
   startAction.classList.toggle('revealed',open);
-  startAction.innerHTML=open?'<span class="start-button-label">选择你现在的状态</span><span class="start-button-arrow">↑</span>':'<span class="start-button-label">给我一个轻轻的开始</span><span class="start-button-arrow">→</span>';
+  startAction.setAttribute('aria-expanded',open?'true':'false');
+  document.getElementById('feedbackAction').classList.toggle('revealed',false);
+  document.getElementById('feedbackAction').setAttribute('aria-expanded','false');
+}
+function setFeedbackOpen(open){
+  feedbackOpen=open;
+  if(open)setEnergyOpen(false);
+  document.getElementById('feedbackBlock').classList.toggle('hidden',!open);
+  document.getElementById('feedbackAction').classList.toggle('revealed',open);
+  document.getElementById('feedbackAction').setAttribute('aria-expanded',open?'true':'false');
+  if(open)document.getElementById('feedbackInput').focus();
+}
+function closeStartPanels(){
+  setEnergyOpen(false);
+  setFeedbackOpen(false);
 }
 startAction.onclick=()=>{
   if(!requireAccount())return;
   setEnergyOpen(!energyOpen);
 };
+document.getElementById('feedbackAction').onclick=()=>{
+  if(!requireAccount())return;
+  setFeedbackOpen(!feedbackOpen);
+};
+document.addEventListener('click',event=>{
+  if(sessionReady())return;
+  if(event.target.closest('#authDialog,#accountButton,#accountMenu,#startNav'))return;
+  const viewingStart=event.target.closest('#startScreen')&&!event.target.closest('button,a,input,textarea,select,label');
+  if(viewingStart)return;
+  if(!event.target.closest('button,a,input,textarea,select,label,.bottom-item'))return;
+  event.preventDefault();
+  event.stopPropagation();
+  requireAccount();
+},true);
 document.querySelectorAll('[data-state]').forEach(button=>button.onclick=()=>{
   if(!currentUser){openAuthDialog();return}
   document.querySelectorAll('[data-state]').forEach(item=>item.classList.toggle('active',item===button));
@@ -1028,7 +1140,7 @@ function showTodoTab(tab){
   document.getElementById('todoIdeasTab').classList.toggle('active',ideas);
   document.getElementById('todoTasksView').classList.toggle('hidden',ideas);
   document.getElementById('todoIdeasView').classList.toggle('hidden',!ideas);
-  document.getElementById('newTodo').classList.toggle('hidden',ideas);
+  document.getElementById('newTodo').classList.toggle('hidden',ideas||allTodoItems().length===0);
 }
 document.getElementById('todoTasksTab').onclick=()=>showTodoTab('tasks');
 document.getElementById('todoIdeasTab').onclick=()=>showTodoTab('ideas');
@@ -1182,6 +1294,28 @@ document.getElementById('ideaForm').onsubmit=event=>{
   document.querySelector('#todoIdeasTab span').textContent=document.querySelectorAll('#ideaList .idea-row').length;
   persistAppState();
 };
+function makeFeedbackRow(text,createdAt=new Date().toISOString()){
+  const row=document.createElement('div');
+  row.className='idea-row feedback-row swipe-item';
+  row.dataset.createdAt=createdAt;
+  const label=document.createElement('span');
+  label.className='idea-text';
+  label.textContent=text;
+  row.append(label);
+  enhanceSwipeRow(row,'feedback');
+  return row;
+}
+document.getElementById('feedbackForm').onsubmit=event=>{
+  event.preventDefault();
+  if(!requireAccount())return;
+  const input=document.getElementById('feedbackInput');
+  const value=input.value.trim();
+  if(!value)return;
+  document.getElementById('feedbackList').prepend(makeFeedbackRow(value,new Date().toISOString()));
+  input.value='';
+  persistAppState();
+  renderCal();
+};
 
 function applyTodoFilters(){
   const project=document.getElementById('todoProjectFilter').dataset.value;
@@ -1211,11 +1345,12 @@ function calData(){
     }
   });
   const ideas=[...document.querySelectorAll('#ideaList .idea-row')].map(row=>({key:dateKey(row.dataset.createdAt),title:row.querySelector('.idea-text')?.textContent.trim()||'',detail:''})).filter(item=>item.key&&item.title);
-  return {completed,reviews,ideas};
+  const feedback=[...document.querySelectorAll('#feedbackList .feedback-row')].map(row=>({key:dateKey(row.dataset.createdAt),title:row.querySelector('.idea-text')?.textContent.trim()||'',detail:''})).filter(item=>item.key&&item.title);
+  return {completed,reviews,ideas,feedback};
 }
 function calRecordsFor(key){
   const data=calData();
-  return {completed:data.completed.filter(item=>item.key===key),reviews:data.reviews.filter(item=>item.key===key),ideas:data.ideas.filter(item=>item.key===key)};
+  return {completed:data.completed.filter(item=>item.key===key),reviews:data.reviews.filter(item=>item.key===key),ideas:data.ideas.filter(item=>item.key===key),feedback:data.feedback.filter(item=>item.key===key)};
 }
 function calRecordGroup(title,items,mark,emptyText){
   const section=document.createElement('section');
@@ -1242,7 +1377,7 @@ function renderCal(){
   const month=calViewDate.getMonth();
   monthTitle.textContent=year+'年'+(month+1)+'月';
   const data=calData();
-  const recordKeys=new Set([...data.completed,...data.reviews,...data.ideas].map(item=>item.key));
+  const recordKeys=new Set([...data.completed,...data.reviews,...data.ideas,...data.feedback].map(item=>item.key));
   days.innerHTML='';
   const firstDay=new Date(year,month,1).getDay();
   const daysInMonth=new Date(year,month+1,0).getDate();
@@ -1269,7 +1404,8 @@ function renderCal(){
   records.append(
     calRecordGroup('完成任务',selected.completed,'✓','这一天还没有完成的任务'),
     calRecordGroup('任务复盘',selected.reviews,'↗','这一天还没有记录复盘'),
-    calRecordGroup('灵感',selected.ideas,'✦','这一天还没有记录灵感')
+    calRecordGroup('灵感',selected.ideas,'✦','这一天还没有记录灵感'),
+    calRecordGroup('正反馈',selected.feedback,'✧','这一天还没有记录正反馈')
   );
 }
 document.getElementById('calPrevMonth').onclick=()=>{calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()-1,1);calSelectedDate=new Date(calViewDate);renderCal()};
@@ -1483,7 +1619,13 @@ applyTodoFilters();
 applyDoneFilters();
 renderReviewList();
 loadDailyRecommendations();
-if(!loadLocalAppState())saveLocalAppState();
+purgeDemoDom();
+if(!loadLocalAppState()){
+  purgeDemoDom();
+  updateCounts();
+  renderReviewList();
+  saveLocalAppState();
+}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 initAuth();
 </script>

@@ -33,10 +33,10 @@ python3 -m http.server 8765
 ## 账号与同步
 
 - 未登录时只能看 Start。点能量状态、To-do、Done、Cal 或添加，都会打开登录框。
-- 注册后需要打开验证链接，验证成功再设置用户名。用户名显示在右上角，点开可以退出登录。
+- 注册后需要打开验证邮件。验证成功会显示「注册账号成功」，然后在弹窗里填写用户名。用户名显示在右上角，点开可以退出登录。
 - 会话是 HttpOnly Cookie，有效期 15 天。
-- 每个账号一份应用状态：待办、完成记录、灵感、项目。修改后大约 250 毫秒自动同步。
-- 邮件发送还没接上。在接上阿里云邮件推送之前，注册和重置密码的接口会返回链接。验证页是 `/api/auth/verify?token=`，重置页是 `/api/auth/reset?token=`。接上之后设置 `EMAIL_DELIVERY=directmail`，并改 `sendVerificationEmail` 和 `sendPasswordResetEmail`。
+- 每个账号一份应用状态：待办、完成记录、灵感、项目。修改后大约 250 毫秒自动同步。新安装和新建账号都没有示例任务、灵感或复盘。
+- 发信由 `EMAIL_DELIVERY` 控制。默认不发信，链接只写在服务日志里。非生产环境的接口响应里也会带上链接，方便本地打开验证页 `/api/auth/verify?token=` 和重置页 `/api/auth/reset?token=`。生产环境无论是否发信，响应里都不会带 token。接上阿里云邮件推送时设置 `EMAIL_DELIVERY=directmail`，并配好 `DIRECTMAIL_*`（见 `deploy/.env.example`）。
 
 ## GitHub Pages
 
