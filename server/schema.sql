@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS users (
 ALTER TABLE users ADD COLUMN username VARCHAR(64) NULL;
 ALTER TABLE users ADD COLUMN email_verified_at DATETIME(3) NULL;
 
--- One JSON document per user: { version, todo, done, ideas, projects, updatedAt }.
+-- One JSON document per user: { version, todo, done, ideas, feedback, projects, updatedAt }.
+-- feedback is [{ text, createdAt }] and must be stored with the rest of the document.
 CREATE TABLE IF NOT EXISTS user_app_state (
   user_id CHAR(36) NOT NULL,
   state JSON NOT NULL,
