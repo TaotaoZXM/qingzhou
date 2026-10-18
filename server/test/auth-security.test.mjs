@@ -417,6 +417,93 @@ test('an existing unverified account can log in while mail is not configured', a
   }
 });
 
+test('login accepts a short password and registration still requires 8 characters', async () => {
+  productionEnv();
+  const bcrypt = (await import('bcryptjs')).default;
+  const password = 'sixchr';
+  const passwordHash = await bcrypt.hash(password, 4);
+  process.env.ADMIN_USERNAME = 'admin';
+  process.env.ADMIN_PASSWORD_HASH = passwordHash;
+  assert.equal(await ensureAdminUser(pool), true);
+  const app = createApp(pool);
+  const http = await listen(app);
+  try {
+    const adminLogin = await http.request('/api/auth/login', { method: 'POST', body: { email: 'admin', password } });
+    assert.equal(adminLogin.status, 200);
+    assert.equal(adminLogin.body.user.email, 'admin');
+    assertNoAuthMaterial(adminLogin.body);
+
+    const email = 'short-login@example.com';
+    await pool.execute(
+      'INSERT INTO users (id, email, password_hash, email_verified_at, role) VALUES (?, ?, ?, UTC_TIMESTAMP(3), ?)',
+      ['33333333-3333-4333-8333-333333333333', email, passwordHash, 'user']
+    );
+    const userLogin = await http.request('/api/auth/login', { method: 'POST', body: { email, password } });
+    assert.equal(userLogin.status, 200);
+    assert.equal(userLogin.body.user.email, email);
+
+    const registered = await http.request('/api/auth/register', {
+      method: 'POST',
+      body: { email: 'short-register@example.com', password }
+    });
+    assert.equal(registered.status, 400);
+    assert.equal(registered.body.error, '密码至少 8 位');
+    const [created] = await pool.execute('SELECT id FROM users WHERE email = ?', ['short-register@example.com']);
+    assert.equal(created.length, 0);
+  } finally {
+    productionEnv();
+    await new Promise((resolve) => http.server.close(resolve));
+  }
+});
+
+test('login form drops the password minlength and signup keeps it', () => {
+  const start = html.indexOf('function setAuthMode(signup){');
+  const end = html.indexOf('function openUsernameDialog');
+  assert.ok(start > 0 && end > start);
+  const elements = new Map();
+  const makeElement = () => {
+    const attrs = new Map();
+    return {
+      classList: { add() {}, remove() {}, toggle() {} },
+      dataset: {},
+      textContent: '',
+      type: '',
+      autocapitalize: '',
+      spellcheck: true,
+      set minLength(value) {
+        if (value < 0) attrs.delete('minlength');
+        else attrs.set('minlength', String(value));
+      },
+      get minLength() {
+        return attrs.has('minlength') ? Number(attrs.get('minlength')) : -1;
+      },
+      removeAttribute(name) { attrs.delete(name); },
+      getAttribute(name) { return attrs.has(name) ? attrs.get(name) : null; }
+    };
+  };
+  for (const id of ['usernameForm', 'authForm', 'authActions', 'authTitle', 'authDescription', 'authSubmit', 'authModeToggle', 'resetPassword', 'authEmail', 'authPassword']) {
+    elements.set(id, makeElement());
+  }
+  elements.get('authPassword').minLength = 8;
+  const context = {
+    document: { getElementById(id) { return elements.get(id); } },
+    setAuthStatus() {},
+    setAuthLink() {}
+  };
+  createContext(context);
+  runInContext(`${html.slice(start, end)}
+    globalThis.setAuthMode = setAuthMode;
+  `, context);
+  context.setAuthMode(false);
+  assert.equal(elements.get('authPassword').getAttribute('minlength'), null);
+  context.setAuthMode(true);
+  assert.equal(elements.get('authPassword').getAttribute('minlength'), '8');
+  context.setAuthMode(false);
+  assert.equal(elements.get('authPassword').getAttribute('minlength'), null);
+  assert.match(html, /minlength="8"/);
+  assert.match(html, /placeholder="至少 8 位"/);
+});
+
 test('admin account is not created when admin env is missing or incomplete', async () => {
   productionEnv();
   await migrate(pool);

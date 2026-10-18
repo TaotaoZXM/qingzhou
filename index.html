@@ -545,6 +545,9 @@ function setAuthMode(signup){
   emailInput.type=signup?'email':'text';
   emailInput.autocapitalize='none';
   emailInput.spellcheck=false;
+  const passwordInput=document.getElementById('authPassword');
+  if(signup)passwordInput.minLength=8;
+  else passwordInput.removeAttribute('minlength');
   setAuthLink('');
   setAuthStatus('');
 }
