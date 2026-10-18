@@ -9,7 +9,8 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "migrate": "node src/migrate.js"
+    "migrate": "node src/migrate.js",
+    "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

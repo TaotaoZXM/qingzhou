@@ -461,6 +461,10 @@ const recommendationRules={
   ready:{target:'hard',order:['hard','medium','easy']}
 };
 const appStateStorageKey='lightboat-app-state-v1';
+const appStateOwnerKey='lightboat-app-state-owner-v1';
+const cloudMetaKeyPrefix='lightboat-cloud-base-v1:';
+let cloudUpdatedAt=null;
+let cloudBaseState=null;
 let currentUser=null;
 let stateHydrated=false;
 let cloudSyncTimer=null;
@@ -580,7 +584,10 @@ function clearVisibleData(){
   applyDoneFilters();
   renderReviewList();
   renderCal();
-  try{localStorage.removeItem(appStateStorageKey)}catch(error){}
+  try{
+    localStorage.removeItem(appStateStorageKey);
+    localStorage.removeItem(appStateOwnerKey);
+  }catch(error){}
 }
 
 function readAppState(){
@@ -592,8 +599,140 @@ function readAppState(){
   const feedback=[...document.querySelectorAll('#feedbackList .feedback-row')].map(row=>({text:row.querySelector('.feedback-text')?.textContent.trim()||'',createdAt:row.dataset.createdAt||new Date().toISOString()})).filter(item=>item.text);
   return {version:1,todo,done,ideas,feedback,projects:[...projectNames],updatedAt:new Date().toISOString()};
 }
+function readStoredAppState(){
+  try{return JSON.parse(localStorage.getItem(appStateStorageKey)||'null')}catch(error){return null}
+}
+function localOwnerId(){
+  try{return localStorage.getItem(appStateOwnerKey)||''}catch(error){return ''}
+}
+function archiveLocalState(){
+  let raw='';
+  try{raw=localStorage.getItem(appStateStorageKey)||''}catch(error){return}
+  if(!raw)return;
+  const owner=localOwnerId();
+  const slot=appStateStorageKey+':'+(owner||'unowned');
+  try{if(owner||!localStorage.getItem(slot))localStorage.setItem(slot,raw)}catch(error){}
+}
+function restoreLocalState(userId){
+  if(!userId)return false;
+  let raw='';
+  try{raw=localStorage.getItem(appStateStorageKey+':'+userId)||''}catch(error){return false}
+  if(!raw){
+    try{localStorage.removeItem(appStateStorageKey);localStorage.removeItem(appStateOwnerKey)}catch(error){}
+    return false;
+  }
+  try{
+    localStorage.setItem(appStateStorageKey,raw);
+    localStorage.setItem(appStateOwnerKey,userId);
+  }catch(error){return false}
+  return true;
+}
+function canUploadLocalState(userId){
+  return Boolean(userId)&&localOwnerId()===userId&&Boolean(readStoredAppState());
+}
+function sameJson(a,b){return JSON.stringify(a)===JSON.stringify(b)}
+function mergeFields(base,local,server){
+  const out={...(server||{})};
+  const keys=new Set([...(base?Object.keys(base):[]),...(local?Object.keys(local):[]),...(server?Object.keys(server):[])]);
+  keys.forEach(key=>{
+    const bv=base?base[key]:undefined;
+    const lv=local?local[key]:undefined;
+    const sv=server?server[key]:undefined;
+    out[key]=sameJson(lv,bv)?sv:lv;
+  });
+  return out;
+}
+function mergeRecords(baseList,localList,serverList,allowDelete){
+  const map=list=>new Map((Array.isArray(list)?list:[]).filter(item=>item&&item.id!=null&&item.id!=='').map(item=>[String(item.id),item]));
+  const baseMap=map(baseList), localMap=map(localList), serverMap=map(serverList);
+  const order=[];
+  const seen=new Set();
+  const pushId=id=>{if(!seen.has(id)){seen.add(id);order.push(id)}};
+  (Array.isArray(serverList)?serverList:[]).forEach(item=>{if(item&&item.id!=null&&item.id!=='')pushId(String(item.id))});
+  (Array.isArray(localList)?localList:[]).forEach(item=>{if(item&&item.id!=null&&item.id!=='')pushId(String(item.id))});
+  const result=[];
+  order.forEach(id=>{
+    const bv=baseMap.get(id), lv=localMap.get(id), sv=serverMap.get(id);
+    if(lv&&sv){result.push(mergeFields(bv||{},lv,sv));return}
+    if(lv&&!sv){
+      if(!allowDelete||!bv||!sameJson(lv,bv))result.push(lv);
+      return;
+    }
+    if(!lv&&sv&&(!allowDelete||!bv||!sameJson(sv,bv)))result.push(sv);
+  });
+  return result;
+}
+function mergeKeyed(base,local,server,keyFn,allowDelete){
+  const decorate=list=>(Array.isArray(list)?list:[]).filter(item=>item&&keyFn(item)).map(item=>({...item,id:keyFn(item)}));
+  return mergeRecords(decorate(base),decorate(local),decorate(server),allowDelete).map(({id,...rest})=>rest);
+}
+function mergeStringList(base,local,server,allowDelete){
+  const b=new Set(Array.isArray(base)?base:[]);
+  const l=new Set(Array.isArray(local)?local:[]);
+  const s=new Set(Array.isArray(server)?server:[]);
+  const values=[];
+  const seen=new Set();
+  const add=value=>{if(typeof value!=='string'||!value||seen.has(value))return;seen.add(value);values.push(value)};
+  (Array.isArray(server)?server:[]).forEach(add);
+  (Array.isArray(local)?local:[]).forEach(value=>{if(!b.has(value))add(value)});
+  if(!allowDelete)return values;
+  return values.filter(value=>{
+    const inL=l.has(value), inB=b.has(value), inS=s.has(value);
+    if(inL&&inS)return true;
+    if(inL&&!inS&&!inB)return true;
+    if(!inL&&inS&&!inB)return true;
+    return false;
+  });
+}
+function mergeAppState(base,local,server){
+  const allowDelete=Boolean(base&&base.version===1);
+  const b=allowDelete?base:{version:1,todo:[],done:[],ideas:[],feedback:[],projects:[]};
+  const l=local||{version:1,todo:[],done:[],ideas:[],feedback:[],projects:[]};
+  const s=server||{version:1,todo:[],done:[],ideas:[],feedback:[],projects:[]};
+  return {
+    version:1,
+    todo:mergeRecords(b.todo,l.todo,s.todo,allowDelete),
+    done:mergeRecords(b.done,l.done,s.done,allowDelete),
+    ideas:mergeKeyed(b.ideas,l.ideas,s.ideas,item=>String(item.text||''),allowDelete),
+    feedback:mergeKeyed(b.feedback,l.feedback,s.feedback,item=>String(item.text||''),allowDelete),
+    projects:mergeStringList(b.projects,l.projects,s.projects,allowDelete),
+    updatedAt:new Date().toISOString()
+  };
+}
+function appStateSignature(state){
+  if(!state)return '';
+  return JSON.stringify({todo:state.todo||[],done:state.done||[],ideas:state.ideas||[],feedback:state.feedback||[],projects:state.projects||[]});
+}
+function rememberCloud(state,updatedAt){
+  cloudUpdatedAt=updatedAt||null;
+  cloudBaseState=state?JSON.parse(JSON.stringify(state)):null;
+  try{
+    if(!currentUser?.id)return;
+    localStorage.setItem(cloudMetaKeyPrefix+currentUser.id,JSON.stringify({updatedAt:cloudUpdatedAt,base:cloudBaseState}));
+  }catch(error){}
+}
+function loadCloudMeta(userId){
+  cloudUpdatedAt=null;
+  cloudBaseState=null;
+  if(!userId)return;
+  try{
+    const meta=JSON.parse(localStorage.getItem(cloudMetaKeyPrefix+userId)||'null');
+    if(!meta||typeof meta!=='object')return;
+    cloudUpdatedAt=meta.updatedAt||null;
+    cloudBaseState=meta.base&&meta.base.version===1?meta.base:null;
+  }catch(error){}
+}
 function saveLocalAppState(){
-  try{localStorage.setItem(appStateStorageKey,JSON.stringify(readAppState()))}catch(error){}
+  try{
+    const owner=localOwnerId();
+    if(currentUser?.id&&owner&&owner!==currentUser.id)return;
+    const payload=JSON.stringify(readAppState());
+    localStorage.setItem(appStateStorageKey,payload);
+    if(currentUser?.id){
+      localStorage.setItem(appStateOwnerKey,currentUser.id);
+      localStorage.setItem(appStateStorageKey+':'+currentUser.id,payload);
+    }
+  }catch(error){}
 }
 function deleteTodoRow(row){
   row.remove();
@@ -733,23 +872,62 @@ async function api(path,options={}){
 }
 async function loadCloudAppState(){
   if(!cloudAvailable||!currentUser)return false;
+  loadCloudMeta(currentUser.id);
   const data=await api('/api/state');
-  if(data.state&&data.state.version===1){
-    const stripped=stripSeedState(data.state);
-    applyAppState(stripped.state);
-    saveLocalAppState();
-    if(stripped.changed)await saveCloudAppState(true);
-    return true;
+  if(!(data.state&&data.state.version===1)){
+    rememberCloud(null,null);
+    return false;
   }
-  return false;
+  const stripped=stripSeedState(data.state);
+  const local=localOwnerId()===currentUser.id?readAppState():null;
+  const merged=local?mergeAppState(cloudBaseState,local,stripped.state):stripped.state;
+  applyAppState(merged);
+  const changed=appStateSignature(merged)!==appStateSignature(stripped.state)||stripped.changed;
+  rememberCloud(stripped.state,data.updatedAt);
+  if(changed)await saveCloudAppState(true);
+  else saveLocalAppState();
+  return true;
 }
 async function saveCloudAppState(force=false){
+  if(currentUser&&localOwnerId()&&localOwnerId()!==currentUser.id)return;
   saveLocalAppState();
-  if(!cloudAvailable||!currentUser)return;
+  if(!cloudAvailable||!currentUser||localOwnerId()!==currentUser.id)return;
   clearTimeout(cloudSyncTimer);
   const save=async()=>{
-    if(!currentUser)return;
-    await api('/api/state',{method:'PUT',body:JSON.stringify({state:readAppState()})});
+    if(!currentUser||localOwnerId()!==currentUser.id)return;
+    let state=readAppState();
+    for(let attempt=0;attempt<3;attempt++){
+      try{
+        const data=await api('/api/state',{method:'PUT',body:JSON.stringify({state,baseUpdatedAt:cloudUpdatedAt})});
+        rememberCloud(state,data.updatedAt);
+        return;
+      }catch(error){
+        if(error.status!==409)throw error;
+        const payload=error.payload||{};
+        let remote=payload.state&&payload.state.version===1?payload.state:null;
+        let updatedAt=payload.updatedAt??null;
+        if(!remote){
+          const fresh=await api('/api/state');
+          remote=fresh.state&&fresh.state.version===1?fresh.state:null;
+          updatedAt=fresh.updatedAt??null;
+        }
+        if(!remote){
+          rememberCloud(null,null);
+          if(attempt===2)throw error;
+          continue;
+        }
+        if(appStateSignature(state)===appStateSignature(remote)){
+          rememberCloud(remote,updatedAt);
+          return;
+        }
+        if(attempt===2)throw error;
+        state=mergeAppState(cloudBaseState,state,remote);
+        applyAppState(state);
+        state=readAppState();
+        saveLocalAppState();
+        rememberCloud(remote,updatedAt);
+      }
+    }
   };
   if(force){
     try{await save()}catch(error){console.warn('Cloud sync failed',error);throw error}
@@ -791,9 +969,14 @@ async function handleUsernameSubmit(event){
 }
 async function finishAuth(user){
   if(!user)return;
+  if(localOwnerId()!==user.id){
+    archiveLocalState();
+    clearVisibleData();
+    if(restoreLocalState(user.id))loadLocalAppState();
+  }
   showAccountState(user);
   try{
-    const hadLocal=Boolean(localStorage.getItem(appStateStorageKey));
+    const hadLocal=canUploadLocalState(user.id);
     const hadCloud=await loadCloudAppState();
     if(hadLocal&&!hadCloud)await saveCloudAppState(true);
     setAuthStatus('已同步');
@@ -827,9 +1010,13 @@ async function initAuth(){
     try{
       const data=await api('/api/auth/forgot-password',{method:'POST',body:JSON.stringify({email})});
       cloudAvailable=true;
-      setAuthStatus(data.message||'重置请求已记录');
-      setAuthLink(data.resetUrl,'打开重置页面');
-    }catch(error){setAuthStatus(error.message||'重置请求失败',true)}
+      setAuthStatus(data.message||'如果该邮箱已注册，重置邮件已发送。');
+      setAuthLink(data.resetUrl||'','打开重置页面');
+    }catch(error){
+      setAuthLink('');
+      if(error.status===503)setAuthStatus(error.message||'找回密码暂不可用，请联系管理员');
+      else setAuthStatus(error.message||'重置请求失败',true);
+    }
   };
   document.getElementById('menuSignOut').onclick=event=>{event.stopPropagation();signOut()};
   document.addEventListener('click',event=>{
