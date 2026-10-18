@@ -13,9 +13,12 @@ process.env.NODE_ENV = 'production';
 delete process.env.EXPOSE_DEV_LINKS;
 delete process.env.EMAIL_DELIVERY;
 delete process.env.PASSWORD_RESET_DELIVERY;
+delete process.env.ADMIN_USERNAME;
+delete process.env.ADMIN_PASSWORD_HASH;
 
 const { createApp } = await import('../src/index.js');
 const { migrate } = await import('../src/db.js');
+const { ensureAdminUser } = await import('../src/admin-user.js');
 
 const root = dirname(fileURLToPath(import.meta.url));
 const html = readFileSync(join(root, '..', '..', 'index.html'), 'utf8');
@@ -64,6 +67,8 @@ function productionEnv() {
   process.env.NODE_ENV = 'production';
   delete process.env.EXPOSE_DEV_LINKS;
   delete process.env.EMAIL_DELIVERY;
+  delete process.env.ADMIN_USERNAME;
+  delete process.env.ADMIN_PASSWORD_HASH;
 }
 
 async function listen(app) {
@@ -408,6 +413,156 @@ test('an existing unverified account can log in while mail is not configured', a
     const [rows] = await pool.execute('SELECT email_verified_at FROM users WHERE email = ?', [email]);
     assert.ok(rows[0].email_verified_at);
   } finally {
+    await new Promise((resolve) => http.server.close(resolve));
+  }
+});
+
+test('admin account is not created when admin env is missing or incomplete', async () => {
+  productionEnv();
+  await migrate(pool);
+  const [columns] = await pool.execute("SHOW COLUMNS FROM users LIKE 'role'");
+  assert.equal(columns.length, 1);
+  assert.equal(String(columns[0].Default), 'user');
+  assert.equal(columns[0].Null, 'NO');
+
+  await pool.execute("DELETE FROM users WHERE role = 'admin' OR email IN ('admin', 'Admin')");
+  assert.equal(await ensureAdminUser(pool), false);
+  const [absent] = await pool.execute("SELECT id FROM users WHERE role = 'admin' OR email = 'admin'");
+  assert.equal(absent.length, 0);
+
+  process.env.ADMIN_USERNAME = 'admin';
+  delete process.env.ADMIN_PASSWORD_HASH;
+  await assert.rejects(() => ensureAdminUser(pool), /must both be set/);
+  process.env.ADMIN_PASSWORD_HASH = 'not-a-bcrypt-hash';
+  await assert.rejects(() => ensureAdminUser(pool), /bcrypt hash/);
+  const [stillAbsent] = await pool.execute("SELECT id FROM users WHERE email = 'admin'");
+  assert.equal(stillAbsent.length, 0);
+  productionEnv();
+
+  const http = await listen(createApp(pool));
+  try {
+    const rejected = await http.request('/api/auth/login', { method: 'POST', body: { email: 'admin', password: 'password123' } });
+    assert.equal(rejected.status, 400);
+    assert.equal(rejected.body.error, '请填写邮箱和密码');
+  } finally {
+    productionEnv();
+    await new Promise((resolve) => http.server.close(resolve));
+  }
+});
+
+test('admin username logs in without verification and regular accounts stay the same', async () => {
+  productionEnv();
+  const bcrypt = (await import('bcryptjs')).default;
+  const password = 'adminpass123';
+  const passwordHash = await bcrypt.hash(password, 4);
+  process.env.ADMIN_USERNAME = 'admin';
+  process.env.ADMIN_PASSWORD_HASH = passwordHash;
+  assert.equal(await ensureAdminUser(pool), true);
+  assert.equal(await ensureAdminUser(pool), true);
+
+  const [seeded] = await pool.execute(
+    'SELECT email, role, email_verified_at, token_version FROM users WHERE email = ?',
+    ['admin']
+  );
+  assert.equal(seeded.length, 1);
+  assert.equal(seeded[0].role, 'admin');
+  assert.ok(seeded[0].email_verified_at);
+  assert.equal(Number(seeded[0].token_version), 0);
+
+  process.env.EMAIL_DELIVERY = 'directmail';
+  delete process.env.EXPOSE_DEV_LINKS;
+  const app = createApp(pool);
+  const http = await listen(app);
+  try {
+    await pool.execute('UPDATE users SET email_verified_at = NULL WHERE email = ?', ['admin']);
+    const loggedIn = await http.request('/api/auth/login', { method: 'POST', body: { email: 'admin', password } });
+    assert.equal(loggedIn.status, 200);
+    assert.equal(loggedIn.body.user.email, 'admin');
+    assert.equal(loggedIn.body.user.role, undefined);
+    assertNoAuthMaterial(loggedIn.body);
+    const cookie = http.cookieFrom(loggedIn);
+    assert.equal(jwt.decode(decodeURIComponent(cookie.split('=')[1])).tv, 0);
+    assert.equal((await http.request('/api/auth/me', { cookie })).status, 200);
+    const named = await http.request('/api/auth/username', { method: 'POST', cookie, body: { username: '舟主' } });
+    assert.equal(named.status, 200);
+    assert.equal(named.body.user.username, '舟主');
+
+    const wrongCase = await http.request('/api/auth/login', { method: 'POST', body: { email: 'Admin', password } });
+    assert.equal(wrongCase.status, 400);
+    const wrongPassword = await http.request('/api/auth/login', { method: 'POST', body: { email: 'admin', password: 'wrong-password' } });
+    assert.equal(wrongPassword.status, 401);
+    assert.equal(wrongPassword.body.error, '邮箱或密码不正确');
+
+    for (const email of ['admin', 'Admin', ' admin ']) {
+      const reserved = await http.request('/api/auth/register', { method: 'POST', body: { email, password: 'password123' } });
+      assert.equal(reserved.status, 400);
+      assert.equal(reserved.body.error, '请填写有效的邮箱');
+    }
+    const [adminRow] = await pool.execute('SELECT password_hash, role FROM users WHERE email = ?', ['admin']);
+    assert.equal(adminRow[0].password_hash, passwordHash);
+    assert.equal(adminRow[0].role, 'admin');
+
+    const email = 'regular-beside-admin@example.com';
+    const userPassword = 'password123';
+    const registered = await http.request('/api/auth/register', { method: 'POST', body: { email, password: userPassword } });
+    assert.equal(registered.status, 201);
+    assert.equal(registered.body.verificationRequired, true);
+    assert.equal(registered.body.user.emailVerified, false);
+    assertNoAuthMaterial(registered.body);
+    const [regular] = await pool.execute('SELECT role, email_verified_at FROM users WHERE email = ?', [email]);
+    assert.equal(regular[0].role, 'user');
+    assert.equal(regular[0].email_verified_at, null);
+    const blocked = await http.request('/api/auth/login', { method: 'POST', body: { email, password: userPassword } });
+    assert.equal(blocked.status, 403);
+    assert.equal(blocked.body.error, '请先完成邮箱验证');
+
+    productionEnv();
+    process.env.ADMIN_USERNAME = 'admin';
+    process.env.ADMIN_PASSWORD_HASH = passwordHash;
+    const openRegister = await http.request('/api/auth/register', {
+      method: 'POST',
+      body: { email: 'regular-open@example.com', password: userPassword }
+    });
+    assert.equal(openRegister.status, 201);
+    assert.equal(openRegister.body.verificationRequired, false);
+    assert.equal(openRegister.body.message, '账号已创建，可以登录');
+    const openLogin = await http.request('/api/auth/login', {
+      method: 'POST',
+      body: { email: 'regular-open@example.com', password: userPassword }
+    });
+    assert.equal(openLogin.status, 200);
+    assert.equal(openLogin.body.user.emailVerified, true);
+    const [openRole] = await pool.execute('SELECT role FROM users WHERE email = ?', ['regular-open@example.com']);
+    assert.equal(openRole[0].role, 'user');
+
+    const forgotMissing = await http.request('/api/auth/forgot-password', { method: 'POST', body: { email: 'missing@example.com' } });
+    const forgotKnown = await http.request('/api/auth/forgot-password', { method: 'POST', body: { email: 'regular-open@example.com' } });
+    assert.equal(forgotMissing.status, 503);
+    assert.equal(forgotKnown.status, 503);
+    assert.equal(forgotKnown.body.error, '找回密码暂不可用，请联系管理员');
+    assert.deepEqual(forgotMissing.body, forgotKnown.body);
+    assertNoAuthMaterial(forgotKnown.body);
+    const [resetRows] = await pool.execute(
+      'SELECT id FROM password_reset_tokens WHERE user_id IN (SELECT id FROM users WHERE email = ?)',
+      ['regular-open@example.com']
+    );
+    assert.equal(resetRows.length, 0);
+
+    const nextHash = await bcrypt.hash('rotated-admin-pass', 4);
+    process.env.ADMIN_PASSWORD_HASH = nextHash;
+    assert.equal(await ensureAdminUser(pool), true);
+    assert.equal((await http.request('/api/auth/me', { cookie })).status, 401);
+    const oldPassword = await http.request('/api/auth/login', { method: 'POST', body: { email: 'admin', password } });
+    assert.equal(oldPassword.status, 401);
+    const rotated = await http.request('/api/auth/login', { method: 'POST', body: { email: 'admin', password: 'rotated-admin-pass' } });
+    assert.equal(rotated.status, 200);
+    const [version] = await pool.execute('SELECT token_version, role, email_verified_at FROM users WHERE email = ?', ['admin']);
+    assert.equal(Number(version[0].token_version), 1);
+    assert.equal(version[0].role, 'admin');
+    assert.ok(version[0].email_verified_at);
+    assert.equal(jwt.decode(decodeURIComponent(http.cookieFrom(rotated).split('=')[1])).tv, 1);
+  } finally {
+    productionEnv();
     await new Promise((resolve) => http.server.close(resolve));
   }
 });
