@@ -232,13 +232,17 @@ sudo git config --system --add safe.directory /opt/qingzhou
 
 ## 登录会话
 
-登录后的 Cookie 固定保留 15 天。旧环境文件里的 `JWT_EXPIRES_IN=30d` 不会再生效。
+登录后的 Cookie 固定保留 7 天。旧环境文件里的 `JWT_EXPIRES_IN=30d` 不会再生效。重置密码会让该账号已经发出的会话全部失效。
 
 ## 邮箱验证和密码重置
 
-注册后账号先处于未验证状态。验证链接打开 `/api/auth/verify?token=`，成功后填写用户名。忘记密码的链接打开 `/api/auth/reset?token=`，改完密码回到登录框。
+接口响应不会带 `verifyUrl`、`resetUrl` 或令牌。生产环境即使设置 `EXPOSE_DEV_LINKS=1` 也不会返回。本机调试要同时满足 `EXPOSE_DEV_LINKS=1` 和 `NODE_ENV` 不是 `production`。
 
-阿里云邮件推送还没接上。在此之前，接口响应里会带上 `verifyUrl` 或 `resetUrl`，服务日志里也会记下“delivery not configured”。接上之后：
+阿里云邮件推送还没接上时，找回密码返回「找回密码暂不可用，请联系管理员」，不会生成重置令牌。这个阶段注册的账号会标成已验证，可以直接登录；以前没验证的账号，在邮件未接入时登录也会补上验证时间，避免接上邮件后被锁在外面。邮箱所有权要等真正发信之后才算数。
 
-1. 把 `server/src/index.js` 里的 `sendVerificationEmail` 和 `sendPasswordResetEmail` 换成真实发信。
-2. 在 `/etc/qingzhou.env` 设置 `EMAIL_DELIVERY=directmail`，然后重启服务。之后接口不再把链接返回给浏览器。
+接上之后：
+
+1. 把 `server/src/index.js` 里的 `sendVerificationEmail` 和 `sendPasswordResetEmail` 换成真实发信，并确认它们会把信发出去。
+2. 在 `/etc/qingzhou.env` 设置 `EMAIL_DELIVERY=directmail`，然后重启服务。新注册的账号需要邮箱验证才能登录。验证页仍是 `/api/auth/verify?token=`，重置页仍是 `/api/auth/reset?token=`，链接只放在邮件里。
+
+不要在服务器上设置 `EXPOSE_DEV_LINKS`。

@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash VARCHAR(255) NOT NULL,
   username VARCHAR(64) NULL,
   email_verified_at DATETIME(3) NULL,
+  token_version INT NOT NULL DEFAULT 0,
   created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
   PRIMARY KEY (id),
@@ -19,6 +20,8 @@ CREATE TABLE IF NOT EXISTS users (
 -- Existing databases created before username and verification columns.
 ALTER TABLE users ADD COLUMN username VARCHAR(64) NULL;
 ALTER TABLE users ADD COLUMN email_verified_at DATETIME(3) NULL;
+-- Incremented on password reset so previously issued sessions no longer match.
+ALTER TABLE users ADD COLUMN token_version INT NOT NULL DEFAULT 0;
 
 -- One JSON document per user: { version, todo, done, ideas, feedback, projects, updatedAt }.
 -- feedback is [{ text, createdAt }] and must be stored with the rest of the document.
