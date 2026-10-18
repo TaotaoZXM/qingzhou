@@ -541,6 +541,10 @@ function setAuthMode(signup){
   document.getElementById('authModeToggle').textContent=signup?'已有账号，直接登录':'创建新账号';
   document.getElementById('authForm').dataset.mode=signup?'signup':'login';
   document.getElementById('resetPassword').classList.toggle('hidden',signup);
+  const emailInput=document.getElementById('authEmail');
+  emailInput.type=signup?'email':'text';
+  emailInput.autocapitalize='none';
+  emailInput.spellcheck=false;
   setAuthLink('');
   setAuthStatus('');
 }

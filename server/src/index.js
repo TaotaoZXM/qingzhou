@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { resetPasswordPage, verifyErrorPage, verifySuccessPage } from './auth-pages.js';
+import { adminUsernameFromEnv, ensureAdminUser } from './admin-user.js';
 import { createPool, isoTimestamp, migrate, readJsonColumn, utcDateTime } from './db.js';
 import { loadEnv } from './env.js';
 
@@ -39,6 +40,27 @@ function normalizeEmail(value) {
   const email = String(value || '').trim().toLowerCase();
   if (email.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return '';
   return email;
+}
+
+// Login accepts the configured admin username in the email field. Every other
+// value still has to be an email. Comparison is exact after trimming.
+function loginIdentifier(value) {
+  const raw = String(value || '').trim();
+  const adminUsername = adminUsernameFromEnv();
+  if (adminUsername && raw === adminUsername) return raw;
+  return normalizeEmail(raw);
+}
+
+function blockedRegistrationName(value) {
+  const name = String(value || '').trim().toLowerCase();
+  if (!name) return false;
+  if (name === 'admin') return true;
+  const configured = adminUsernameFromEnv().toLowerCase();
+  return Boolean(configured) && name === configured;
+}
+
+function needsEmailVerification(user) {
+  return !user.email_verified_at && user.role !== 'admin';
 }
 
 function passwordError(password) {
@@ -239,7 +261,7 @@ function createApp(pool) {
     const userId = String(payload.sub || '');
     if (!userId) return null;
     const [rows] = await pool.execute(
-      'SELECT id, email, username, email_verified_at, token_version FROM users WHERE id = ? LIMIT 1',
+      'SELECT id, email, username, email_verified_at, token_version, role FROM users WHERE id = ? LIMIT 1',
       [userId]
     );
     const user = rows[0];
@@ -267,7 +289,9 @@ function createApp(pool) {
     if (!allowRequest(`register:${req.ip}`, 20, 15 * 60 * 1000)) {
       return res.status(429).json({ error: '请求过于频繁，请稍后再试' });
     }
-    const email = normalizeEmail(req.body?.email);
+    const rawEmail = String(req.body?.email || '');
+    if (blockedRegistrationName(rawEmail)) return res.status(400).json({ error: '请填写有效的邮箱' });
+    const email = normalizeEmail(rawEmail);
     const password = String(req.body?.password || '');
     if (!email) return res.status(400).json({ error: '请填写有效的邮箱' });
     const invalidPassword = passwordError(password);
@@ -324,23 +348,23 @@ function createApp(pool) {
     if (!allowRequest(`login:${req.ip}`, 30, 15 * 60 * 1000)) {
       return res.status(429).json({ error: '请求过于频繁，请稍后再试' });
     }
-    const email = normalizeEmail(req.body?.email);
+    const email = loginIdentifier(req.body?.email);
     const password = String(req.body?.password || '');
     if (!email || !password) return res.status(400).json({ error: '请填写邮箱和密码' });
     const [rows] = await pool.execute(
-      'SELECT id, email, username, email_verified_at, password_hash, token_version FROM users WHERE email = ? LIMIT 1',
+      'SELECT id, email, username, email_verified_at, password_hash, token_version, role FROM users WHERE email = ? LIMIT 1',
       [email]
     );
     const user = rows[0];
     const matches = user ? await bcrypt.compare(password, user.password_hash) : false;
     if (!user || !matches) return res.status(401).json({ error: '邮箱或密码不正确' });
-    if (!user.email_verified_at && verificationRequired()) {
+    if (needsEmailVerification(user) && verificationRequired()) {
       const body = { error: '请先完成邮箱验证' };
       const verifyUrl = await issueVerificationUrl(pool, user.id, req);
       if (verifyUrl && exposeDevLinks()) body.verifyUrl = verifyUrl;
       return res.status(403).json(body);
     }
-    if (!user.email_verified_at) {
+    if (needsEmailVerification(user)) {
       await pool.execute(
         'UPDATE users SET email_verified_at = UTC_TIMESTAMP(3) WHERE id = ? AND email_verified_at IS NULL',
         [user.id]
@@ -451,7 +475,7 @@ function createApp(pool) {
   });
 
   app.post('/api/auth/username', requireUser, asyncRoute(async (req, res) => {
-    if (!req.user.email_verified_at) return res.status(403).json({ error: '请先完成邮箱验证' });
+    if (needsEmailVerification(req.user)) return res.status(403).json({ error: '请先完成邮箱验证' });
     const username = normalizeUsername(req.body?.username);
     if (!username) return res.status(400).json({ error: '请填写 1 到 20 个字符的用户名' });
     await pool.execute('UPDATE users SET username = ? WHERE id = ?', [username, req.user.id]);
@@ -574,6 +598,7 @@ if (isDirectRun()) {
   if (jwtSecret.length < 16) throw new Error('JWT_SECRET must be at least 16 characters');
   const pool = createPool();
   await migrate(pool);
+  if (await ensureAdminUser(pool)) console.log('admin account ensured');
   const port = Number(process.env.PORT || 3000);
   const host = process.env.HOST || '127.0.0.1';
   const app = createApp(pool);

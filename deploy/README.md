@@ -118,6 +118,32 @@ SERVE_STATIC=0
 
 页面由 Nginx 提供，Node 只处理 `/api`。
 
+### 管理员账号
+
+需要一个不经过邮箱注册和验证、也能登录的账号时，在 `/etc/qingzhou.env` 同时加上：
+
+```text
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD_HASH=
+```
+
+`ADMIN_USERNAME` 是登录名，不是邮箱。启动时把它写进 `users.email`，`role` 设为 `admin`，并写上验证时间。两项都留空时，启动不会创建或修改管理员。只填一项时，进程会退出，避免半套配置。
+
+密码哈希和普通账号使用同一套 bcrypt。在服务器上生成，只把输出贴进环境文件：
+
+```bash
+cd /opt/qingzhou/server
+node scripts/hash-password.js
+```
+
+脚本会提示输入密码，标准输出只有哈希。不要把密码或哈希写进仓库，也不要放进 shell 历史；如果必须传参数，进程列表里看得到。
+
+登录仍用原来的登录框和 `POST /api/auth/login`。邮箱一栏填写 `admin`（与 `ADMIN_USERNAME` 完全一致），密码用生成哈希时的那一个。管理员不检查邮箱验证，但走同一套登录限流、7 天会话，以及 `token_version`：更换 `ADMIN_PASSWORD_HASH` 并重启后，这个账号已经发出的会话会失效。
+
+注册接口仍然只接受邮箱，并拒绝注册 `admin`。没有单独的管理员接口，也没有额外的管理功能。
+
+改 `ADMIN_USERNAME` 会按新名字再写一行，不会删除原来的管理员行。确认新账号能登录后，再自行处理旧行。
+
 ## 6. 启动 API
 
 ```bash
@@ -222,7 +248,7 @@ sudo systemctl restart qingzhou
 sudo git config --system --add safe.directory /opt/qingzhou
 ```
 
-启动时会再次执行 `server/schema.sql`。里面的语句都是 `CREATE TABLE IF NOT EXISTS`，重复执行不会清数据。
+启动时会再次执行 `server/schema.sql`，并为已有的 `users` 表补上 `role` 列（默认 `user`）。重复执行不会清数据。若配置了管理员环境变量，启动还会按上面的规则写入该账号。
 
 ## 10. GitHub Pages
 
