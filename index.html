@@ -403,7 +403,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div class="work-head"><div><div class="eyebrow">WORKSPACE</div><h1>To-do</h1></div><button class="add" id="newTodo">＋ 新任务</button></div>
     <div class="tabs"><button class="tab active" id="todoTasksTab">任务 <span id="todoTabCount">0</span></button><button class="tab" id="todoIdeasTab">灵感 <span>0</span></button></div>
     <div id="todoTasksView">
-      <div class="filters"><div class="filter-set"><div class="filter-control" id="todoProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="个人成长">个人成长</button><button class="filter-option" type="button" data-value="日常">日常</button></div></div><div class="filter-control" id="todoDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div>
+      <div class="filters"><div class="filter-set"><div class="filter-control" id="todoProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"></div></div><div class="filter-control" id="todoDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div>
       <div id="todoGroups" class="groups"><section class="group"><div class="group-title">重要且紧急 <small>0</small></div></section><section class="group"><div class="group-title">重要不紧急 <small>0</small></div></section><section class="group"><div class="group-title">紧急不重要 <small>0</small></div></section><section class="group"><div class="group-title">其他 <small>0</small></div></section></div><div id="todoEmptyState" class="todo-empty-state hidden"><span class="todo-empty-state-mark">＋</span><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置</p></div>
     </div>
     <div id="todoIdeasView" class="ideas hidden"><div class="ideas-intro"><span>✦</span><div><h2>先记下来，之后再安排</h2></div></div><form class="idea-input" id="ideaForm"><input id="ideaInput" placeholder="刚刚想到什么？"><button type="submit" aria-label="保存灵感">→</button></form><div class="idea-list" id="ideaList"></div></div>
@@ -413,8 +413,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div class="work-head"><div><div class="eyebrow">CLOSED LOOP</div><h1>Done</h1></div><button class="add" id="newEvent">＋ 新增完成事件</button></div>
     <div class="done-intro"><p>做完只是完成第一步，留下点什么才算结束</p></div>
     <div class="done-tabs"><button class="done-tab active" id="completedTab">已完成任务 <span id="completedTabCount">0</span></button><button class="done-tab" id="reviewsTab">任务复盘 <span id="reviewsTabCount">0</span></button></div>
-    <div id="completedView" class="done-content"><div class="filters done-filter-line"><div class="filter-set"><div class="filter-control" id="doneProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="生活">生活</button></div></div><div class="filter-control" id="doneDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div><div id="doneList" class="done-list"></div><button id="doneHistoryLink" class="done-history-link" type="button">查看过往完成任务</button></div>
-    <div id="reviewsView" class="done-content hidden"><div class="filters done-filter-line"><div class="filter-set"><div class="filter-control" id="reviewProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="工作">工作</button><button class="filter-option" type="button" data-value="产品">产品</button><button class="filter-option" type="button" data-value="生活">生活</button></div></div><div class="filter-control" id="reviewDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div><div id="pendingReviews" class="review-list"></div><div class="reviewed"><div id="reviewedList"></div></div></div>
+    <div id="completedView" class="done-content"><div class="filters done-filter-line"><div class="filter-set"><div class="filter-control" id="doneProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"></div></div><div class="filter-control" id="doneDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div><div id="doneList" class="done-list"></div><button id="doneHistoryLink" class="done-history-link" type="button">查看过往完成任务</button></div>
+    <div id="reviewsView" class="done-content hidden"><div class="filters done-filter-line"><div class="filter-set"><div class="filter-control" id="reviewProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"></div></div><div class="filter-control" id="reviewDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div><div id="pendingReviews" class="review-list"></div><div class="reviewed"><div id="reviewedList"></div></div></div>
   </section>
 
   <section id="calScreen" class="screen cal hidden">
@@ -425,8 +425,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   </section>
 
   <nav class="bottom-nav"><button id="startNav" class="bottom-item active"><span class="bottom-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l1.9 5.6 5.6 1.9-5.6 1.9L12 18.5l-1.9-5.6L4.5 11l5.6-1.9z"></path></svg></span><span>Start</span></button><button id="todoNav" class="bottom-item"><span class="bottom-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7h10M9 12h10M9 17h10"></path><circle cx="5" cy="7" r=".6"></circle><circle cx="5" cy="12" r=".6"></circle><circle cx="5" cy="17" r=".6"></circle></svg></span><span>To-do</span></button><button id="doneNav" class="bottom-item"><span class="bottom-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><span>Done</span></button><button id="calNav" class="bottom-item"><span class="bottom-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="2"></rect><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"></path></svg></span><span>Cal</span></button></nav>
-  <div id="todoSheet" class="sheet hidden"><div class="sheet-panel"><div class="sheet-head"><div><div class="eyebrow">NEW TO-DO</div><h2>添加任务</h2></div><button class="close" data-close="todoSheet">×</button></div><form class="form task-entry-form"><label>任务内容<input id="newTaskTitle" placeholder="例如：给客户确认最终版本"></label><div class="form-field"><span>难易程度</span><div class="choices"><button type="button" class="choice active" data-task-difficulty="easy">简单<small>3/4</small></button><button type="button" class="choice" data-task-difficulty="medium">适中<small>3/3</small></button><button type="button" class="choice" data-task-difficulty="hard">困难<small>2/3</small></button></div></div><div class="form-field"><span>优先级</span><div class="choices priority-choice"><button type="button" class="choice active">重要且紧急</button><button type="button" class="choice">重要不紧急</button><button type="button" class="choice">紧急不重要</button><button type="button" class="choice">其他</button></div></div><div class="form-field"><span>截止时间（可选）</span><div class="datetime-row"><input type="date" value="2026-09-30"><input type="time" value="14:00"></div></div><div class="form-field project-picker"><span>项目</span><input class="project-search" type="search" placeholder="搜索项目" autocomplete="off"><div class="project-list"><button type="button" class="project active">工作</button><button type="button" class="project">产品</button><button type="button" class="project">个人成长</button><button type="button" class="project">生活</button><button type="button" class="project new-project" data-project-new="newProjectFieldTodo">＋ 新增项目</button></div><div id="newProjectFieldTodo" class="new-project-field hidden"><input placeholder="输入新项目名称"><button type="button" class="project-create">添加</button></div></div><label class="review-option"><input id="newTaskReview" type="checkbox">需要复盘</label><button class="sheet-submit">加入 To-do</button></form></div></div>
-  <div id="eventSheet" class="sheet hidden"><div class="sheet-panel"><div class="sheet-head"><div><div class="eyebrow">NEW DONE EVENT</div><h2>记录完成事件</h2></div><button class="close" data-close="eventSheet">×</button></div><form class="form task-entry-form"><label>完成内容<input id="newDoneTitle" placeholder="例如：整理完了房间"></label><div class="form-field"><span>难易程度</span><div class="choices"><button type="button" class="choice active" data-event-difficulty="easy">简单<small>完成事件</small></button><button type="button" class="choice" data-event-difficulty="medium">适中<small>完成事件</small></button><button type="button" class="choice" data-event-difficulty="hard">困难<small>完成事件</small></button></div></div><div class="form-field"><span>优先级</span><div class="choices priority-choice"><button type="button" class="choice active">重要且紧急</button><button type="button" class="choice">重要不紧急</button><button type="button" class="choice">紧急不重要</button><button type="button" class="choice">其他</button></div></div><div class="form-field"><span>截止时间（可选）</span><div class="datetime-row"><input type="date" value="2026-10-13"><input type="time" value="18:00"></div></div><div class="form-field project-picker"><span>项目</span><input class="project-search" type="search" placeholder="搜索项目" autocomplete="off"><div class="project-list"><button type="button" class="project active">工作</button><button type="button" class="project">产品</button><button type="button" class="project">个人成长</button><button type="button" class="project">生活</button><button type="button" class="project new-project" data-project-new="newProjectFieldEvent">＋ 新增项目</button></div><div id="newProjectFieldEvent" class="new-project-field hidden"><input placeholder="输入新项目名称"><button type="button" class="project-create">添加</button></div></div><label class="review-option"><input id="newDoneReview" type="checkbox">需要复盘</label><button class="sheet-submit">加入 Done</button></form></div></div>
+  <div id="todoSheet" class="sheet hidden"><div class="sheet-panel"><div class="sheet-head"><div><div class="eyebrow">NEW TO-DO</div><h2>添加任务</h2></div><button class="close" data-close="todoSheet">×</button></div><form class="form task-entry-form"><label>任务内容<input id="newTaskTitle" placeholder="例如：给客户确认最终版本"></label><div class="form-field"><span>难易程度</span><div class="choices"><button type="button" class="choice active" data-task-difficulty="easy">简单<small>3/4</small></button><button type="button" class="choice" data-task-difficulty="medium">适中<small>3/3</small></button><button type="button" class="choice" data-task-difficulty="hard">困难<small>2/3</small></button></div></div><div class="form-field"><span>优先级</span><div class="choices priority-choice"><button type="button" class="choice active">重要且紧急</button><button type="button" class="choice">重要不紧急</button><button type="button" class="choice">紧急不重要</button><button type="button" class="choice">其他</button></div></div><div class="form-field"><span>截止时间（可选）</span><div class="datetime-row"><input type="date" value="2026-09-30"><input type="time" value="14:00"></div></div><div class="form-field project-picker"><span>项目</span><input class="project-search" type="search" placeholder="搜索项目" autocomplete="off"><div class="project-list"><button type="button" class="project new-project" data-project-new="newProjectFieldTodo">＋ 新增项目</button></div><div id="newProjectFieldTodo" class="new-project-field hidden"><input placeholder="输入新项目名称"><button type="button" class="project-create">添加</button></div></div><label class="review-option"><input id="newTaskReview" type="checkbox">需要复盘</label><button class="sheet-submit">加入 To-do</button></form></div></div>
+  <div id="eventSheet" class="sheet hidden"><div class="sheet-panel"><div class="sheet-head"><div><div class="eyebrow">NEW DONE EVENT</div><h2>记录完成事件</h2></div><button class="close" data-close="eventSheet">×</button></div><form class="form task-entry-form"><label>完成内容<input id="newDoneTitle" placeholder="例如：整理完了房间"></label><div class="form-field"><span>难易程度</span><div class="choices"><button type="button" class="choice active" data-event-difficulty="easy">简单<small>完成事件</small></button><button type="button" class="choice" data-event-difficulty="medium">适中<small>完成事件</small></button><button type="button" class="choice" data-event-difficulty="hard">困难<small>完成事件</small></button></div></div><div class="form-field"><span>优先级</span><div class="choices priority-choice"><button type="button" class="choice active">重要且紧急</button><button type="button" class="choice">重要不紧急</button><button type="button" class="choice">紧急不重要</button><button type="button" class="choice">其他</button></div></div><div class="form-field"><span>截止时间（可选）</span><div class="datetime-row"><input type="date" value="2026-10-13"><input type="time" value="18:00"></div></div><div class="form-field project-picker"><span>项目</span><input class="project-search" type="search" placeholder="搜索项目" autocomplete="off"><div class="project-list"><button type="button" class="project new-project" data-project-new="newProjectFieldEvent">＋ 新增项目</button></div><div id="newProjectFieldEvent" class="new-project-field hidden"><input placeholder="输入新项目名称"><button type="button" class="project-create">添加</button></div></div><label class="review-option"><input id="newDoneReview" type="checkbox">需要复盘</label><button class="sheet-submit">加入 Done</button></form></div></div>
   <div id="reviewDialog" class="review-dialog hidden"><div class="review-card"><div class="sheet-head"><div><div class="eyebrow">TASK REVIEW</div><h2 id="reviewDialogTitle"></h2></div><button class="close" data-close="reviewDialog">×</button></div><p>留下一句话就够了，完成文字输入，即完成这次复盘</p><textarea id="reviewText" maxlength="200" placeholder="这次有什么值得记住的？"></textarea><div class="review-footer"><span><b id="reviewCount">0</b>/200</span><button class="review-done" id="reviewDone" disabled>完成复盘</button></div></div></div>
   <div id="deleteDialog" class="review-dialog hidden"><div class="review-card delete-card"><div class="sheet-head"><div><div class="eyebrow">DELETE</div><h2>确认删除</h2></div><button class="close" data-close="deleteDialog" aria-label="关闭删除确认">×</button></div><p id="deleteDialogText">删除后无法恢复，确认删除这项内容吗？</p><div class="delete-actions"><button id="deleteCancel" class="delete-cancel" type="button">取消</button><button id="deleteConfirm" class="delete-confirm" type="button">确认删除</button></div></div></div>
   <div id="taskLimitAlert" class="review-dialog capacity-dialog hidden"><div class="review-card"><div class="sheet-head"><div><div class="eyebrow">TASK LIMIT</div><h2>当下囤积任务过多</h2></div><button class="close" data-close="taskLimitAlert" type="button" aria-label="关闭">×</button></div><p>请先一件一件事情来，或者先生成灵感</p><div class="review-footer capacity-actions"><button class="review-done" id="goIdeasFromLimit" type="button">生成灵感</button></div></div></div>
@@ -829,9 +829,10 @@ function createDoneRow(item){
 }
 function applyAppState(state){
   if(!state||state.version!==1)return false;
-  if(Array.isArray(state.projects)){
-    state.projects.filter(name=>typeof name==='string'&&name.trim()).forEach(name=>{const clean=name.trim();if(!projectNames.includes(clean))projectNames.push(clean)});
+  if(Array.isArray(state.projects)||Array.isArray(state.todo)||Array.isArray(state.done)){
+    projectsFromState(state).forEach(name=>{if(!projectNames.includes(name))projectNames.push(name)});
     syncStoredProjectsToLists();
+    syncProjectFilters();
     setupProjectPickers();
   }
   document.querySelectorAll('#todoTasksView .task-row').forEach(row=>row.remove());
@@ -1679,15 +1680,10 @@ function addDoneEvent(){
   persistAppState();
 }
 document.querySelector('#eventSheet form').onsubmit=event=>{event.preventDefault();addDoneEvent()};
-document.querySelectorAll('.filter-control').forEach(control=>{
+function bindFilterOption(control,option){
   const trigger=control.querySelector('.filter-trigger');
   const menu=control.querySelector('.filter-menu');
-  trigger.onclick=event=>{
-    event.stopPropagation();
-    document.querySelectorAll('.filter-menu').forEach(item=>{if(item!==menu)item.classList.add('hidden')});
-    menu.classList.toggle('hidden');
-  };
-  control.querySelectorAll('.filter-option').forEach(option=>option.onclick=event=>{
+  option.onclick=event=>{
     event.stopPropagation();
     control.dataset.value=option.dataset.value;
     trigger.firstChild.textContent=option.textContent;
@@ -1696,7 +1692,39 @@ document.querySelectorAll('.filter-control').forEach(control=>{
     if(control.id.startsWith('todo'))applyTodoFilters();
     else if(control.id.startsWith('review'))applyReviewFilters();
     else applyDoneFilters();
+  };
+}
+function syncProjectFilters(){
+  document.querySelectorAll('#todoProjectFilter,#doneProjectFilter,#reviewProjectFilter').forEach(control=>{
+    const menu=control.querySelector('.filter-menu');
+    const trigger=control.querySelector('.filter-trigger');
+    const selected=control.dataset.value||'';
+    menu.replaceChildren();
+    if(selected&&!projectNames.includes(selected)){
+      control.dataset.value='';
+      trigger.textContent='项目';
+    }
+    projectNames.forEach(name=>{
+      const option=document.createElement('button');
+      option.type='button';
+      option.className='filter-option';
+      option.dataset.value=name;
+      option.textContent=name;
+      if(name===control.dataset.value)option.classList.add('active');
+      bindFilterOption(control,option);
+      menu.appendChild(option);
+    });
   });
+}
+document.querySelectorAll('.filter-control').forEach(control=>{
+  const trigger=control.querySelector('.filter-trigger');
+  const menu=control.querySelector('.filter-menu');
+  trigger.onclick=event=>{
+    event.stopPropagation();
+    document.querySelectorAll('.filter-menu').forEach(item=>{if(item!==menu)item.classList.add('hidden')});
+    menu.classList.toggle('hidden');
+  };
+  control.querySelectorAll('.filter-option').forEach(option=>bindFilterOption(control,option));
 });
 document.addEventListener('click',()=>document.querySelectorAll('.filter-menu').forEach(menu=>menu.classList.add('hidden')));
 document.querySelectorAll('.choices').forEach(group=>group.querySelectorAll('.choice:not([data-task-difficulty])').forEach(choice=>choice.onclick=()=>{
@@ -1708,7 +1736,33 @@ document.querySelectorAll('#todoSheet [data-task-difficulty]').forEach(button=>b
   document.querySelectorAll('#todoSheet [data-task-difficulty]').forEach(item=>item.classList.remove('active'));
   button.classList.add('active');
 });
-const projectNames=['工作','产品','个人成长','生活'];
+function isLegacyPlaceholderProject(name){
+  return name==='工作'||name==='产品'||name==='个人成长'||name==='生活'||name==='日常';
+}
+function projectsFromState(state){
+  const used=[];
+  const seenUsed=new Set();
+  const collect=item=>{
+    const name=String(item&&item.project||'').trim();
+    if(!name||name==='未分类'||seenUsed.has(name))return;
+    seenUsed.add(name);
+    used.push(name);
+  };
+  (Array.isArray(state&&state.todo)?state.todo:[]).forEach(collect);
+  (Array.isArray(state&&state.done)?state.done:[]).forEach(collect);
+  const kept=[];
+  const add=name=>{
+    const clean=String(name||'').trim();
+    if(!clean||clean==='未分类'||kept.includes(clean))return;
+    kept.push(clean);
+  };
+  (Array.isArray(state&&state.projects)?state.projects:[]).forEach(name=>{
+    if(!isLegacyPlaceholderProject(String(name||'').trim()))add(name);
+  });
+  used.forEach(add);
+  return kept;
+}
+const projectNames=[];
 function projectLists(){return [...document.querySelectorAll('.project-picker .project-list')]}
 function setProjectActive(list,name){
   list.querySelectorAll('.project:not(.new-project)').forEach(item=>item.classList.toggle('active',item.textContent.trim()===name));
@@ -1737,14 +1791,18 @@ function addProjectToPickers(name){
     const input=picker.querySelector('.project-search');
     input.value='';renderProjectList(list);
   });
-  if(!alreadyExists){projectNames.push(clean);persistProjectNames();persistAppState()}
+  if(!alreadyExists){projectNames.push(clean);persistProjectNames();syncProjectFilters();persistAppState()}
   return true;
 }
 function persistProjectNames(){try{localStorage.setItem('lightboat-projects-v1',JSON.stringify(projectNames))}catch(error){}}
 function loadProjectNames(){
   try{
     const stored=JSON.parse(localStorage.getItem('lightboat-projects-v1')||'[]');
-    if(Array.isArray(stored))stored.filter(name=>typeof name==='string'&&name.trim()).forEach(name=>{if(!projectNames.includes(name.trim()))projectNames.push(name.trim())});
+    if(Array.isArray(stored))stored.forEach(name=>{
+      const clean=String(name||'').trim();
+      if(!clean||isLegacyPlaceholderProject(clean)||projectNames.includes(clean))return;
+      projectNames.push(clean);
+    });
   }catch(error){}
 }
 function syncStoredProjectsToLists(){
@@ -1776,6 +1834,7 @@ function setupProjectPickers(){
     create.onclick=submit;
     input.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();submit()}};
   });
+  syncProjectFilters();
 }
 setupProjectPickers();
 document.getElementById('closeCapacityAlert').onclick=()=>document.getElementById('capacityAlert').classList.add('hidden');
