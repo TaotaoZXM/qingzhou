@@ -110,6 +110,9 @@ function readToken(req) {
   return readCookies(req.headers.cookie)[SESSION_COOKIE] || '';
 }
 
+// Secure follows the browser-facing scheme. Nginx sets X-Forwarded-Proto to
+// $scheme, and trust proxy makes req.secure true only for HTTPS. Leave
+// COOKIE_SECURE unset so http://121.41.63.67/ can still store the session.
 function cookieSecure(req) {
   if (process.env.COOKIE_SECURE === '1') return true;
   if (process.env.COOKIE_SECURE === '0') return false;
