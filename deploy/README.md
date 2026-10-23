@@ -57,7 +57,7 @@ Node.js 需要 18 或更高。`node -v` 满足的话可以跳过 Node 安装。
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y git nginx certbot python3-certbot-nginx
+sudo apt-get install -y git nginx certbot
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
@@ -68,10 +68,13 @@ sudo apt-get install -y nodejs
 sudo dnf install -y git nginx
 curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash -
 sudo dnf install -y nodejs
-sudo dnf install -y certbot python3-certbot-nginx || true
+sudo dnf install -y certbot || {
+  sudo dnf install -y epel-release
+  sudo dnf install -y certbot
+}
 ```
 
-如果 certbot 不在默认源里，可以改用阿里云数字证书管理服务签发的 Nginx 证书，见第 8 节。
+证书用 certbot 的 webroot，不用 nginx 插件，避免它改写站点配置。不在默认源里时，第 8 节的脚本会再试一次。
 
 确认：
 
@@ -168,71 +171,71 @@ sudo setsebool -P httpd_can_network_connect 1
 
 ## 7. 配置 Nginx
 
-把域名解析到 ECS 公网 IP 之后：
+现网 `/etc/nginx/conf.d/qingzhou.conf` 只监听 80，`server_name` 同时有 `121.41.63.67`、`myqingzhou.com`、`www.myqingzhou.com`，`/.well-known/acme-challenge/` 指向 `/var/www/certbot`。443 那段还注释着，证书目录 `/etc/letsencrypt` 还不存在。安全组已经放行 80 和 443。
 
-```bash
-sudo mkdir -p /var/www/certbot
-sudo cp /opt/qingzhou/deploy/nginx-qingzhou.conf /etc/nginx/conf.d/qingzhou.conf
-sudoedit /etc/nginx/conf.d/qingzhou.conf
-```
+仓库里的 `deploy/nginx-qingzhou.conf` 是证书签发之后的配置。证书文件还不在时不要把它拷进 `conf.d`，`nginx -t` 会因为找不到 PEM 失败。启用步骤在第 8 节。
 
-把两处 `example.com` 换成真实域名。然后：
+启用之后 Nginx 会做这些事：
 
-```bash
-sudo nginx -t
-sudo systemctl enable --now nginx
-sudo systemctl reload nginx
-```
-
-配置会做这几件事：
-
+- `http://121.41.63.67/` 继续走 HTTP，不跳转
+- `myqingzhou.com` 和 `www.myqingzhou.com` 的 80 端口只留下 ACME 校验，其余 301 到同一主机的 HTTPS
+- 443 终止 TLS，证书路径是 `/etc/letsencrypt/live/myqingzhou.com/fullchain.pem` 和 `privkey.pem`（这本证书同时覆盖 www）
 - 网站根目录是 `/opt/qingzhou`
-- `/api/` 转发到 `127.0.0.1:3000`
+- `/api/` 转发到 `127.0.0.1:3000`，并设置 `X-Forwarded-Proto $scheme`
 - 拒绝直接访问 `server/`、`deploy/`、`.git/` 等目录
-- `/.well-known/acme-challenge/` 留给证书校验
 
-先用浏览器打开 `http://你的域名/`，能看到轻舟，并且可以注册登录。
+新机器还没有这份只监听 80 的配置时，先让 80 端口能打开页面，并且 `/.well-known/acme-challenge/` 的 `root` 是 `/var/www/certbot`，再做第 8 节。
 
 ## 8. 开启 HTTPS
 
-PWA 安装和正式使用都需要 HTTPS。Cookie 在 HTTPS 请求上会带 `Secure`。
+PWA 需要 HTTPS。`myqingzhou.com` 和 `www.myqingzhou.com` 的 A 记录都要指到 `121.41.63.67`。如果有指到别处的 AAAA，先删掉，否则证书校验可能走到别的机器。记录还没生效时，下面的脚本会在申请证书之前退出，不会改 Nginx。
 
-### 用 certbot
-
-域名已经解析到这台 ECS，并且安全组放行了 80：
+先把包含 `deploy/enable-https.sh` 和 `deploy/nginx-qingzhou.conf` 的版本放到 `/opt/qingzhou`。然后在阿里云 ECS「发送命令」（云助手 RunCommand）里用 root 执行，或者登录后执行同一条：
 
 ```bash
-sudo certbot --nginx -d example.com
+sudo bash /opt/qingzhou/deploy/enable-https.sh
 ```
 
-把 `example.com` 换成真实域名。certbot 会改写 Nginx 配置并加上跳转到 HTTPS。
-
-续期：
+需要到期邮件时加上邮箱，脚本会把它传给 certbot。不设则使用 `--register-unsafely-without-email`：
 
 ```bash
-sudo systemctl enable --now certbot.timer || sudo certbot renew --dry-run
+sudo CERTBOT_EMAIL=you@example.com bash /opt/qingzhou/deploy/enable-https.sh
 ```
 
-### 用阿里云证书
+脚本按这个顺序执行。任一步失败，都不会把还没有证书的 443 配置留下来：
 
-在数字证书管理服务下载 Nginx 证书，放到例如：
+1. 没有 certbot 就安装。Ubuntu：`apt-get install -y certbot`。Alibaba Cloud Linux：`dnf install -y certbot`，源里没有则先 `epel-release` 再装。
+2. 建立 `/var/www/certbot`，并向本机 80 发带 `Host: myqingzhou.com` 和 `Host: www.myqingzhou.com` 的校验请求，确认现网 webroot 还在。
+3. 确认两个域名的 A 记录包含 `121.41.63.67`。
+4. 用 webroot 申请证书，不使用 nginx 插件，所以 certbot 不会改站点文件：
+
+```bash
+sudo certbot certonly \
+  --webroot -w /var/www/certbot \
+  --cert-name myqingzhou.com \
+  -d myqingzhou.com -d www.myqingzhou.com \
+  --agree-tos --non-interactive --keep-until-expiring --expand \
+  --register-unsafely-without-email
+```
+
+5. 确认这两个文件存在：
 
 ```text
-/etc/nginx/ssl/example.com.pem
-/etc/nginx/ssl/example.com.key
+/etc/letsencrypt/live/myqingzhou.com/fullchain.pem
+/etc/letsencrypt/live/myqingzhou.com/privkey.pem
 ```
 
-打开 `/etc/nginx/conf.d/qingzhou.conf`，取消文件底部 443 那段的注释，把 `ssl_certificate` 指到这两个文件。确认 HTTPS 可以打开后，在 80 端口的 `server` 里加上：
+6. 备份 `/etc/nginx/conf.d/qingzhou.conf`，用仓库里的配置覆盖它。`nginx -t` 失败则还原备份并退出。通过后 `systemctl reload nginx`。
+7. 写入 `/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh`（内容是 `systemctl reload nginx`）。有 `certbot.timer` 就 `systemctl enable --now certbot.timer`；没有则写 `/etc/cron.d/qingzhou-certbot`，每天 03:00 和 15:00 执行 `certbot renew --quiet --deploy-hook "systemctl reload nginx"`。
+8. `certbot renew --dry-run`。演练失败时，HTTPS 配置已经加载，脚本以非 0 退出，方便在云助手里看到续期还没通。
 
-```nginx
-return 301 https://$host$request_uri;
-```
+Cookie 不要改环境变量。保持 `COOKIE_SECURE` 不设置。Nginx 在 443 上把 `X-Forwarded-Proto` 设为 `https`，API 的 `trust proxy` 为 1，登录和退出的 `Set-Cookie` 会带 `Secure`，并保留原来的 `HttpOnly` 和 `SameSite=Lax`。`http://121.41.63.67/` 的 `X-Forwarded-Proto` 是 `http`，Cookie 不带 `Secure`，过渡期还能登录。不要写 `COOKIE_SECURE=1`，否则 IP 上的登录态存不住。改完不需要为 Cookie 重启 API；已在跑的进程本来就会看这个头。
 
-保留 `/.well-known/acme-challenge/` 的话，把跳转放在该 location 之后，避免以后换证书时校验失败。
+用浏览器确认：
 
-改完执行 `sudo nginx -t && sudo systemctl reload nginx`。
-
-如果希望 Cookie 在任何情况下都只走 HTTPS，在 `/etc/qingzhou.env` 加上 `COOKIE_SECURE=1`，然后 `sudo systemctl restart qingzhou`。证书还没配好之前不要加这一行，否则 HTTP 登录态存不住。
+- `https://myqingzhou.com/` 和 `https://www.myqingzhou.com/` 能打开
+- `http://myqingzhou.com/` 和 `http://www.myqingzhou.com/` 跳到 HTTPS
+- `http://121.41.63.67/` 仍然是 HTTP，可以登录
 
 ## 9. 更新
 
@@ -241,6 +244,8 @@ sudo -u qingzhou git -C /opt/qingzhou pull
 sudo -u qingzhou npm ci --prefix /opt/qingzhou/server
 sudo systemctl restart qingzhou
 ```
+
+`git pull` 只更新 `/opt/qingzhou` 里的文件，不会改 `/etc/nginx/conf.d/qingzhou.conf`。HTTPS 仍按第 8 节执行。
 
 如果 `git pull` 报 `safe.directory`，执行一次：
 

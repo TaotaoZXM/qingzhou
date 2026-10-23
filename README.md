@@ -35,7 +35,7 @@ python3 -m http.server 8765
 - 未登录时只能看 Start。点能量状态、To-do、Done、Cal 或添加，都会打开登录框。
 - 邮件还没接上时，注册后可以直接登录，再设置用户名。接上邮件后，新账号要先完成邮箱验证。用户名显示在右上角，点开可以退出登录。
 - 可选管理员不是邮箱账号。同时设置 `ADMIN_USERNAME`（例如 `admin`）和 `ADMIN_PASSWORD_HASH` 后，进程启动会写入或更新这一行：`role` 为 `admin`，并标成已验证。两项都没设置时不会创建。管理员用现有登录框，在邮箱一栏填写这个用户名和密码，不需要邮箱验证。注册仍然只接受邮箱，并且不能注册 `admin`。限流、7 天会话，以及改密码后旧会话失效，都和普通账号一样。哈希用 `server/scripts/hash-password.js` 生成，不要把密码或哈希写进仓库。
-- 会话是 HttpOnly Cookie，有效期 7 天。重置密码后，这个账号已经发出的会话都会失效。
+- 会话是 HttpOnly Cookie，`SameSite=Lax`，有效期 7 天。Nginx 把 `X-Forwarded-Proto` 设为 `https` 时，Cookie 同时带 `Secure`。用 HTTP 打开 IP 时不带 `Secure`。重置密码后，这个账号已经发出的会话都会失效。
 - 每个账号一份应用状态：待办、完成记录、灵感、项目。修改后大约 250 毫秒自动同步。本机缓存记着账号 id；换账号登录时，不会把上一个账号或来源不明的本地数据上传到新账号。保存如果和云端版本不一致，会合并后再提交。
 - 接口不会返回重置链接或验证链接。只有本机调试同时设置 `EXPOSE_DEV_LINKS=1` 且 `NODE_ENV` 不是 `production` 时才会返回。找回密码在接上邮件前不可用。接上之后设置 `EMAIL_DELIVERY=directmail`，并让 `sendVerificationEmail` 和 `sendPasswordResetEmail` 真正把信发出去。验证页是 `/api/auth/verify?token=`，重置页是 `/api/auth/reset?token=`。
 
