@@ -3,17 +3,17 @@ function page(title, body) {
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>${title} · 轻舟</title>
 <style>
-  body{margin:0;min-height:100vh;display:grid;place-items:center;background:#eef0ed;color:#252a26;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif}
-  main{width:min(100%,390px);margin:24px;padding:24px 20px;background:#fff;border-radius:12px;box-shadow:0 16px 40px rgba(37,42,38,.12)}
+  body{margin:0;min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;align-items:safe center;justify-content:safe center;box-sizing:border-box;padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));background:#eef0ed;color:#252a26;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif}
+  main{box-sizing:border-box;flex:0 0 auto;align-self:center;width:min(100%,400px);height:auto;margin:0;padding:22px 20px 20px;background:#fff;border-radius:12px;box-shadow:0 16px 40px rgba(37,42,38,.12)}
   h1{margin:0;font-size:22px;letter-spacing:-.04em}
   p{margin:10px 0 0;color:#7e887f;font-size:14px;line-height:1.5}
   form{display:grid;gap:12px;margin-top:18px}
   label{display:grid;gap:6px;color:#7e887f;font-size:13px}
-  input{width:100%;padding:10px 0;color:#252a26;background:transparent;border:0;border-bottom:1px solid #e5e8e3;outline:0;font:inherit}
-  button,a.button{display:inline-block;margin-top:8px;padding:11px 14px;color:#fff;background:#367769;border:0;border-radius:6px;font:inherit;text-align:center;text-decoration:none}
+  input{width:100%;box-sizing:border-box;padding:10px 0;color:#252a26;background:transparent;border:0;border-bottom:1px solid #e5e8e3;outline:0;font:inherit}
+  button,a.button{display:block;width:100%;box-sizing:border-box;margin-top:8px;padding:11px 14px;color:#fff;background:#367769;border:0;border-radius:6px;font:inherit;text-align:center;text-decoration:none}
   .status{min-height:18px;color:#9a5f5d}
 </style>
 </head>
