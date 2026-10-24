@@ -188,3 +188,57 @@ test('creating a task fills only the current energy and does not refill when a t
   assert.match(html, /\.phone \.screen\.start \.recommendation-head\{display:none\}/);
   assert.doesNotMatch(between('<section id="startScreen"', '<section id="todoScreen"'), /卡皮|capybara|v\d+/i);
 });
+
+function loadFooterHelpers() {
+  const source = between('function greyFooterIds', 'function settledPushItems');
+  const context = { Math, Date, String };
+  createContext(context);
+  runInContext(`${source}
+    globalThis.greyFooterIds = greyFooterIds;
+    globalThis.pushColumnPlan = pushColumnPlan;
+  `, context);
+  return context;
+}
+
+test('the grey footer keeps only tasks completed on the given local day', () => {
+  const { greyFooterIds } = loadFooterHelpers();
+  const today = new Date(2026, 9, 24, 15, 30);
+  const yesterday = new Date(2026, 9, 23, 23, 59);
+  const tomorrow = new Date(2026, 9, 25, 0, 1);
+  assert.deepEqual(
+    ids(greyFooterIds([
+      { id: 'old', completedAt: yesterday },
+      { id: 'first', completedAt: new Date(2026, 9, 24, 9, 0) },
+      { id: 'blank', completedAt: 'not-a-date' },
+      { id: 'later', completedAt: new Date(2026, 9, 24, 18, 0) },
+      { id: 'next', completedAt: tomorrow }
+    ], '2026-10-24')),
+    ['first', 'later']
+  );
+  assert.deepEqual(ids(greyFooterIds([{ id: 'today', completedAt: today }], '2026-10-23')), []);
+});
+
+test('settled tasks sit after unfinished ones and do not use an unfinished slot', () => {
+  const { pushColumnPlan } = loadFooterHelpers();
+  const plan = pushColumnPlan(['a', 'b', 'c', 'd'], ['b', 'done-1', 'done-2']);
+  assert.deepEqual(ids(plan.unfinished), ['a', 'b', 'c']);
+  assert.deepEqual(ids(plan.settled), ['done-1', 'done-2']);
+  assert.equal(plan.unfinished.length, 3);
+});
+
+test('Cal has the same grey eyebrow style, checkboxes stay in front, and the push list is not pinned', () => {
+  const cal = between('<section id="calScreen"', '<nav class="bottom-nav">');
+  const todo = between('<section id="todoScreen"', '<section id="doneScreen"');
+  const done = between('<section id="doneScreen"', '<section id="calScreen"');
+  assert.match(cal, /<div class="eyebrow">LOOKING BACK<\/div>\s*<h1>Cal<\/h1>/);
+  assert.match(todo, /<div class="eyebrow">WORKSPACE<\/div>\s*<h1>To-do<\/h1>/);
+  assert.match(done, /<div class="eyebrow">CLOSED LOOP<\/div>\s*<h1>Done<\/h1>/);
+  assert.match(html, /\.phone #calScreen \.eyebrow\{font-size:14px\}/);
+  assert.match(html, /row\.append\(check,copy,chevron\)/);
+  assert.match(between('function settledTaskRow', 'function renderTodoSettled'), /row\.append\(check,main\)/);
+  assert.match(between('function addTaskToList', "document.querySelector('#todoSheet form')"), /row\.append\(check,main\)/);
+  assert.match(between('function completeTask', 'document.addEventListener'), /noteSettledTask\(item\.id\)/);
+  assert.match(html, /function rollRecommendationDay\(\)/);
+  assert.match(html, /recommendationStorageKey\(\)\{return 'lightboat-recommendations-'\+dateKey\(new Date\(\)\)\}/);
+  assert.doesNotMatch(html, /todoPinned|position:\s*sticky/);
+});

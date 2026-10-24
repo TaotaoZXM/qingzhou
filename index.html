@@ -171,6 +171,7 @@
 .phone #doneScreen .work-head h1{font-size:27px}
 .phone #doneScreen .done-intro p{font-size:12px}
 .phone #doneScreen .eyebrow{font-size:14px}
+.phone #calScreen .eyebrow{font-size:14px}
 .phone #doneScreen .add{font-size:13px}
 .phone #doneScreen .done-tabs .done-tab{font-size:15px}
 .phone #doneScreen .done-tabs .done-tab span{font-size:14px}
@@ -223,7 +224,7 @@
 .screen.cal{text-align:left;padding:0 20px 90px;background:#fbfcfa}
 .cal-header{padding-top:20px}
 .cal-header-row{display:flex;align-items:center;justify-content:space-between}
-.cal-header h1{font-size:27px;letter-spacing:-.06em}
+.cal-header h1{margin-top:4px;font-size:27px;letter-spacing:-.06em}
 .cal-header p{margin-top:7px;color:var(--muted);font-size:12px}
 .cal-month{margin-top:27px;padding:16px 0 14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .cal-month-head{display:flex;align-items:center;justify-content:space-between}
@@ -374,6 +375,11 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .phone .screen.start .recommendation-copy strong{font-size:15px;font-weight:500}
 .phone .screen.start .recommendation-copy small{margin-top:4px;font-size:13px}
 .phone .recommendation-chevron{flex:none;color:#c5ccc7;font-size:20px;line-height:1}
+.recommendation-row .check{align-self:center}
+.task-row.is-settled .task-title,.task-row.is-settled .meta,.task-row.is-settled .meta span,.recommendation-row.is-settled .recommendation-copy strong,.recommendation-row.is-settled .recommendation-copy small,.recommendation-row.is-settled .recommendation-chevron,.is-settled .check{color:var(--quiet)}
+.task-row.is-settled,.recommendation-row.is-settled{opacity:.72}
+.todo-settled:empty{display:none}
+.check:disabled{cursor:default}
 .phone .feedback-block{margin-top:28px}
 .phone .feedback-form{display:flex;align-items:flex-end;gap:10px;border-bottom:1.5px solid #367769}
 .phone .feedback-form input{flex:1;min-width:0;padding:8px 0 10px;color:var(--text);background:transparent;border:0;outline:0;font-size:15px}
@@ -441,7 +447,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div class="tabs"><button class="tab active" id="todoTasksTab">任务 <span id="todoTabCount">0</span></button><button class="tab" id="todoIdeasTab">灵感 <span>0</span></button></div>
     <div id="todoTasksView">
       <div class="filters"><div class="filter-set"><div class="filter-control" id="todoProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"></div></div><div class="filter-control" id="todoDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div>
-      <div id="todoGroups" class="groups"><section class="group"><div class="group-title">重要且紧急 <small>0</small></div></section><section class="group"><div class="group-title">重要不紧急 <small>0</small></div></section><section class="group"><div class="group-title">紧急不重要 <small>0</small></div></section><section class="group"><div class="group-title">其他 <small>0</small></div></section></div><div id="todoEmptyState" class="todo-empty-state hidden"><button type="button" class="todo-empty-add" id="todoEmptyAdd" aria-label="新任务">＋</button><strong>当前没有要完成的任务</strong></div>
+      <div id="todoGroups" class="groups"><section class="group"><div class="group-title">重要且紧急 <small>0</small></div></section><section class="group"><div class="group-title">重要不紧急 <small>0</small></div></section><section class="group"><div class="group-title">紧急不重要 <small>0</small></div></section><section class="group"><div class="group-title">其他 <small>0</small></div></section></div><div id="todoSettled" class="todo-settled"></div><div id="todoEmptyState" class="todo-empty-state hidden"><button type="button" class="todo-empty-add" id="todoEmptyAdd" aria-label="新任务">＋</button><strong>当前没有要完成的任务</strong></div>
     </div>
     <div id="todoIdeasView" class="ideas hidden"><div class="ideas-intro"><span>✦</span><div><h2>先记下来，之后再安排</h2></div></div><form class="idea-input" id="ideaForm"><input id="ideaInput" placeholder="刚刚想到什么？"><button type="submit" aria-label="保存灵感">→</button></form><div class="idea-list" id="ideaList"></div></div>
   </section>
@@ -455,7 +461,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   </section>
 
   <section id="calScreen" class="screen cal hidden">
-    <div class="cal-header"><div class="cal-header-row"><h1>Cal</h1></div><p>回看那些已经发生的事</p></div>
+    <div class="cal-header"><div class="cal-header-row"><div><div class="eyebrow">LOOKING BACK</div><h1>Cal</h1></div></div><p>回看那些已经发生的事</p></div>
     <div class="cal-month"><div class="cal-month-head"><h2 id="calMonthTitle" class="cal-month-title"></h2><div class="cal-month-actions"><button id="calPrevMonth" type="button" aria-label="上个月">‹</button><button id="calNextMonth" type="button" aria-label="下个月">›</button></div></div><div class="cal-weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div><div id="calDays" class="cal-days"></div></div>
     <div class="cal-selected"><h2 id="calSelectedTitle"></h2><p id="calSelectedSubtitle">这一天留下的记录</p></div>
     <div id="calRecords"></div>
@@ -488,9 +494,12 @@ let pendingDeleteType='task';
 const completedReviewNotes=new Map();
 let recommendedTaskIds=[];
 let recommendedTaskIdsByState={};
+let settledTodoIds=[];
+let settledTaskIdsByState={};
 let recommendationsGenerated=false;
 let recommendationState=null;
-const recommendationStorageKey='lightboat-recommendations-'+new Date().toLocaleDateString('sv-SE');
+let loadedRecommendationDay='';
+function recommendationStorageKey(){return 'lightboat-recommendations-'+dateKey(new Date())}
 const recommendationRuleVersion='difficulty-priority-v5';
 const recommendationRules={
   low:{target:'easy',order:['easy','medium','hard']},
@@ -529,18 +538,34 @@ function normalizeIdeas(ideas){
 }
 
 function loadDailyRecommendations(){
+  loadedRecommendationDay=dateKey(new Date());
   try{
-    const stored=JSON.parse(localStorage.getItem(recommendationStorageKey)||'null');
+    const stored=JSON.parse(localStorage.getItem(recommendationStorageKey())||'null');
     if(stored&&stored.version===recommendationRuleVersion&&stored.taskIdsByState&&typeof stored.taskIdsByState==='object'){
       recommendedTaskIdsByState=stored.taskIdsByState;
       recommendationState=stored.state||null;
       recommendedTaskIds=Array.isArray(recommendedTaskIdsByState[recommendationState])?recommendedTaskIdsByState[recommendationState]:[];
       recommendationsGenerated=Boolean(recommendationState&&recommendedTaskIds.length);
+      settledTodoIds=Array.isArray(stored.settledTodoIds)?stored.settledTodoIds.map(String):[];
+      settledTaskIdsByState=stored.settledIdsByState&&typeof stored.settledIdsByState==='object'?stored.settledIdsByState:{};
     }
   }catch(error){recommendedTaskIds=[]}
 }
 function saveDailyRecommendations(){
-  try{localStorage.setItem(recommendationStorageKey,JSON.stringify({version:recommendationRuleVersion,state:recommendationState,taskIdsByState:recommendedTaskIdsByState}))}catch(error){}
+  try{localStorage.setItem(recommendationStorageKey(),JSON.stringify({version:recommendationRuleVersion,state:recommendationState,taskIdsByState:recommendedTaskIdsByState,settledTodoIds,settledIdsByState:settledTaskIdsByState}))}catch(error){}
+}
+function rollRecommendationDay(){
+  const today=dateKey(new Date());
+  if(today===loadedRecommendationDay)return;
+  recommendedTaskIds=[];
+  recommendedTaskIdsByState={};
+  settledTodoIds=[];
+  settledTaskIdsByState={};
+  recommendationsGenerated=false;
+  recommendationState=null;
+  loadDailyRecommendations();
+  renderTodoSettled();
+  if(startPanel==='begin')renderRecommendations(activeEnergy||document.querySelector('.screen.start [data-state].active')?.dataset.state||'some');
 }
 
 function setAuthStatus(message,error=false){
@@ -797,6 +822,8 @@ function deleteDoneRow(row){
   applyDoneFilters();
   renderReviewList();
   renderCal();
+  renderTodoSettled();
+  if(activeEnergy)renderRecommendations(activeEnergy);
   persistAppState();
 }
 function requestDeleteRow(row,type){
@@ -905,7 +932,7 @@ function applyAppState(state){
   (Array.isArray(state.done)?state.done:[]).forEach(item=>document.getElementById('doneList').appendChild(createDoneRow(item)));
   const ideas=document.getElementById('ideaList');ideas.innerHTML='';normalizeIdeas(state.ideas).forEach(idea=>ideas.appendChild(makeIdeaRow(idea.text,idea.createdAt)));
   const feedbackList=document.getElementById('feedbackList');feedbackList.replaceChildren();normalizeFeedback(state.feedback).forEach(item=>feedbackList.appendChild(makeFeedbackRow(item.text,item.createdAt)));
-  updateCounts();applyTodoFilters();applyDoneFilters();renderReviewList();renderCal();
+  updateCounts();applyTodoFilters();applyDoneFilters();renderReviewList();renderCal();renderTodoSettled();
   if(startPanel==='begin'&&activeEnergy)renderRecommendations(activeEnergy);
   return true;
 }
@@ -1121,7 +1148,7 @@ function updateStartDate(){
   document.getElementById('startDate').textContent=dateKey(now)+' 星期'+weekdays[now.getDay()];
 }
 updateStartDate();
-setInterval(updateStartDate,60000);
+setInterval(()=>{updateStartDate();rollRecommendationDay()},60000);
 
 function showScreen(name){
   if(name!=='start'&&!requireAccount())return;
@@ -1135,7 +1162,7 @@ navs.done.onclick=()=>showScreen('done');
 navs.cal.onclick=()=>showScreen('cal');
 document.getElementById('doneHistoryLink').onclick=()=>showScreen('cal');
 
-function allTodoButtons(){return [...document.querySelectorAll('#todoTasksView .todo-check')]}
+function allTodoButtons(){return [...document.querySelectorAll('#todoTasksView .group .todo-check')].filter(button=>!button.closest('.task-row')?.classList.contains('is-settled'))}
 allTodoButtons().forEach((button,index)=>{button.dataset.taskId='seed_'+index;const row=button.closest('.task-row');const groupName=row.closest('.group').querySelector('.group-title').childNodes[0].textContent.trim();row.dataset.priority=priorityIds[groupName]||'other'});
 document.querySelectorAll('#todoTasksView .task-row').forEach(row=>enhanceSwipeRow(row,'task'));
 function taskMeta(button){
@@ -1182,16 +1209,19 @@ function updateCounts(){
       bars.appendChild(bar);
     }
   }
-  document.querySelectorAll('#todoTasksView .group').forEach(group=>group.querySelector('.group-title small').textContent=group.querySelectorAll('.task-row').length);
+  document.querySelectorAll('#todoTasksView .group').forEach(group=>group.querySelector('.group-title small').textContent=group.querySelectorAll('.task-row:not(.is-settled)').length);
   updateDifficultyChoices();
   updateTodoEmptyState();
 }
 function updateTodoEmptyState(){
-  const empty=allTodoItems().length===0;
+  const open=allTodoItems().length===0;
+  const settling=document.querySelectorAll('#todoTasksView .group .task-row.is-settled').length>0;
+  const settled=document.querySelectorAll('#todoSettled .task-row').length>0;
+  const empty=open&&!settling;
   document.getElementById('todoGroups').classList.toggle('hidden',empty);
-  document.getElementById('todoEmptyState').classList.toggle('hidden',!empty);
-  document.querySelector('#todoTasksView > .filters')?.classList.toggle('hidden',empty);
-  document.querySelector('#todoTasksView > .summary')?.classList.toggle('hidden',empty);
+  document.getElementById('todoEmptyState').classList.toggle('hidden',!empty||settled||settling);
+  document.querySelector('#todoTasksView > .filters')?.classList.toggle('hidden',empty&&!settled);
+  document.querySelector('#todoTasksView > .summary')?.classList.toggle('hidden',empty&&!settled);
 }
 function updateDifficultyChoices(){
   const counts=difficultyCounts();
@@ -1297,45 +1327,163 @@ function fillCurrentPushSlots(){
   recommendationsGenerated=true;
   saveDailyRecommendations();
 }
+function greyFooterIds(entries, todayKey){
+  const ids=[];
+  (Array.isArray(entries)?entries:[]).forEach(entry=>{
+    if(!entry||entry.id==null||entry.id==='')return;
+    const date=entry.completedAt instanceof Date?entry.completedAt:new Date(entry.completedAt);
+    if(Number.isNaN(date.getTime()))return;
+    const key=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+    if(key!==todayKey)return;
+    ids.push(String(entry.id));
+  });
+  return ids;
+}
+function pushColumnPlan(unfinishedIds, settledIds){
+  const unfinished=[];
+  const seen=new Set();
+  (Array.isArray(unfinishedIds)?unfinishedIds:[]).forEach(id=>{
+    const key=String(id);
+    if(!key||seen.has(key)||unfinished.length>=3)return;
+    seen.add(key);
+    unfinished.push(key);
+  });
+  const settled=[];
+  (Array.isArray(settledIds)?settledIds:[]).forEach(id=>{
+    const key=String(id);
+    if(!key||seen.has(key))return;
+    seen.add(key);
+    settled.push(key);
+  });
+  return {unfinished,settled};
+}
+function noteSettledTask(id){
+  const key=String(id);
+  if(!settledTodoIds.map(String).includes(key))settledTodoIds.push(key);
+  Object.keys(recommendationRules).forEach(state=>{
+    const saved=recommendedTaskIdsByState[state];
+    if(!Array.isArray(saved)||!saved.map(String).includes(key))return;
+    const list=settledTaskIdsByState[state]||(settledTaskIdsByState[state]=[]);
+    if(!list.map(String).includes(key))list.push(key);
+  });
+  saveDailyRecommendations();
+}
+function recommendationBits(item){
+  const bits=[difficultyLabels[item.difficulty]||'',item.project||''].filter(Boolean);
+  if(item.display&&item.display!=='未设置截止时间')bits.unshift(item.display);
+  return bits.join(' · ');
+}
+function appendRecommendationRow(list, item, settled){
+  const row=document.createElement('div');
+  row.className='recommendation-row'+(settled?' is-settled':'');
+  const check=document.createElement('button');
+  check.type='button';
+  check.className=settled?'check':'check start-check';
+  check.dataset.taskId=item.id;
+  check.textContent=settled?'●':'○';
+  if(settled){check.disabled=true;check.tabIndex=-1}
+  const copy=document.createElement('span');
+  copy.className='recommendation-copy';
+  const title=document.createElement('strong');
+  title.textContent=item.title;
+  const meta=document.createElement('small');
+  meta.textContent=recommendationBits(item);
+  copy.append(title,meta);
+  const chevron=document.createElement('span');
+  chevron.className='recommendation-chevron';
+  chevron.setAttribute('aria-hidden','true');
+  chevron.textContent='›';
+  row.append(check,copy,chevron);
+  list.appendChild(row);
+}
+function settledPushItems(state){
+  const ids=Array.isArray(settledTaskIdsByState[state])?settledTaskIdsByState[state]:[];
+  return ids.map(id=>{
+    const done=[...document.querySelectorAll('#doneList .done-row')].find(row=>String(row.dataset.taskId)===String(id));
+    if(!done||!isDoneToday(done))return null;
+    const parts=(done.querySelector('.done-copy small')?.textContent.trim()||'').split(' · ');
+    return {id:String(id),title:done.querySelector('.done-copy strong')?.textContent.trim()||'',project:done.dataset.project||'',difficulty:done.dataset.difficulty||'',display:parts.slice(2).join(' · ')};
+  }).filter(Boolean);
+}
 function renderRecommendations(state){
   ensureRecommendationIds(state);
   activeEnergy=state;
   const currentItems=allTodoItems();
-  const chosen=recommendedTaskIds.map(id=>currentItems.find(item=>item.id===id)).filter(Boolean);
+  const unfinished=recommendedTaskIds.map(id=>currentItems.find(item=>item.id===id)).filter(Boolean);
+  const settledItems=settledPushItems(state);
+  const plan=pushColumnPlan(unfinished.map(item=>item.id),settledItems.map(item=>item.id));
   const displayState=state;
   const stateNames={low:'低能量',some:'中能量',ready:'高能量'};
-  const noTasks=!currentItems.length;
+  const noTasks=!currentItems.length&&!plan.settled.length;
   document.getElementById('recommendationHeading').classList.remove('hidden');
   document.getElementById('recommendationHeading').textContent='现在适合开始这些';
   document.getElementById('startEmptyState').classList.toggle('hidden',!noTasks);
-  document.getElementById('recommendationCount').textContent=noTasks?'':stateNames[displayState]+' · 为你挑了 '+chosen.length+' 件';
+  document.getElementById('recommendationCount').textContent=noTasks?'':stateNames[displayState]+' · 为你挑了 '+plan.unfinished.length+' 件';
   const list=document.getElementById('recommendationItems');
   list.innerHTML='';
-  chosen.forEach(item=>{
-    const row=document.createElement('button');
-    row.type='button';
-    row.className='recommendation-row';
-    row.dataset.completeTask=item.id;
-    const copy=document.createElement('span');
-    copy.className='recommendation-copy';
-    const title=document.createElement('strong');
-    title.textContent=item.title;
-    const meta=document.createElement('small');
-    const bits=[difficultyLabels[item.difficulty]||'',item.project||''].filter(Boolean);
-    if(item.display&&item.display!=='未设置截止时间')bits.unshift(item.display);
-    meta.textContent=bits.join(' · ');
-    copy.append(title,meta);
-    const chevron=document.createElement('span');
-    chevron.className='recommendation-chevron';
-    chevron.setAttribute('aria-hidden','true');
-    chevron.textContent='›';
-    row.append(copy,chevron);
-    list.appendChild(row);
+  plan.unfinished.forEach(id=>{
+    const item=unfinished.find(entry=>entry.id===id);
+    if(item)appendRecommendationRow(list,item,false);
+  });
+  plan.settled.forEach(id=>{
+    const item=settledItems.find(entry=>entry.id===id);
+    if(item)appendRecommendationRow(list,item,true);
   });
   if(startPanel==='begin')document.getElementById('recommendations').classList.remove('hidden');
 }
+function settledTaskRow(doneRow){
+  const row=document.createElement('div');
+  row.className='task-row is-settled';
+  row.dataset.project=doneRow.dataset.project||'';
+  row.dataset.difficulty=doneRow.dataset.difficulty||'';
+  const check=document.createElement('button');
+  check.type='button';
+  check.className='check';
+  check.disabled=true;
+  check.tabIndex=-1;
+  check.textContent='●';
+  const main=document.createElement('div');
+  main.className='task-main';
+  const title=document.createElement('span');
+  title.className='task-title';
+  title.textContent=doneRow.querySelector('.done-copy strong')?.textContent.trim()||'';
+  const meta=document.createElement('span');
+  meta.className='meta';
+  const text=document.createElement('span');
+  text.textContent=doneRow.querySelector('.done-copy small')?.textContent.trim()||'';
+  meta.appendChild(text);
+  main.append(title,meta);
+  row.append(check,main);
+  return row;
+}
+function renderTodoSettled(){
+  const footer=document.getElementById('todoSettled');
+  if(!footer)return;
+  const entries=[...document.querySelectorAll('#doneList .done-row')].filter(row=>settledTodoIds.map(String).includes(String(row.dataset.taskId))).map(row=>({id:row.dataset.taskId,completedAt:Number(row.dataset.completed||0),row})).sort((a,b)=>a.completedAt-b.completedAt);
+  const ids=greyFooterIds(entries,dateKey(new Date()));
+  footer.replaceChildren();
+  ids.forEach(id=>{
+    const entry=entries.find(item=>String(item.id)===id);
+    if(entry)footer.appendChild(settledTaskRow(entry.row));
+  });
+  updateTodoEmptyState();
+  applyTodoFilters();
+}
 function completeTask(button){
-  const item=taskMeta(button);
+  if(!button||button.disabled||button.dataset.settling==='true'||button.closest('.is-settled'))return;
+  const todoButton=button.matches('.todo-check')?button:allTodoItems().find(task=>task.id===button.dataset.taskId)?.button;
+  if(!todoButton||todoButton.dataset.settling==='true')return;
+  const item=taskMeta(todoButton);
+  button.dataset.settling='true';
+  todoButton.dataset.settling='true';
+  const mark=node=>{
+    if(!node)return;
+    node.classList.add('is-settled');
+    const check=node.querySelector('.check');
+    if(check){check.textContent='●';check.disabled=true}
+  };
+  mark(item.row);
+  mark(button.closest('.recommendation-row'));
   const doneRow=document.createElement('div');
   doneRow.className='done-row';
   doneRow.dataset.taskId=item.id;
@@ -1354,19 +1502,24 @@ function completeTask(button){
   doneRow.append(copy);
   enhanceSwipeRow(doneRow,'done');
   document.getElementById('doneList').prepend(doneRow);
-  item.row.remove();
+  noteSettledTask(item.id);
   updateCounts();
   applyDoneFilters();
   renderReviewList();
   persistAppState();
-  if(activeEnergy)renderRecommendations(activeEnergy);
+  const state=activeEnergy||currentPushEnergy();
+  setTimeout(()=>{
+    if(item.row.isConnected)item.row.remove();
+    renderTodoSettled();
+    updateCounts();
+    if(state)renderRecommendations(state);
+    persistAppState();
+  },280);
 }
 document.addEventListener('click',event=>{
-  const target=event.target.closest('.todo-check,[data-complete-task]');
-  if(!target)return;
-  if(target.matches('.todo-check')){completeTask(target);return}
-  const item=allTodoItems().find(task=>task.id===target.dataset.completeTask);
-  if(item)completeTask(item.button);
+  const target=event.target.closest('.todo-check,.start-check');
+  if(!target||target.disabled||target.closest('.is-settled'))return;
+  completeTask(target);
 });
 
 function applyStartPanel(panel){
