@@ -554,6 +554,7 @@ function createApp(pool) {
 
   const serveStatic = process.env.SERVE_STATIC ? process.env.SERVE_STATIC === '1' : process.env.NODE_ENV !== 'production';
   if (serveStatic) {
+    const blockedPrefixes = ['/server', '/deploy', '/.git', '/.github', '/node_modules', '/docs'];
     app.use((req, res, next) => {
       let pathName = req.path;
       try {
@@ -561,16 +562,36 @@ function createApp(pool) {
       } catch {
         return res.status(404).end();
       }
-      const blocked = ['/server', '/deploy', '/.git', '/.github', '/node_modules', '/docs'];
-      if (
-        pathName.includes('..') ||
-        pathName === '/.env' ||
-        pathName.endsWith('/.env') ||
-        blocked.some((prefix) => pathName === prefix || pathName.startsWith(`${prefix}/`))
-      ) {
-        return res.status(404).end();
-      }
+      const candidates = [pathName];
+      if (pathName === '/taskmanager') candidates.push('/');
+      else if (pathName.startsWith('/taskmanager/')) candidates.push(pathName.slice('/taskmanager'.length) || '/');
+      const blocked = candidates.some((candidate) => (
+        candidate.includes('..') ||
+        candidate === '/.env' ||
+        candidate.endsWith('/.env') ||
+        blockedPrefixes.some((prefix) => candidate === prefix || candidate.startsWith(`${prefix}/`))
+      ));
+      if (blocked) return res.status(404).end();
       next();
+    });
+    // Mirror nginx: the slash keeps relative URLs inside /taskmanager/.
+    // Match the raw path. Express route matching treats /taskmanager and
+    // /taskmanager/ as the same unless strict routing is on.
+    // Unknown paths return the shell. / itself stays put for local preview.
+    app.use((req, res, next) => {
+      if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+      const queryIndex = req.originalUrl.indexOf('?');
+      const pathname = queryIndex === -1 ? req.originalUrl : req.originalUrl.slice(0, queryIndex);
+      if (pathname !== '/taskmanager') return next();
+      const query = queryIndex === -1 ? '' : req.originalUrl.slice(queryIndex);
+      res.redirect(301, `/taskmanager/${query}`);
+    });
+    app.use('/taskmanager', express.static(webRoot, { dotfiles: 'ignore', index: 'index.html', redirect: false }));
+    app.use('/taskmanager', (req, res, next) => {
+      if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+      res.sendFile(join(webRoot, 'index.html'), (error) => {
+        if (error) next(error);
+      });
     });
     app.use(express.static(webRoot, { dotfiles: 'ignore', index: 'index.html' }));
   }
