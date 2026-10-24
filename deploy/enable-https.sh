@@ -177,5 +177,5 @@ if ! certbot renew --dry-run; then
   exit 1
 fi
 
-echo "HTTPS 已启用: https://myqingzhou.com/ 和 https://www.myqingzhou.com/"
-echo "IP 仍走 HTTP: http://121.41.63.67/"
+echo "HTTPS 已启用: https://myqingzhou.com/taskmanager/ 和 https://www.myqingzhou.com/taskmanager/"
+echo "域名的 / 会跳到 /taskmanager/。IP 仍走 HTTP，页面仍在 http://121.41.63.67/ ，也可以打开 http://121.41.63.67/taskmanager/"

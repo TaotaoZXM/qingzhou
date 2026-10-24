@@ -177,12 +177,13 @@ sudo setsebool -P httpd_can_network_connect 1
 
 启用之后 Nginx 会做这些事：
 
-- `http://121.41.63.67/` 继续走 HTTP，不跳转
-- `myqingzhou.com` 和 `www.myqingzhou.com` 的 80 端口只留下 ACME 校验，其余 301 到同一主机的 HTTPS
+- `http://121.41.63.67/` 继续走 HTTP，不跳转，页面仍在 `/`。同一个地址也可以打开 `http://121.41.63.67/taskmanager/`（没有末尾斜杠时会补上）
+- `myqingzhou.com` 和 `www.myqingzhou.com` 的 80 端口只留下 ACME 校验，其余 301 到同一主机的 HTTPS，路径和查询字符串保留
 - 443 终止 TLS，证书路径是 `/etc/letsencrypt/live/myqingzhou.com/fullchain.pem` 和 `privkey.pem`（这本证书同时覆盖 www）
-- 网站根目录是 `/opt/qingzhou`
-- `/api/` 转发到 `127.0.0.1:3000`，并设置 `X-Forwarded-Proto $scheme`
-- 拒绝直接访问 `server/`、`deploy/`、`.git/` 等目录
+- 正式页面在 `/taskmanager/`。`/taskmanager` 会 301 到 `/taskmanager/`，查询字符串保留。这个前缀下的文件来自网站根目录 `/opt/qingzhou`；找不到的路径回退到 `index.html`，所以深链刷新仍是这一份页面
+- 443 上，`/` 和 `/index.html` 301 到 `/taskmanager/`，查询字符串保留。例如 `/?login=1` 会到 `/taskmanager/?login=1`。旧书签因此还能进应用
+- `/api/` 仍在网站根上，转发到 `127.0.0.1:3000`，并设置 `X-Forwarded-Proto $scheme`。页面请求的是绝对路径 `/api`，不会变成 `/taskmanager/api`
+- 拒绝直接访问 `server/`、`deploy/`、`.git/` 等目录，也包括 `/taskmanager/` 下面的同名路径
 
 新机器还没有这份只监听 80 的配置时，先让 80 端口能打开页面，并且 `/.well-known/acme-challenge/` 的 `root` 是 `/var/www/certbot`，再做第 8 节。
 
@@ -233,9 +234,11 @@ Cookie 不要改环境变量。保持 `COOKIE_SECURE` 不设置。Nginx 在 443 
 
 用浏览器确认：
 
-- `https://myqingzhou.com/` 和 `https://www.myqingzhou.com/` 能打开
-- `http://myqingzhou.com/` 和 `http://www.myqingzhou.com/` 跳到 HTTPS
-- `http://121.41.63.67/` 仍然是 HTTP，可以登录
+- `https://myqingzhou.com/taskmanager/` 和 `https://www.myqingzhou.com/taskmanager/` 能打开，图标和接口正常
+- `https://myqingzhou.com/` 和 `https://www.myqingzhou.com/` 跳到同一主机的 `/taskmanager/`
+- `https://myqingzhou.com/?login=1` 跳到 `/taskmanager/?login=1`
+- `http://myqingzhou.com/` 和 `http://www.myqingzhou.com/` 先到 HTTPS，再进入 `/taskmanager/`
+- `http://121.41.63.67/` 仍然是 HTTP，地址留在 `/`，可以登录
 
 ## 9. 更新
 
@@ -245,7 +248,17 @@ sudo -u qingzhou npm ci --prefix /opt/qingzhou/server
 sudo systemctl restart qingzhou
 ```
 
-`git pull` 只更新 `/opt/qingzhou` 里的文件，不会改 `/etc/nginx/conf.d/qingzhou.conf`。HTTPS 仍按第 8 节执行。
+`git pull` 只更新 `/opt/qingzhou` 里的文件，不会改 `/etc/nginx/conf.d/qingzhou.conf`。证书已经在、只是页面路径变了时，不必重跑 certbot。先备份现网配置，再把仓库里的文件换上去并重载：
+
+```bash
+sudo cp -a /etc/nginx/conf.d/qingzhou.conf "/etc/nginx/conf.d/qingzhou.conf.bak.$(date +%Y%m%d%H%M%S)"
+sudo cp /opt/qingzhou/deploy/nginx-qingzhou.conf /etc/nginx/conf.d/qingzhou.conf
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+`nginx -t` 失败就不要 reload，把刚才的 `.bak` 文件拷回 `/etc/nginx/conf.d/qingzhou.conf`。`deploy/enable-https.sh` 也会用这份文件覆盖站点配置，可以重跑；它会再做一次证书和 webroot 检查。还没有证书时仍按第 8 节，不要提前把这份文件拷进 `conf.d`。
+
+页面里有一段很短的脚本，只在主机名是 `myqingzhou.com` 或 `www.myqingzhou.com`、并且路径是 `/` 或 `/index.html` 时，才改到 `/taskmanager/`。已经安装的 Service Worker 如果把 Nginx 的 301 吞掉、地址栏仍停在 `/`，这段脚本会把浏览器带过去。IP 和本机预览不跳转。在 `/taskmanager` 下打开时，脚本会写上 `<base href="/taskmanager/">`，深链里的图标、manifest 和 `sw.js` 仍指向这个目录。Service Worker 的脚本在 `/taskmanager/sw.js`，作用范围是 `/taskmanager/`，并且继续放过 `/api/`。
 
 如果 `git pull` 报 `safe.directory`，执行一次：
 
