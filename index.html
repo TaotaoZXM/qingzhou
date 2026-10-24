@@ -1208,31 +1208,62 @@ function updateDifficultyChoices(){
     document.querySelector('#todoSheet [data-task-difficulty]:not(:disabled)')?.classList.add('active');
   }
 }
-function chooseRecommendationIds(state=activeEnergy||'some'){
+function chooseRecommendationIdsFrom(items, state, options){
   const rule=recommendationRules[state]||recommendationRules.some;
+  const exclude=options&&options.exclude||null;
+  const limit=options&&Number.isInteger(options.limit)?options.limit:3;
+  const random=options&&typeof options.random==='function'?options.random:Math.random;
   const pools={easy:[],medium:[],hard:[]};
-  allTodoItems().forEach(item=>pools[item.difficulty].push(item));
+  (Array.isArray(items)?items:[]).forEach(item=>{
+    if(!item||item.id==null||item.id==='')return;
+    if(exclude&&(exclude.has(item.id)||exclude.has(String(item.id))))return;
+    if(!pools[item.difficulty])return;
+    pools[item.difficulty].push(item);
+  });
   Object.keys(pools).forEach(level=>{
     const priorityGroups={};
     pools[level].forEach(item=>(priorityGroups[item.priority]||(priorityGroups[item.priority]=[])).push(item));
     pools[level]=Object.entries(priorityGroups)
       .sort(([a],[b])=>(priorityRank[b]||0)-(priorityRank[a]||0))
-      .flatMap(([,items])=>{
-        for(let i=items.length-1;i>0;i--){
-          const j=Math.floor(Math.random()*(i+1));
-          [items[i],items[j]]=[items[j],items[i]];
+      .flatMap(([,group])=>{
+        for(let i=group.length-1;i>0;i--){
+          const j=Math.floor(random()*(i+1));
+          [group[i],group[j]]=[group[j],group[i]];
         }
-        return items;
+        return group;
       });
   });
   const chosen=[];
   const levels=[rule.target,...rule.order.filter(level=>level!==rule.target)];
   for(const level of levels){
-    const remaining=3-chosen.length;
+    const remaining=limit-chosen.length;
     if(remaining<=0)break;
     chosen.push(...pools[level].slice(0,remaining));
   }
   return chosen.map(item=>item.id);
+}
+function chooseRecommendationIds(state=activeEnergy||'some', options){
+  return chooseRecommendationIdsFrom(allTodoItems(), state, options);
+}
+function fillSavedPushIds(saved, items, state, random){
+  const openIds=new Set();
+  (Array.isArray(items)?items:[]).forEach(item=>{
+    if(item&&item.id!=null&&item.id!=='')openIds.add(String(item.id));
+  });
+  if(!Array.isArray(saved)||saved.length===0)return null;
+  const valid=[];
+  const seen=new Set();
+  saved.forEach(id=>{
+    if(id==null||id==='')return;
+    const key=String(id);
+    if(seen.has(key)||!openIds.has(key))return;
+    seen.add(key);
+    valid.push(id);
+  });
+  if(valid.length>=3)return null;
+  const extra=chooseRecommendationIdsFrom(items, state, {exclude:seen, limit:3-valid.length, random});
+  if(!extra.length)return null;
+  return valid.concat(extra).slice(0,3);
 }
 function refreshRecommendationIds(state=activeEnergy||'some'){
   recommendedTaskIds=chooseRecommendationIds(state);
@@ -1250,6 +1281,21 @@ function ensureRecommendationIds(state){
   }
   recommendedTaskIds=saved.filter(id=>openIds.has(id));
   recommendationState=state;
+}
+function currentPushEnergy(){
+  const selected=document.querySelector('.screen.start [data-state].active');
+  return activeEnergy||(selected&&selected.dataset.state)||recommendationState||null;
+}
+function fillCurrentPushSlots(){
+  const state=currentPushEnergy();
+  if(!state||!recommendationRules[state])return;
+  const next=fillSavedPushIds(recommendedTaskIdsByState[state], allTodoItems(), state);
+  if(!next)return;
+  recommendedTaskIdsByState[state]=next;
+  recommendationState=state;
+  recommendedTaskIds=next;
+  recommendationsGenerated=true;
+  saveDailyRecommendations();
 }
 function renderRecommendations(state){
   ensureRecommendationIds(state);
@@ -1794,7 +1840,8 @@ function addTaskToList(){
   updateCounts();
   applyTodoFilters();
   persistAppState();
-  if(startPanel==='begin')renderRecommendations(activeEnergy||document.querySelector('.screen.start [data-state].active')?.dataset.state||'some');
+  fillCurrentPushSlots();
+  if(startPanel==='begin')renderRecommendations(currentPushEnergy()||'some');
 }
 document.querySelector('#todoSheet form').onsubmit=event=>{event.preventDefault();addTaskToList()};
 document.getElementById('newTodo').onclick=()=>openTaskForm('');
