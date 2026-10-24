@@ -639,6 +639,11 @@ test('login form drops the password minlength and signup keeps it', () => {
   assert.equal(elements.get('authPassword').getAttribute('minlength'), '8');
   context.setAuthMode(false);
   assert.equal(elements.get('authPassword').getAttribute('minlength'), null);
+  assert.equal(elements.get('authSubmit').textContent, '登录');
+  context.setAuthMode(true);
+  assert.equal(elements.get('authSubmit').textContent, '注册');
+  context.setAuthMode(false);
+  assert.equal(elements.get('authSubmit').textContent, '登录');
   assert.match(html, /minlength="8"/);
   assert.match(html, /placeholder="至少 8 位"/);
 });

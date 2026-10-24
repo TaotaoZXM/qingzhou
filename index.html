@@ -32,7 +32,7 @@
 <style>
 :root{--canvas:#eef0ed;--surface:#fff;--soft:#f4f5f3;--text:#252a26;--muted:#7e887f;--quiet:#a9b0aa;--line:#e5e8e3;--accent:#367769;--accent-soft:#e4f0ec;--easy:#4c8c78;--medium:#9a7651;--hard:#9a5f5d}
 *{box-sizing:border-box}html,body{margin:0;background:var(--canvas);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif}body{padding:28px}button,input,textarea{font:inherit}button{cursor:pointer}h1,h2,h3,p{margin:0}
-.phone{position:relative;width:min(100%,390px);height:820px;margin:0 auto;overflow:hidden;background:var(--surface);box-shadow:0 15px 36px rgba(39,49,59,.1);display:flex;flex-direction:column}.status{height:24px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;color:var(--muted);font-size:9px}.appbar{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 1px 0 var(--line)}.brand{font-size:13px;font-weight:600;letter-spacing:-.04em}.top-note{color:var(--quiet);font-size:13px}
+.phone{position:relative;width:min(100%,390px);height:820px;margin:0 auto;overflow:hidden;background:var(--surface);box-shadow:0 15px 36px rgba(39,49,59,.1);display:flex;flex-direction:column}.status{height:24px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;color:var(--muted);font-size:9px}.appbar{position:relative;z-index:4;height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#fff;border-bottom:1px solid var(--line);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}.brand{font-size:13px;font-weight:600;letter-spacing:-.04em}.top-note{color:var(--quiet);font-size:13px}
 .screen{flex:1;overflow:auto;padding:31px 17px 90px}.hidden{display:none!important}.screen.start{text-align:center}.date{color:var(--muted);font-size:10px;margin-bottom:28px}.greeting{font-size:24px;line-height:1.25;letter-spacing:-.05em;font-weight:600}.sub{max-width:235px;margin:12px auto 0;color:var(--muted);font-size:11px;line-height:1.55}.start-button{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:48px;margin-top:30px;padding:0 15px;background:var(--accent);color:#fff;border:0;border-radius:7px;font-size:12px;font-weight:600}.start-button svg{width:17px}.state-block{text-align:left;margin-top:34px}.section-label{color:var(--muted);font-size:10px}.states{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:9px}.state{padding:10px 4px;background:#fafbfa;color:var(--muted);border:0;font-size:10px}.state.active{background:var(--soft);color:var(--text);box-shadow:inset 0 -2px 0 var(--accent)}.state-hint{margin-top:9px;color:var(--quiet);font-size:10px}.delay-row{display:flex;justify-content:center;gap:16px;margin-top:18px;color:var(--muted);font-size:10px}.delay-row span:last-child{color:var(--accent)}
 .recommendations{margin-top:30px;text-align:left}.recommendations h2{margin-top:4px;font-size:16px;letter-spacing:-.03em}.recommendations small{color:var(--muted);font-size:10px}.recommendation-head{display:flex;align-items:end;justify-content:space-between;gap:12px}.refresh-recommendations{flex:none;padding:4px 0;color:var(--accent);background:transparent;border:0;font-size:10px}.refresh-recommendations:hover{text-decoration:underline}.recommendation-row{width:100%;display:flex;align-items:center;gap:9px;padding:10px 0;text-align:left;color:var(--text);background:transparent;border:0;border-bottom:1px solid var(--line)}.recommendation-copy{flex:1}.recommendation-copy strong{display:block;font-size:12px;font-weight:400}.recommendation-copy small{display:block;margin-top:4px;color:var(--muted);font-size:10px}
 .screen.work{text-align:left}.work-head{display:flex;align-items:end;justify-content:space-between}.work-head h1{margin-top:4px;font-size:27px;letter-spacing:-.06em}.eyebrow{color:var(--muted);font-size:10px;letter-spacing:.06em}.add{display:flex;align-items:center;gap:5px;padding:0 0 3px;color:var(--accent);background:transparent;border:0;font-size:12px}
@@ -45,7 +45,7 @@
 .done-intro{margin-top:24px}.done-tabs{gap:18px;margin-top:25px}.done-tab{font-size:12px}.done-list{margin-top:14px}.done-row{display:flex;align-items:flex-start;gap:9px;padding:11px 0;border-bottom:1px solid var(--line)}.done-copy{flex:1;min-width:0}.done-copy strong{display:block;font-size:12px;font-weight:400}.done-copy small{display:block;margin-top:4px;color:var(--muted);font-size:9px}.section-note{margin:12px 0;color:var(--quiet);font-size:9px}.done-history-link{display:block;margin:16px auto 0;padding:0;color:var(--quiet);background:transparent;border:0;font-size:13px;text-align:center}.done-history-link:hover{color:var(--accent)}.review-list{margin-top:15px}.review-label{color:var(--muted);font-size:10px}.review-row{display:flex;align-items:flex-start;gap:8px;width:100%;padding:12px 0;text-align:left;color:var(--text);background:transparent;border:0;border-bottom:1px solid var(--line)}.review-copy{flex:1;min-width:0}.review-row strong{display:block;font-size:12px;font-weight:400}.review-row small{display:block;margin-top:4px;color:var(--muted);font-size:9px;line-height:1.4}.review-row .review-note{color:var(--text)}.review-arrow{display:grid;place-items:center;flex:none;width:26px;height:26px;margin-left:auto;color:#fff;background:var(--accent);border-radius:50%;font-size:15px;line-height:1}.reviewed{margin-top:23px}.reviewed .review-row{color:var(--muted)}
 .bottom-nav{position:absolute;right:0;bottom:0;left:0;display:grid;grid-template-columns:repeat(3,1fr);padding:9px 10px 12px;background:rgba(255,255,255,.96);box-shadow:0 -1px 0 var(--line)}.bottom-item{display:grid;grid-template-rows:24px 18px;justify-items:center;align-items:center;gap:3px;color:var(--muted);background:transparent;border:0;font-size:9px;line-height:1}.bottom-item.active{color:var(--text)}.bottom-item .bottom-icon{display:grid;place-items:center;width:24px;height:24px;font-size:18px;line-height:1}.bottom-item span:not(.bottom-icon){display:block;text-align:center;line-height:18px}.count{padding:1px 4px;color:var(--muted);background:var(--soft);border-radius:8px;font-size:8px}
 .sheet,.review-dialog{position:absolute;z-index:5;inset:0;display:flex;align-items:end;background:rgba(37,42,38,.22)}.sheet.hidden,.review-dialog.hidden{display:none}.sheet-panel,.review-card{width:100%;padding:19px 17px 24px;background:#fff;border-radius:15px 15px 0 0;box-shadow:0 -14px 36px rgba(37,42,38,.15)}.review-dialog{z-index:7;align-items:center;padding:18px}.review-card{border-radius:11px;box-shadow:0 14px 40px rgba(37,42,38,.15)}.sheet-head{display:flex;align-items:start;justify-content:space-between}.sheet-head h2{margin-top:4px;font-size:18px;letter-spacing:-.04em}.close{display:grid;place-items:center;width:29px;height:29px;color:var(--muted);background:transparent;border:0}.form{display:grid;gap:14px;margin-top:18px}.form label,.form-field{display:grid;gap:6px;color:var(--muted);font-size:10px}.form input,.form textarea{width:100%;padding:9px 0;color:var(--text);background:transparent;border:0;border-bottom:1px solid var(--line);outline:0;font-size:12px}.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.choice{padding:8px 4px;color:var(--muted);background:var(--soft);border:1px solid transparent;border-radius:5px;font-size:10px}.choice.active{color:var(--text);background:var(--accent-soft);border-color:#c7ded6}.choice small{display:block;margin-top:2px;color:var(--quiet);font-size:8px}.sheet-submit,.review-done{padding:11px;color:#fff;background:var(--accent);border:0;border-radius:6px;font-size:11px}.review-card p{margin-top:10px;color:var(--muted);font-size:11px;line-height:1.5}.review-card textarea{width:100%;min-height:100px;margin-top:17px;padding:10px;color:var(--text);background:var(--soft);border:0;border-radius:6px;outline:0;resize:none;font-size:12px;line-height:1.5}.review-footer{display:flex;align-items:center;justify-content:space-between;margin-top:8px;color:var(--quiet);font-size:9px}.review-done:disabled{color:var(--quiet);background:var(--soft)}
-@media(max-width:430px){html,body{background:#fff}body{padding:0}.phone{width:100%;height:100svh;box-shadow:none}}
+@media(max-width:430px){html,body{background:#fff}body{padding:0}.phone{width:100%;height:100svh;box-shadow:none;padding-top:env(safe-area-inset-top,0px);background:#fff}}
 .priority-choice{grid-template-columns:repeat(2,1fr)}.datetime-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.project-list{display:flex;flex-wrap:wrap;gap:5px}.project{padding:8px 9px;color:var(--muted);background:var(--soft);border:1px solid transparent;border-radius:5px;font-size:10px}.project.active{color:var(--text);background:var(--accent-soft);border-color:#c7ded6}.project.new-project{color:var(--accent)}.new-project-field{margin-top:8px}.task-entry-form{max-height:520px;overflow:auto;padding-right:2px}.start-button.revealed{background:var(--soft);color:var(--text);border:1px solid var(--line);box-shadow:none}.start-button.revealed span{font-size:11px}.state-block{transition:opacity .18s ease,transform .18s ease}.recommendation-set.hidden{display:none}.recommendation-set h2{margin-bottom:5px}.done-filter-line{margin-top:16px}.done-filter-line .filter-set{width:100%;justify-content:flex-start}.capacity-blocked{color:var(--quiet)!important;background:#f7f8f6!important;opacity:.58;cursor:not-allowed}.todo-empty-state{display:grid;justify-items:center;gap:10px;padding:54px 12px 30px;text-align:center}.todo-empty-state-mark{display:grid;place-items:center;width:34px;height:34px;color:var(--accent);background:var(--accent-soft);border-radius:50%;font-size:19px}.todo-empty-state strong{font-size:14px;font-weight:500}.todo-empty-state p{color:var(--muted);font-size:10px;line-height:1.5}.todo-empty-state button{padding:8px 14px;color:var(--accent);background:var(--accent-soft);border:0;border-radius:6px;font-size:11px;font-weight:500}.capacity-alert{position:absolute;z-index:12;inset:0;display:flex;align-items:center;padding:20px;background:rgba(37,42,38,.24)}.capacity-alert.hidden{display:none}.capacity-alert-card{width:100%;padding:20px;background:#fff;border-radius:10px;box-shadow:0 16px 40px rgba(37,42,38,.16);text-align:center}.capacity-alert-mark{display:grid;place-items:center;width:27px;height:27px;margin:0 auto 12px;color:#fff;background:var(--medium);border-radius:50%;font-size:15px;font-weight:600}.capacity-alert-card h3{font-size:15px;line-height:1.45;font-weight:500;letter-spacing:-.02em}.capacity-alert-card p{margin-top:9px;color:var(--muted);font-size:11px;line-height:1.5}.capacity-alert-card button{margin-top:17px;padding:9px 18px;color:#fff;background:var(--accent);border:0;border-radius:5px;font-size:11px}.screen.start{padding:0 20px 90px;display:flex;flex-direction:column;text-align:left;background:#fbfcfa}.start-topline{display:flex;align-items:center;justify-content:space-between;padding-top:20px;color:var(--quiet);font-size:10px}.start-topline span:first-child{color:var(--text);font-size:14px;font-weight:600;letter-spacing:-.05em}.start-stage{display:flex;flex:1;flex-direction:column;justify-content:center;padding:0 0 7vh}.start-kicker{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:10px}.start-kicker-line{width:22px;height:1px;background:var(--accent)}.screen.start .greeting{margin-top:17px;font-size:27px;line-height:1.28;letter-spacing:-.055em;font-weight:500}.screen.start .greeting span{color:#596760}.screen.start .sub{max-width:250px;margin:14px 0 0;color:var(--muted);font-size:12px;line-height:1.55}.screen.start .start-button{display:flex;align-items:center;justify-content:space-between;width:min(100%,325px);min-height:56px;margin-top:30px;padding:0 8px 0 18px;color:var(--text);background:var(--surface);border:1px solid #d3dbd5;border-radius:999px;box-shadow:0 8px 22px rgba(57,88,72,.08);font-size:13px;font-weight:500;text-align:left}.screen.start .start-button:hover{border-color:var(--accent)}.start-button-arrow{display:grid;place-items:center;width:40px;height:40px;color:#fff;background:var(--accent);border-radius:50%;font-size:18px;font-weight:400}.screen.start .start-button.revealed{color:var(--text);background:var(--accent-soft);border-color:#c7ded6;box-shadow:none}.screen.start .state-block{margin-top:32px}.screen.start .recommendations{margin-top:27px}.screen.start .recommendation-row{padding:11px 0}.screen.start .recommendation-copy strong{font-size:13px}.screen.start .recommendation-copy small{font-size:10px}.idea-row{display:flex;align-items:center;justify-content:space-between;gap:12px}.idea-text{flex:1;min-width:0;line-height:1.45}.idea-to-task{flex:none;min-width:52px;padding:6px 11px;color:var(--accent);background:var(--accent-soft);border:0;border-radius:6px;font-size:10px;font-weight:500}.idea-to-task:hover{background:#d5e8e2}.recommendation-row{cursor:default}.recommendation-check{width:22px;height:22px;color:var(--quiet);border-radius:50%;font-size:16px}.recommendation-check:hover{color:var(--accent);background:var(--accent-soft)}</style>
 <style>
 .screen.start .start-button.revealed .start-button-label{font-size:15px}
@@ -65,7 +65,7 @@
 .bottom-item span:not(.bottom-icon){font-size:10px;font-weight:500}
 .bottom-item.active{color:var(--text)}
 .count{color:#59655e;background:transparent;font-size:9px;font-weight:600}
-.account-button{padding:0;color:var(--muted);background:transparent;border:0;font-size:11px}.account-button.authenticated{color:var(--accent)}
+.account-button{position:relative;z-index:1;padding:0;color:var(--muted);background:transparent;border:0;font-size:11px;line-height:1.2;-webkit-appearance:none;appearance:none;transform:none;filter:none;-webkit-font-smoothing:auto;-moz-osx-font-smoothing:auto}.account-button.authenticated{color:var(--accent)}.appbar .brand{position:relative;z-index:1;transform:none;filter:none;-webkit-font-smoothing:auto;-moz-osx-font-smoothing:auto}
 .auth-dialog{position:absolute;z-index:20;inset:0;display:flex;align-items:center;padding:18px;background:rgba(37,42,38,.24)}.auth-dialog.hidden{display:none}.auth-card{position:relative;width:100%;padding:21px 18px;background:#fff;border-radius:11px;box-shadow:0 16px 40px rgba(37,42,38,.16)}.auth-card h2{margin-top:5px;font-size:20px;letter-spacing:-.04em}.auth-card p{margin-top:9px;color:var(--muted);font-size:11px;line-height:1.5}.auth-close{position:absolute;top:14px;right:14px;display:grid;place-items:center;width:28px;height:28px;padding:0;color:var(--muted);background:transparent;border:0;font-size:14px;line-height:1}.auth-form{display:grid;gap:12px;margin-top:19px}.auth-form label{display:grid;gap:6px;color:var(--muted);font-size:10px}.auth-form input{width:100%;padding:10px 0;color:var(--text);background:transparent;border:0;border-bottom:1px solid var(--line);outline:0;font-size:12px}.auth-primary{padding:11px;color:#fff;background:var(--accent);border:0;border-radius:6px;font-size:11px}.auth-secondary{padding:4px 0;color:var(--accent);background:transparent;border:0;font-size:10px}.auth-status{min-height:16px;margin-top:10px!important;color:var(--accent)!important;font-size:10px!important}.auth-status.error{color:var(--hard)!important}.auth-account{display:flex;align-items:center;justify-content:space-between;margin-top:17px;padding-top:13px;border-top:1px solid var(--line);color:var(--muted);font-size:10px}
 </style>
 <style>
@@ -387,6 +387,28 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .capacity-dialog .sheet-head h2{line-height:1.35}
 .capacity-actions{justify-content:flex-end;margin-top:20px}
 </style>
+<style>
+.todo-empty-state .todo-empty-add{display:grid;place-items:center;width:44px;height:44px;padding:0;color:#367769;background:#e4f0ec;border:0;border-radius:50%;font-size:22px;font-weight:400;line-height:1}
+.todo-empty-state .todo-empty-add:hover{background:#d7ebe4}
+.deadline-date{width:100%;padding:9px 0;color:var(--text);background:transparent;border:0;border-bottom:1px solid var(--line);text-align:left;font-size:12px}
+.deadline-date.is-empty{color:var(--quiet)}
+.deadline-picker{margin-top:8px;padding:10px 8px 6px;background:#fbfcfa;border:1px solid var(--line);border-radius:10px}
+.deadline-picker-head{display:flex;align-items:center;justify-content:space-between}
+.deadline-picker-head strong{font-size:13px;font-weight:600}
+.deadline-picker-head button{display:grid;place-items:center;width:28px;height:28px;padding:0;color:var(--muted);background:transparent;border:0;border-radius:50%;font-size:18px;line-height:1}
+.deadline-weekdays,.deadline-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.deadline-weekdays{margin-top:8px;color:var(--quiet);font-size:11px}
+.deadline-days{margin-top:4px}
+.deadline-day{display:grid;place-items:center;width:100%;aspect-ratio:1;padding:0;color:var(--text);background:transparent;border:0;border-radius:50%;font-size:12px}
+.deadline-day.muted{color:#c6ccc7}
+.deadline-day.selected{color:#fff;background:#367769}
+.deadline-day.today:not(.selected){color:#367769;box-shadow:inset 0 0 0 1.5px #367769}
+.deadline-clear{display:flex;align-items:center;width:100%;margin-top:8px;padding:12px 4px 8px;color:#367769;background:transparent;border:0;border-top:1px solid var(--line);text-align:left;font-size:14px}
+.phone #todoSheet .deadline-date,.phone #todoSheet .deadline-picker-head strong,.phone #todoSheet .deadline-weekdays,.phone #todoSheet .deadline-day{font-size:13px}
+.phone #todoSheet .deadline-clear{font-size:14px}
+.done-row.swipe-item{display:block}
+.done-row .swipe-content{display:flex;align-items:flex-start;gap:9px;min-width:0;background:var(--surface)}
+</style>
 </head>
 <body>
 <div class="phone">
@@ -406,7 +428,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       <div class="states"><button type="button" class="state" data-state="low">低能量</button><button type="button" class="state" data-state="some">中能量</button><button type="button" class="state" data-state="ready">高能量</button></div>
       <div id="stateHint" class="state-hint">选一个最接近现在的状态</div>
     </div>
-    <div id="recommendations" class="recommendations hidden"><div class="recommendation-set"><div class="recommendation-head"><small id="recommendationCount">按此刻的状态为你挑选 3 件事</small><button id="refreshRecommendations" class="refresh-recommendations" type="button">刷新任务</button></div><h2 id="recommendationHeading">现在适合开始这些</h2><div id="startEmptyState" class="todo-empty-state hidden"><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置</p></div><div id="recommendationItems"></div></div></div>
+    <div id="recommendations" class="recommendations hidden"><div class="recommendation-set"><div class="recommendation-head"><small id="recommendationCount">按此刻的状态为你挑选 3 件事</small><button id="refreshRecommendations" class="refresh-recommendations" type="button">刷新任务</button></div><h2 id="recommendationHeading">现在适合开始这些</h2><div id="startEmptyState" class="todo-empty-state hidden"><button type="button" class="todo-empty-add" id="startEmptyAdd" aria-label="新任务">＋</button><strong>当前没有要完成的任务</strong></div><div id="recommendationItems"></div></div></div>
     <div id="feedbackBlock" class="feedback-block hidden">
       <form class="feedback-form" id="feedbackForm"><input id="feedbackInput" maxlength="200" placeholder="今天有什么正反馈？" autocomplete="off"><button type="submit" aria-label="保存正反馈">→</button></form>
       <p class="feedback-motto">成功是成功之母，你只需要成功6次</p>
@@ -419,7 +441,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div class="tabs"><button class="tab active" id="todoTasksTab">任务 <span id="todoTabCount">0</span></button><button class="tab" id="todoIdeasTab">灵感 <span>0</span></button></div>
     <div id="todoTasksView">
       <div class="filters"><div class="filter-set"><div class="filter-control" id="todoProjectFilter" data-value=""><button class="filter-trigger" type="button">项目</button><div class="filter-menu hidden"></div></div><div class="filter-control" id="todoDifficultyFilter" data-value=""><button class="filter-trigger" type="button">难易程度</button><div class="filter-menu hidden"><button class="filter-option" type="button" data-value="easy">简单</button><button class="filter-option" type="button" data-value="medium">适中</button><button class="filter-option" type="button" data-value="hard">困难</button></div></div></div></div>
-      <div id="todoGroups" class="groups"><section class="group"><div class="group-title">重要且紧急 <small>0</small></div></section><section class="group"><div class="group-title">重要不紧急 <small>0</small></div></section><section class="group"><div class="group-title">紧急不重要 <small>0</small></div></section><section class="group"><div class="group-title">其他 <small>0</small></div></section></div><div id="todoEmptyState" class="todo-empty-state hidden"><span class="todo-empty-state-mark">＋</span><strong>今天的任务都完成了</strong><p>给下一件想做的事留一个位置</p></div>
+      <div id="todoGroups" class="groups"><section class="group"><div class="group-title">重要且紧急 <small>0</small></div></section><section class="group"><div class="group-title">重要不紧急 <small>0</small></div></section><section class="group"><div class="group-title">紧急不重要 <small>0</small></div></section><section class="group"><div class="group-title">其他 <small>0</small></div></section></div><div id="todoEmptyState" class="todo-empty-state hidden"><button type="button" class="todo-empty-add" id="todoEmptyAdd" aria-label="新任务">＋</button><strong>当前没有要完成的任务</strong></div>
     </div>
     <div id="todoIdeasView" class="ideas hidden"><div class="ideas-intro"><span>✦</span><div><h2>先记下来，之后再安排</h2></div></div><form class="idea-input" id="ideaForm"><input id="ideaInput" placeholder="刚刚想到什么？"><button type="submit" aria-label="保存灵感">→</button></form><div class="idea-list" id="ideaList"></div></div>
   </section>
@@ -440,7 +462,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   </section>
 
   <nav class="bottom-nav"><button id="startNav" class="bottom-item active"><span class="bottom-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l1.9 5.6 5.6 1.9-5.6 1.9L12 18.5l-1.9-5.6L4.5 11l5.6-1.9z"></path></svg></span><span>Start</span></button><button id="todoNav" class="bottom-item"><span class="bottom-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7h10M9 12h10M9 17h10"></path><circle cx="5" cy="7" r=".6"></circle><circle cx="5" cy="12" r=".6"></circle><circle cx="5" cy="17" r=".6"></circle></svg></span><span>To-do</span></button><button id="doneNav" class="bottom-item"><span class="bottom-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><span>Done</span></button><button id="calNav" class="bottom-item"><span class="bottom-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="2"></rect><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"></path></svg></span><span>Cal</span></button></nav>
-  <div id="todoSheet" class="sheet hidden"><div class="sheet-panel"><div class="sheet-head"><div><div class="eyebrow">NEW TO-DO</div><h2>添加任务</h2></div><button class="close" data-close="todoSheet">×</button></div><form class="form task-entry-form"><label>任务内容<input id="newTaskTitle" placeholder="例如：给客户确认最终版本"></label><div class="form-field"><span>难易程度</span><div class="choices"><button type="button" class="choice active" data-task-difficulty="easy">简单<small>3/4</small></button><button type="button" class="choice" data-task-difficulty="medium">适中<small>3/3</small></button><button type="button" class="choice" data-task-difficulty="hard">困难<small>2/3</small></button></div></div><div class="form-field"><span>优先级</span><div class="choices priority-choice"><button type="button" class="choice active">重要且紧急</button><button type="button" class="choice">重要不紧急</button><button type="button" class="choice">紧急不重要</button><button type="button" class="choice">其他</button></div></div><div class="form-field"><span>截止时间（可选）</span><div class="datetime-row"><input type="date" value="2026-09-30"><input type="time" value="14:00"></div></div><div class="form-field project-picker"><span>项目</span><input class="project-search" type="search" placeholder="搜索项目" autocomplete="off"><div class="project-list"><button type="button" class="project new-project" data-project-new="newProjectFieldTodo">＋ 新增项目</button></div><div id="newProjectFieldTodo" class="new-project-field hidden"><input placeholder="输入新项目名称"><button type="button" class="project-create">添加</button></div></div><label class="review-option"><input id="newTaskReview" type="checkbox">需要复盘</label><button class="sheet-submit">加入 To-do</button></form></div></div>
+  <div id="todoSheet" class="sheet hidden"><div class="sheet-panel"><div class="sheet-head"><div><div class="eyebrow">NEW TO-DO</div><h2>添加任务</h2></div><button class="close" data-close="todoSheet">×</button></div><form class="form task-entry-form"><label>任务内容<input id="newTaskTitle" placeholder="例如：给客户确认最终版本"></label><div class="form-field"><span>难易程度</span><div class="choices"><button type="button" class="choice active" data-task-difficulty="easy">简单<small>3/4</small></button><button type="button" class="choice" data-task-difficulty="medium">适中<small>3/3</small></button><button type="button" class="choice" data-task-difficulty="hard">困难<small>2/3</small></button></div></div><div class="form-field"><span>优先级</span><div class="choices priority-choice"><button type="button" class="choice active">重要且紧急</button><button type="button" class="choice">重要不紧急</button><button type="button" class="choice">紧急不重要</button><button type="button" class="choice">其他</button></div></div><div class="form-field deadline-field" id="taskDeadlineField"><span>截止时间（可选）</span><div class="datetime-row"><button type="button" class="deadline-date is-empty" id="taskDeadlineDate" aria-expanded="false">选择日期</button><input type="time" id="taskDeadlineTime" value=""></div><div id="taskDeadlinePicker" class="deadline-picker hidden"><div class="deadline-picker-head"><button type="button" id="taskDeadlinePrev" aria-label="上个月">‹</button><strong id="taskDeadlineTitle"></strong><button type="button" id="taskDeadlineNext" aria-label="下个月">›</button></div><div class="deadline-weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div><div id="taskDeadlineDays" class="deadline-days"></div><button type="button" class="deadline-clear" id="taskDeadlineClear">不填写截止日期</button></div></div><div class="form-field project-picker"><span>项目</span><input class="project-search" type="search" placeholder="搜索项目" autocomplete="off"><div class="project-list"><button type="button" class="project new-project" data-project-new="newProjectFieldTodo">＋ 新增项目</button></div><div id="newProjectFieldTodo" class="new-project-field hidden"><input placeholder="输入新项目名称"><button type="button" class="project-create">添加</button></div></div><label class="review-option"><input id="newTaskReview" type="checkbox">需要复盘</label><button class="sheet-submit">加入 To-do</button></form></div></div>
   <div id="eventSheet" class="sheet hidden"><div class="sheet-panel"><div class="sheet-head"><div><div class="eyebrow">NEW DONE EVENT</div><h2>记录完成事件</h2></div><button class="close" data-close="eventSheet">×</button></div><form class="form task-entry-form"><label>完成内容<input id="newDoneTitle" placeholder="例如：整理完了房间"></label><div class="form-field"><span>难易程度</span><div class="choices"><button type="button" class="choice active" data-event-difficulty="easy">简单<small>完成事件</small></button><button type="button" class="choice" data-event-difficulty="medium">适中<small>完成事件</small></button><button type="button" class="choice" data-event-difficulty="hard">困难<small>完成事件</small></button></div></div><div class="form-field"><span>优先级</span><div class="choices priority-choice"><button type="button" class="choice active">重要且紧急</button><button type="button" class="choice">重要不紧急</button><button type="button" class="choice">紧急不重要</button><button type="button" class="choice">其他</button></div></div><div class="form-field"><span>截止时间（可选）</span><div class="datetime-row"><input type="date" value="2026-10-13"><input type="time" value="18:00"></div></div><div class="form-field project-picker"><span>项目</span><input class="project-search" type="search" placeholder="搜索项目" autocomplete="off"><div class="project-list"><button type="button" class="project new-project" data-project-new="newProjectFieldEvent">＋ 新增项目</button></div><div id="newProjectFieldEvent" class="new-project-field hidden"><input placeholder="输入新项目名称"><button type="button" class="project-create">添加</button></div></div><label class="review-option"><input id="newDoneReview" type="checkbox">需要复盘</label><button class="sheet-submit">加入 Done</button></form></div></div>
   <div id="reviewDialog" class="review-dialog hidden"><div class="review-card"><div class="sheet-head"><div><div class="eyebrow">TASK REVIEW</div><h2 id="reviewDialogTitle"></h2></div><button class="close" data-close="reviewDialog">×</button></div><p>留下一句话就够了，完成文字输入，即完成这次复盘</p><textarea id="reviewText" maxlength="200" placeholder="这次有什么值得记住的？"></textarea><div class="review-footer"><span><b id="reviewCount">0</b>/200</span><button class="review-done" id="reviewDone" disabled>完成复盘</button></div></div></div>
   <div id="deleteDialog" class="review-dialog hidden"><div class="review-card delete-card"><div class="sheet-head"><div><div class="eyebrow">DELETE</div><h2>确认删除</h2></div><button class="close" data-close="deleteDialog" aria-label="关闭删除确认">×</button></div><p id="deleteDialogText">删除后无法恢复，确认删除这项内容吗？</p><div class="delete-actions"><button id="deleteCancel" class="delete-cancel" type="button">取消</button><button id="deleteConfirm" class="delete-confirm" type="button">确认删除</button></div></div></div>
@@ -552,7 +574,7 @@ function setAuthMode(signup){
   document.getElementById('authActions').classList.remove('hidden');
   document.getElementById('authTitle').textContent=signup?'创建轻舟账号':'登录轻舟';
   document.getElementById('authDescription').textContent=signup?'使用邮箱和密码保存你的任务，并在其他浏览器恢复':'登录后，任务会在不同浏览器和设备间保持同步';
-  document.getElementById('authSubmit').textContent=signup?'创建账号':'登录';
+  document.getElementById('authSubmit').textContent=signup?'注册':'登录';
   document.getElementById('authModeToggle').textContent=signup?'已有账号，直接登录':'创建新账号';
   document.getElementById('authForm').dataset.mode=signup?'signup':'login';
   document.getElementById('resetPassword').classList.toggle('hidden',signup);
@@ -768,16 +790,26 @@ function deleteIdeaRow(row){
   document.querySelector('#todoIdeasTab span').textContent=document.querySelectorAll('#ideaList .idea-row').length;
   persistAppState();
 }
+function deleteDoneRow(row){
+  const id=row.dataset.taskId;
+  if(id)completedReviewNotes.delete(id);
+  row.remove();
+  applyDoneFilters();
+  renderReviewList();
+  renderCal();
+  persistAppState();
+}
 function requestDeleteRow(row,type){
   pendingDeleteRow=row;
   pendingDeleteType=type;
-  const title=type==='idea'?row.querySelector('.idea-text')?.textContent.trim():row.querySelector('.task-title')?.textContent.trim();
+  const title=type==='idea'?row.querySelector('.idea-text')?.textContent.trim():type==='done'?row.querySelector('.done-copy strong')?.textContent.trim():row.querySelector('.task-title')?.textContent.trim();
   document.getElementById('deleteDialogText').textContent='删除“'+(title||'这项内容')+'”后无法恢复，确认删除吗？';
   document.getElementById('deleteDialog').classList.remove('hidden');
 }
 function confirmDeleteRow(){
   if(!pendingDeleteRow)return;
   if(pendingDeleteType==='idea')deleteIdeaRow(pendingDeleteRow);
+  else if(pendingDeleteType==='done')deleteDoneRow(pendingDeleteRow);
   else deleteTodoRow(pendingDeleteRow);
   pendingDeleteRow=null;
   document.getElementById('deleteDialog').classList.add('hidden');
@@ -801,20 +833,33 @@ function enhanceSwipeRow(row,type){
   row.dataset.swipeReady='true';
   let startX=0;
   let startY=0;
-  content.addEventListener('touchstart',event=>{
-    const touch=event.changedTouches[0];
-    startX=touch.clientX;
-    startY=touch.clientY;
-  },{passive:true});
-  content.addEventListener('touchend',event=>{
-    const touch=event.changedTouches[0];
-    const deltaX=touch.clientX-startX;
-    const deltaY=touch.clientY-startY;
+  let pointerId=null;
+  let swipedGesture=false;
+  content.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='mouse'&&event.button!==0)return;
+    pointerId=event.pointerId;
+    startX=event.clientX;
+    startY=event.clientY;
+    swipedGesture=false;
+  });
+  content.addEventListener('pointerup',event=>{
+    if(event.pointerId!==pointerId)return;
+    pointerId=null;
+    const deltaX=event.clientX-startX;
+    const deltaY=event.clientY-startY;
     if(Math.abs(deltaX)>40&&Math.abs(deltaX)>Math.abs(deltaY)){
+      swipedGesture=true;
       document.querySelectorAll('.swipe-item.swiped').forEach(item=>{if(item!==row)item.classList.remove('swiped')});
       row.classList.toggle('swiped',deltaX<0);
     }
-  },{passive:true});
+  });
+  content.addEventListener('pointercancel',()=>{pointerId=null});
+  content.addEventListener('click',event=>{
+    if(!swipedGesture)return;
+    swipedGesture=false;
+    event.preventDefault();
+    event.stopPropagation();
+  },true);
   return row;
 }
 document.addEventListener('click',event=>{
@@ -840,7 +885,9 @@ function createDoneRow(item){
   const row=document.createElement('div');row.className='done-row';row.dataset.taskId=item.id;row.dataset.project=item.project||'未分类';row.dataset.difficulty=item.difficulty||'easy';row.dataset.deadline=item.deadline||'';row.dataset.completed=String(item.completed||Date.now());row.dataset.reviewRequired=item.reviewRequired?'true':'false';
   const copy=document.createElement('div');copy.className='done-copy';const title=document.createElement('strong');title.textContent=item.title;const meta=document.createElement('small');meta.textContent=(item.display&&item.display.includes(' · '))?item.display:(row.dataset.project+' · '+difficultyLabels[row.dataset.difficulty]+' · '+(item.display||'未设置截止时间'));copy.append(title,meta);
   row.append(copy);
-  if(item.reviewNote)completedReviewNotes.set(item.id,item.reviewNote);return row;
+  if(item.reviewNote)completedReviewNotes.set(item.id,item.reviewNote);
+  enhanceSwipeRow(row,'done');
+  return row;
 }
 function applyAppState(state){
   if(!state||state.version!==1)return false;
@@ -859,6 +906,7 @@ function applyAppState(state){
   const ideas=document.getElementById('ideaList');ideas.innerHTML='';normalizeIdeas(state.ideas).forEach(idea=>ideas.appendChild(makeIdeaRow(idea.text,idea.createdAt)));
   const feedbackList=document.getElementById('feedbackList');feedbackList.replaceChildren();normalizeFeedback(state.feedback).forEach(item=>feedbackList.appendChild(makeFeedbackRow(item.text,item.createdAt)));
   updateCounts();applyTodoFilters();applyDoneFilters();renderReviewList();renderCal();
+  if(startPanel==='begin'&&activeEnergy)renderRecommendations(activeEnergy);
   return true;
 }
 const demoIdeaText=new Set(['把每周复盘变成一张很短的卡片','给常见任务准备可复用的下一步']);
@@ -1193,17 +1241,28 @@ function refreshRecommendationIds(state=activeEnergy||'some'){
   recommendationsGenerated=true;
   saveDailyRecommendations();
 }
+function ensureRecommendationIds(state){
+  const saved=recommendedTaskIdsByState[state];
+  const openIds=new Set(allTodoItems().map(item=>item.id));
+  if(!Array.isArray(saved)||(saved.length===0&&openIds.size>0)){
+    refreshRecommendationIds(state);
+    return;
+  }
+  recommendedTaskIds=saved.filter(id=>openIds.has(id));
+  recommendationState=state;
+}
 function renderRecommendations(state){
+  ensureRecommendationIds(state);
   activeEnergy=state;
   const currentItems=allTodoItems();
   const chosen=recommendedTaskIds.map(id=>currentItems.find(item=>item.id===id)).filter(Boolean);
   const displayState=state;
   const stateNames={low:'低能量',some:'中能量',ready:'高能量'};
-  const empty=!chosen.length;
+  const noTasks=!currentItems.length;
   document.getElementById('recommendationHeading').classList.remove('hidden');
   document.getElementById('recommendationHeading').textContent='现在适合开始这些';
-  document.getElementById('startEmptyState').classList.toggle('hidden',!empty);
-  document.getElementById('recommendationCount').textContent=empty?'':stateNames[displayState]+' · 为你挑了 '+chosen.length+' 件';
+  document.getElementById('startEmptyState').classList.toggle('hidden',!noTasks);
+  document.getElementById('recommendationCount').textContent=noTasks?'':stateNames[displayState]+' · 为你挑了 '+chosen.length+' 件';
   const list=document.getElementById('recommendationItems');
   list.innerHTML='';
   chosen.forEach(item=>{
@@ -1247,6 +1306,7 @@ function completeTask(button){
   meta.textContent=item.project+' · '+difficultyLabels[item.difficulty]+' · '+item.display;
   copy.append(title,meta);
   doneRow.append(copy);
+  enhanceSwipeRow(doneRow,'done');
   document.getElementById('doneList').prepend(doneRow);
   item.row.remove();
   updateCounts();
@@ -1295,11 +1355,6 @@ function selectEnergy(state){
   document.querySelectorAll('.screen.start [data-state]').forEach(item=>item.classList.toggle('active',item.dataset.state===state));
   stateHint.textContent='选一个最接近现在的状态';
   stateHint.classList.remove('hidden');
-  if(!Array.isArray(recommendedTaskIdsByState[state]))refreshRecommendationIds(state);
-  else{
-    recommendedTaskIds=recommendedTaskIdsByState[state];
-    recommendationState=state;
-  }
   renderRecommendations(state);
 }
 document.getElementById('beginTile').onclick=()=>setStartPanel('begin');
@@ -1394,6 +1449,58 @@ document.getElementById('pendingReviews').addEventListener('click',event=>{
   document.getElementById('reviewDialog').classList.remove('hidden');
 });
 
+let taskDeadlineValue='';
+let taskDeadlineView=new Date();
+function clockValue(date){
+  return String(date.getHours()).padStart(2,'0')+':'+String(date.getMinutes()).padStart(2,'0');
+}
+function showTaskDeadline(dateValue,timeValue){
+  taskDeadlineValue=dateValue||'';
+  const trigger=document.getElementById('taskDeadlineDate');
+  const time=document.getElementById('taskDeadlineTime');
+  trigger.textContent=taskDeadlineValue||'选择日期';
+  trigger.classList.toggle('is-empty',!taskDeadlineValue);
+  if(timeValue!==undefined)time.value=timeValue;
+}
+function prefillTaskDeadline(){
+  const now=new Date();
+  taskDeadlineView=new Date(now.getFullYear(),now.getMonth(),1);
+  showTaskDeadline(dateKey(now),clockValue(now));
+  const picker=document.getElementById('taskDeadlinePicker');
+  picker.classList.add('hidden');
+  document.getElementById('taskDeadlineDate').setAttribute('aria-expanded','false');
+}
+function renderTaskDeadlinePicker(){
+  const title=document.getElementById('taskDeadlineTitle');
+  const days=document.getElementById('taskDeadlineDays');
+  const year=taskDeadlineView.getFullYear();
+  const month=taskDeadlineView.getMonth();
+  title.textContent=year+'年'+(month+1)+'月';
+  days.replaceChildren();
+  const firstDay=new Date(year,month,1).getDay();
+  const totalCells=42;
+  const today=dateKey(new Date());
+  for(let index=0;index<totalCells;index++){
+    const date=new Date(year,month,index-firstDay+1);
+    const inMonth=date.getMonth()===month;
+    const key=dateKey(date);
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='deadline-day'+(inMonth?'':' muted');
+    button.textContent=String(date.getDate());
+    if(!inMonth)button.disabled=true;
+    else{
+      if(key===today)button.classList.add('today');
+      if(key===taskDeadlineValue)button.classList.add('selected');
+      button.onclick=()=>{
+        showTaskDeadline(key);
+        document.getElementById('taskDeadlinePicker').classList.add('hidden');
+        document.getElementById('taskDeadlineDate').setAttribute('aria-expanded','false');
+      };
+    }
+    days.appendChild(button);
+  }
+}
 function openTaskForm(idea){
   if(!requireAccount())return;
   if(allTodoItems().length>=10){
@@ -1402,9 +1509,43 @@ function openTaskForm(idea){
   }
   document.getElementById('newTaskTitle').value=idea||'';
   document.getElementById('newTaskReview').checked=false;
+  prefillTaskDeadline();
   updateCounts();
   document.getElementById('todoSheet').classList.remove('hidden');
 }
+document.getElementById('startEmptyAdd').onclick=()=>openTaskForm('');
+document.getElementById('todoEmptyAdd').onclick=()=>openTaskForm('');
+document.getElementById('taskDeadlineDate').onclick=()=>{
+  const picker=document.getElementById('taskDeadlinePicker');
+  const opening=picker.classList.contains('hidden');
+  picker.classList.toggle('hidden');
+  document.getElementById('taskDeadlineDate').setAttribute('aria-expanded',opening?'true':'false');
+  if(!opening)return;
+  const base=taskDeadlineValue?dateFromKey(taskDeadlineValue):new Date();
+  taskDeadlineView=new Date(base.getFullYear(),base.getMonth(),1);
+  renderTaskDeadlinePicker();
+  document.getElementById('taskDeadlinePicker').scrollIntoView({block:'nearest'});
+};
+document.getElementById('taskDeadlinePrev').onclick=()=>{
+  taskDeadlineView=new Date(taskDeadlineView.getFullYear(),taskDeadlineView.getMonth()-1,1);
+  renderTaskDeadlinePicker();
+};
+document.getElementById('taskDeadlineNext').onclick=()=>{
+  taskDeadlineView=new Date(taskDeadlineView.getFullYear(),taskDeadlineView.getMonth()+1,1);
+  renderTaskDeadlinePicker();
+};
+document.getElementById('taskDeadlineClear').onclick=()=>{
+  showTaskDeadline('','');
+  document.getElementById('taskDeadlinePicker').classList.add('hidden');
+  document.getElementById('taskDeadlineDate').setAttribute('aria-expanded','false');
+};
+document.addEventListener('click',event=>{
+  const picker=document.getElementById('taskDeadlinePicker');
+  const field=document.getElementById('taskDeadlineField');
+  if(!picker||picker.classList.contains('hidden')||field.contains(event.target))return;
+  picker.classList.add('hidden');
+  document.getElementById('taskDeadlineDate').setAttribute('aria-expanded','false');
+});
 document.getElementById('newTodo').onclick=()=>openTaskForm('');
 document.getElementById('newEvent').onclick=()=>{
   if(!requireAccount())return;
@@ -1616,8 +1757,8 @@ function addTaskToList(){
   const priority=priorityIds[priorityLabel]||'other';
   const projectButton=document.querySelector('#todoSheet .project-list .project.active');
   const project=projectButton?projectButton.textContent.trim():'未分类';
-  const date=document.querySelector('#todoSheet input[type="date"]').value;
-  const time=document.querySelector('#todoSheet input[type="time"]').value;
+  const date=taskDeadlineValue;
+  const time=document.getElementById('taskDeadlineTime').value;
   const deadline=date?date+'T'+(time||'23:59'):'';
   const display=date?new Date(deadline).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'未设置截止时间';
   const group=[...document.querySelectorAll('#todoTasksView .group')].find(item=>item.querySelector('.group-title').childNodes[0].textContent.trim()===priorityLabels[priority]);
@@ -1653,6 +1794,7 @@ function addTaskToList(){
   updateCounts();
   applyTodoFilters();
   persistAppState();
+  if(startPanel==='begin')renderRecommendations(activeEnergy||document.querySelector('.screen.start [data-state].active')?.dataset.state||'some');
 }
 document.querySelector('#todoSheet form').onsubmit=event=>{event.preventDefault();addTaskToList()};
 document.getElementById('newTodo').onclick=()=>openTaskForm('');
@@ -1684,6 +1826,7 @@ function addDoneEvent(){
   meta.textContent=project+' · '+difficultyLabels[difficulty]+' · '+display;
   copy.append(strong,meta);
   row.append(copy);
+  enhanceSwipeRow(row,'done');
   document.getElementById('doneList').prepend(row);
   document.getElementById('eventSheet').classList.add('hidden');
   document.getElementById('newDoneTitle').value='';
