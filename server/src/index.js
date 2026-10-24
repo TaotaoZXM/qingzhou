@@ -8,7 +8,9 @@ import jwt from 'jsonwebtoken';
 import { resetPasswordPage, verifyErrorPage, verifySuccessPage } from './auth-pages.js';
 import { adminUsernameFromEnv, ensureAdminUser } from './admin-user.js';
 import { createPool, isoTimestamp, migrate, readJsonColumn, utcDateTime } from './db.js';
+import { assertDirectMailEnv, passwordResetMessage, redactMailLog, singleSendMail, verificationMessage } from './directmail.js';
 import { loadEnv } from './env.js';
+import { appHomeUrl, resolvePublicOrigin } from './public-origin.js';
 
 loadEnv();
 
@@ -162,10 +164,10 @@ function normalizeUsername(value) {
   return username;
 }
 
-// Links are returned only for an explicit local debug session.
-// NODE_ENV=production never honors the flag.
+// Links are returned only for an explicit local debug session, and never once
+// DirectMail is the delivery path. NODE_ENV=production ignores the flag.
 function exposeDevLinks() {
-  return process.env.EXPOSE_DEV_LINKS === '1' && process.env.NODE_ENV !== 'production';
+  return process.env.EXPOSE_DEV_LINKS === '1' && process.env.NODE_ENV !== 'production' && !mailConfigured();
 }
 
 function mailConfigured() {
@@ -176,33 +178,68 @@ function verificationRequired() {
   return mailConfigured() || exposeDevLinks();
 }
 
+let invalidPublicUrlWarned = false;
+
 function publicOrigin(req) {
+  const configured = process.env.APP_PUBLIC_URL;
+  if (configured) {
+    const resolved = resolvePublicOrigin(configured);
+    if (resolved) return resolved;
+    if (!invalidPublicUrlWarned) {
+      invalidPublicUrlWarned = true;
+      console.error('[email] APP_PUBLIC_URL is not an http(s) origin; using the request host');
+    }
+  }
   return `${req.protocol}://${req.get('host')}`;
+}
+
+function logMailFailure(kind, email, error) {
+  const code = error?.code || 'MailError';
+  const requestId = error?.requestId || '';
+  const status = error?.status || '';
+  console.error(`[${kind}] send failed for ${email} code=${code} requestId=${requestId} status=${status} ${redactMailLog(error?.message)}`);
 }
 
 function hashResetToken(token) {
   return createHash('sha256').update(token).digest('hex');
 }
 
-// Hook: password-reset email is intentionally not sent yet.
-// Replace the body with Alibaba Direct Mail or another SMTP provider.
-// `token` and `resetUrl` stay inside this hook. They are logged only when
-// PASSWORD_RESET_DELIVERY=log or EMAIL_DELIVERY=log is set.
-export async function sendPasswordResetEmail({ email, token, resetUrl }) {
+// `token` stays inside resetUrl. It is logged only when delivery is explicitly
+// set to log, and never when EMAIL_DELIVERY=directmail.
+export async function sendPasswordResetEmail({ email, resetUrl }) {
+  if (mailConfigured()) {
+    const message = passwordResetMessage({ resetUrl, appUrl: appHomeUrl(publicOriginFromLink(resetUrl)) });
+    const result = await singleSendMail({ toAddress: email, ...message });
+    console.info(`[directmail] password reset sent to ${email} requestId=${result.requestId}`);
+    return { delivered: true };
+  }
   if (process.env.PASSWORD_RESET_DELIVERY === 'log' || process.env.EMAIL_DELIVERY === 'log') {
     console.info(`[password-reset] ${email} ${resetUrl}`);
   } else {
     console.info(`[password-reset] delivery not configured for ${email}`);
   }
-  return { delivered: false, email, token, resetUrl };
+  return { delivered: false };
 }
 
-// Hook: replace with Alibaba Cloud DirectMail. verifyUrl is not part of the
-// API response unless exposeDevLinks() is true.
-export async function sendVerificationEmail({ email, token, verifyUrl }) {
+// verifyUrl is not part of the API response when DirectMail is enabled.
+export async function sendVerificationEmail({ email, verifyUrl }) {
+  if (mailConfigured()) {
+    const message = verificationMessage({ verifyUrl, appUrl: appHomeUrl(publicOriginFromLink(verifyUrl)) });
+    const result = await singleSendMail({ toAddress: email, ...message });
+    console.info(`[directmail] verification sent to ${email} requestId=${result.requestId}`);
+    return { delivered: true };
+  }
   if (process.env.EMAIL_DELIVERY === 'log') console.info(`[email-verify] ${email} ${verifyUrl}`);
   else console.info(`[email-verify] delivery not configured for ${email}`);
-  return { delivered: false, email, token, verifyUrl };
+  return { delivered: false };
+}
+
+function publicOriginFromLink(url) {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return '';
+  }
 }
 
 async function issueVerificationUrl(pool, userId, req) {
@@ -217,9 +254,18 @@ async function issueVerificationUrl(pool, userId, req) {
     'INSERT INTO email_verification_tokens (id, user_id, token_hash, expires_at) VALUES (?, ?, ?, ?)',
     [randomUUID(), userId, hashResetToken(rawToken), utcDateTime(new Date(Date.now() + VERIFY_TTL_MS))]
   );
-  const verifyUrl = `${publicOrigin(req)}/api/auth/verify?token=${rawToken}`;
+  const verifyUrl = `${publicOrigin(req)}/api/auth/verify?token=${encodeURIComponent(rawToken)}`;
   const [rows] = await pool.execute('SELECT email FROM users WHERE id = ? LIMIT 1', [userId]);
-  await sendVerificationEmail({ email: rows[0]?.email || '', token: rawToken, verifyUrl });
+  try {
+    await sendVerificationEmail({ email: rows[0]?.email || '', verifyUrl });
+  } catch (error) {
+    try {
+      await pool.execute('DELETE FROM email_verification_tokens WHERE user_id = ? AND used_at IS NULL', [userId]);
+    } catch (cleanupError) {
+      console.error(`[email-verify] cleanup failed code=${cleanupError?.code || ''}`);
+    }
+    throw error;
+  }
   return verifyUrl;
 }
 
@@ -336,8 +382,18 @@ function createApp(pool) {
         message: '账号已创建，可以登录'
       });
     }
-    const verifyUrl = `${publicOrigin(req)}/api/auth/verify?token=${rawToken}`;
-    await sendVerificationEmail({ email: user.email, token: rawToken, verifyUrl });
+    const verifyUrl = `${publicOrigin(req)}/api/auth/verify?token=${encodeURIComponent(rawToken)}`;
+    try {
+      await sendVerificationEmail({ email: user.email, verifyUrl });
+    } catch (error) {
+      logMailFailure('email-verify', user.email, error);
+      try {
+        await pool.execute('DELETE FROM users WHERE id = ? AND email_verified_at IS NULL', [user.id]);
+      } catch (cleanupError) {
+        console.error(`[email-verify] cleanup failed code=${cleanupError?.code || ''}`);
+      }
+      return res.status(503).json({ error: '验证邮件发送失败，请稍后再试' });
+    }
     const body = {
       user: publicUser(user),
       verificationRequired: true,
@@ -362,10 +418,15 @@ function createApp(pool) {
     const matches = user ? await bcrypt.compare(password, user.password_hash) : false;
     if (!user || !matches) return res.status(401).json({ error: '邮箱或密码不正确' });
     if (needsEmailVerification(user) && verificationRequired()) {
-      const body = { error: '请先完成邮箱验证' };
-      const verifyUrl = await issueVerificationUrl(pool, user.id, req);
-      if (verifyUrl && exposeDevLinks()) body.verifyUrl = verifyUrl;
-      return res.status(403).json(body);
+      try {
+        const verifyUrl = await issueVerificationUrl(pool, user.id, req);
+        const body = { error: '请先完成邮箱验证' };
+        if (verifyUrl && exposeDevLinks()) body.verifyUrl = verifyUrl;
+        return res.status(403).json(body);
+      } catch (error) {
+        logMailFailure('email-verify', user.email, error);
+        return res.status(503).json({ error: '验证邮件发送失败，请稍后再试' });
+      }
     }
     if (needsEmailVerification(user)) {
       await pool.execute(
@@ -409,8 +470,18 @@ function createApp(pool) {
         'INSERT INTO password_reset_tokens (id, user_id, token_hash, expires_at) VALUES (?, ?, ?, ?)',
         [randomUUID(), user.id, hashResetToken(rawToken), utcDateTime(new Date(Date.now() + RESET_TTL_MS))]
       );
-      resetUrl = `${publicOrigin(req)}/api/auth/reset?token=${rawToken}`;
-      await sendPasswordResetEmail({ email: user.email, token: rawToken, resetUrl });
+      resetUrl = `${publicOrigin(req)}/api/auth/reset?token=${encodeURIComponent(rawToken)}`;
+      try {
+        await sendPasswordResetEmail({ email: user.email, resetUrl });
+      } catch (error) {
+        logMailFailure('password-reset', user.email, error);
+        try {
+          await pool.execute('DELETE FROM password_reset_tokens WHERE user_id = ? AND used_at IS NULL', [user.id]);
+        } catch (cleanupError) {
+          console.error(`[password-reset] cleanup failed code=${cleanupError?.code || ''}`);
+        }
+        return res.status(503).json({ error: '邮件发送失败，请稍后再试' });
+      }
     }
     const body = {
       ok: true,
@@ -620,6 +691,7 @@ function isDirectRun() {
 if (isDirectRun()) {
   const jwtSecret = requiredEnv('JWT_SECRET');
   if (jwtSecret.length < 16) throw new Error('JWT_SECRET must be at least 16 characters');
+  assertDirectMailEnv();
   const pool = createPool();
   await migrate(pool);
   if (await ensureAdminUser(pool)) console.log('admin account ensured');

@@ -280,13 +280,32 @@ sudo git config --system --add safe.directory /opt/qingzhou
 
 ## 邮箱验证和密码重置
 
-接口响应不会带 `verifyUrl`、`resetUrl` 或令牌。生产环境即使设置 `EXPOSE_DEV_LINKS=1` 也不会返回。本机调试要同时满足 `EXPOSE_DEV_LINKS=1` 和 `NODE_ENV` 不是 `production`。
+接口响应不会带 `verifyUrl`、`resetUrl` 或令牌。`EMAIL_DELIVERY=directmail` 时也不会带，哪怕同时开了 `EXPOSE_DEV_LINKS`。生产环境即使设置 `EXPOSE_DEV_LINKS=1` 也不会返回。本机调试要同时满足 `EXPOSE_DEV_LINKS=1`、`NODE_ENV` 不是 `production`，并且没有把发信设成 `directmail`。
 
-阿里云邮件推送还没接上时，找回密码返回「找回密码暂不可用，请联系管理员」，不会生成重置令牌。这个阶段注册的账号会标成已验证，可以直接登录；以前没验证的账号，在邮件未接入时登录也会补上验证时间，避免接上邮件后被锁在外面。邮箱所有权要等真正发信之后才算数。
+`EMAIL_DELIVERY` 不是 `directmail` 时，找回密码返回「找回密码暂不可用，请联系管理员」，不会生成重置令牌。这个阶段注册的账号会标成已验证，可以直接登录；以前没验证的账号，在邮件未接入时登录也会补上验证时间，避免接上邮件后被锁在外面。邮箱所有权要等真正发信之后才算数。
 
-接上之后：
+发信走阿里云邮件推送的 SingleSendMail 接口（杭州公网默认是 `https://dm.aliyuncs.com/`），不用 SMTP。把下面这些写进 `/etc/qingzhou.env`。不要加引号，不要把 AccessKey 或这份文件提交到 git：
 
-1. 把 `server/src/index.js` 里的 `sendVerificationEmail` 和 `sendPasswordResetEmail` 换成真实发信，并确认它们会把信发出去。
-2. 在 `/etc/qingzhou.env` 设置 `EMAIL_DELIVERY=directmail`，然后重启服务。新注册的账号需要邮箱验证才能登录。验证页仍是 `/api/auth/verify?token=`，重置页仍是 `/api/auth/reset?token=`，链接只放在邮件里。
+```bash
+EMAIL_DELIVERY=directmail
+DIRECTMAIL_ACCESS_KEY_ID=你的AccessKeyId
+DIRECTMAIL_ACCESS_KEY_SECRET=你的AccessKeySecret
+DIRECTMAIL_ACCOUNT_NAME=noreply@mail.myqingzhou.com
+APP_PUBLIC_URL=https://www.myqingzhou.com
+```
+
+`DIRECTMAIL_ACCOUNT_NAME` 是控制台里已验证的发信地址。也可以用 `EMAIL_FROM` 代替这一项。控制台区域是杭州时不用写 `DIRECTMAIL_REGION`，默认 `cn-hangzhou`。区域必须和控制台一致，否则改成对应的值（`ap-southeast-1`、`ap-southeast-2`、`us-east-1`、`eu-central-1`）。同一地域的 ECS 可以改走内网，例如 `DIRECTMAIL_ENDPOINT=https://dm-vpc.cn-hangzhou.aliyuncs.com/`。
+
+`APP_PUBLIC_URL` 是站点源。写成 `https://www.myqingzhou.com/taskmanager/` 也可以：验证和重置链接仍在源上的 `/api/auth/verify?token=` 和 `/api/auth/reset?token=`，信里另外带一条 `https://www.myqingzhou.com/taskmanager/`。不设置时用请求里的协议和主机名。
+
+可选：`DIRECTMAIL_REPLY_TO` 是回信地址。不设置则不启用控制台里的回信地址。RAM 用户只需要 `dm:SingleSendMail`。发信地址用触发类型，不要用批量地址。控制台如果开了 IP 保护，把这台 ECS 的出口 IP 加进白名单。
+
+改完重启，再用一个真实邮箱走一遍注册和找回密码，确认信到了、链接能打开，并且接口 JSON 里没有验证或重置地址：
+
+```bash
+sudo systemctl restart qingzhou
+```
+
+发信失败时，注册返回「验证邮件发送失败，请稍后再试」，找回密码和再次发送验证信返回「邮件发送失败，请稍后再试」。日志里只有错误码和 RequestId，没有 AccessKey，也没有带令牌的链接。注册如果没把信发出去，这次创建的未验证账号会删掉，可以重新注册。
 
 不要在服务器上设置 `EXPOSE_DEV_LINKS`。

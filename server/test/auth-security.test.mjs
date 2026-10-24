@@ -15,6 +15,14 @@ delete process.env.EMAIL_DELIVERY;
 delete process.env.PASSWORD_RESET_DELIVERY;
 delete process.env.ADMIN_USERNAME;
 delete process.env.ADMIN_PASSWORD_HASH;
+delete process.env.DIRECTMAIL_ACCESS_KEY_ID;
+delete process.env.DIRECTMAIL_ACCESS_KEY_SECRET;
+delete process.env.DIRECTMAIL_ACCOUNT_NAME;
+delete process.env.DIRECTMAIL_REGION;
+delete process.env.DIRECTMAIL_ENDPOINT;
+delete process.env.DIRECTMAIL_REPLY_TO;
+delete process.env.EMAIL_FROM;
+delete process.env.APP_PUBLIC_URL;
 
 const { createApp } = await import('../src/index.js');
 const { migrate } = await import('../src/db.js');
@@ -67,8 +75,44 @@ function productionEnv() {
   process.env.NODE_ENV = 'production';
   delete process.env.EXPOSE_DEV_LINKS;
   delete process.env.EMAIL_DELIVERY;
+  delete process.env.PASSWORD_RESET_DELIVERY;
   delete process.env.ADMIN_USERNAME;
   delete process.env.ADMIN_PASSWORD_HASH;
+  delete process.env.DIRECTMAIL_ACCESS_KEY_ID;
+  delete process.env.DIRECTMAIL_ACCESS_KEY_SECRET;
+  delete process.env.DIRECTMAIL_ACCOUNT_NAME;
+  delete process.env.DIRECTMAIL_REGION;
+  delete process.env.DIRECTMAIL_ENDPOINT;
+  delete process.env.DIRECTMAIL_REPLY_TO;
+  delete process.env.EMAIL_FROM;
+  delete process.env.APP_PUBLIC_URL;
+}
+
+function mockDirectMail(responseFactory) {
+  process.env.DIRECTMAIL_ACCESS_KEY_ID = 'testid';
+  process.env.DIRECTMAIL_ACCESS_KEY_SECRET = 'testsecret';
+  process.env.DIRECTMAIL_ACCOUNT_NAME = 'noreply@mail.myqingzhou.com';
+  const realFetch = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async (url, options) => {
+    const target = String(url);
+    if (target.startsWith('http://127.0.0.1') || target.startsWith('http://localhost')) {
+      return realFetch(url, options);
+    }
+    const call = { url: target, method: options?.method, body: String(options?.body || '') };
+    calls.push(call);
+    if (responseFactory) return responseFactory(call);
+    return new Response(JSON.stringify({ RequestId: 'req-test', EnvId: 'env-test' }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' }
+    });
+  };
+  return {
+    calls,
+    restore() {
+      globalThis.fetch = realFetch;
+    }
+  };
 }
 
 async function listen(app) {
@@ -77,11 +121,12 @@ async function listen(app) {
   const { port } = server.address();
   return {
     server,
-    async request(path, { method = 'GET', body, cookie } = {}) {
+    async request(path, { method = 'GET', body, cookie, headers = {} } = {}) {
       const response = await fetch(`http://127.0.0.1:${port}${path}`, {
         method,
         headers: {
           'Content-Type': 'application/json',
+          ...headers,
           ...(cookie ? { Cookie: cookie } : {})
         },
         body: body === undefined ? undefined : JSON.stringify(body)
@@ -289,7 +334,9 @@ test('password reset revokes outstanding sessions', async () => {
 test('configured mail still does not return links, and dev opt-in does', async () => {
   process.env.NODE_ENV = 'production';
   process.env.EMAIL_DELIVERY = 'directmail';
+  process.env.APP_PUBLIC_URL = 'https://www.myqingzhou.com/taskmanager/';
   delete process.env.EXPOSE_DEV_LINKS;
+  const mail = mockDirectMail();
   const app = createApp(pool);
   const http = await listen(app);
   try {
@@ -299,6 +346,14 @@ test('configured mail still does not return links, and dev opt-in does', async (
     assert.equal(registered.status, 201);
     assert.equal(registered.body.verificationRequired, true);
     assertNoAuthMaterial(registered.body);
+    const sent = new URLSearchParams(mail.calls[0].body);
+    assert.equal(sent.get('Action'), 'SingleSendMail');
+    assert.equal(sent.get('AccountName'), 'noreply@mail.myqingzhou.com');
+    assert.equal(sent.has('AccessKeySecret'), false);
+    assert.equal(sent.get('HtmlBody').includes('testsecret'), false);
+    assert.match(sent.get('HtmlBody'), /https:\/\/www\.myqingzhou\.com\/api\/auth\/verify\?token=/);
+    assert.match(sent.get('HtmlBody'), /https:\/\/www\.myqingzhou\.com\/taskmanager\//);
+    assert.doesNotMatch(sent.get('HtmlBody'), /\/taskmanager\/api/);
     const [verifyRows] = await pool.execute(
       'SELECT t.id FROM email_verification_tokens t JOIN users u ON u.id = t.user_id WHERE u.email = ?',
       [email]
@@ -329,8 +384,92 @@ test('configured mail still does not return links, and dev opt-in does', async (
       body: { email: 'dev@example.com', password }
     });
     assert.equal(devRegister.status, 201);
-    assert.match(devRegister.body.verifyUrl, /\/api\/auth\/verify\?token=/);
+    assertNoAuthMaterial(devRegister.body);
+    delete process.env.EMAIL_DELIVERY;
+    const localRegister = await http.request('/api/auth/register', {
+      method: 'POST',
+      body: { email: 'local-dev@example.com', password }
+    });
+    assert.equal(localRegister.status, 201);
+    assert.match(localRegister.body.verifyUrl, /\/api\/auth\/verify\?token=/);
   } finally {
+    mail.restore();
+    productionEnv();
+    await new Promise((resolve) => http.server.close(resolve));
+  }
+});
+
+test('directmail delivery failure does not leave a link or a usable token', async () => {
+  process.env.NODE_ENV = 'production';
+  process.env.EMAIL_DELIVERY = 'directmail';
+  process.env.APP_PUBLIC_URL = 'https://www.myqingzhou.com';
+  delete process.env.EXPOSE_DEV_LINKS;
+  const forwarded = { 'X-Forwarded-For': '203.0.113.40' };
+  let fail = true;
+  const mail = mockDirectMail(() => new Response(
+    JSON.stringify(fail
+      ? { Code: 'InvalidSendMail', Message: 'rejected token=deadbeef AccessKeySecret=testsecret', RequestId: 'rid-fail' }
+      : { RequestId: 'rid-ok', EnvId: 'env-ok' }),
+    { status: fail ? 400 : 200, headers: { 'content-type': 'application/json' } }
+  ));
+  const app = createApp(pool);
+  const http = await listen(app);
+  try {
+    const bounced = await http.request('/api/auth/register', {
+      method: 'POST',
+      headers: forwarded,
+      body: { email: 'bounce@example.com', password: 'password123' }
+    });
+    assert.equal(bounced.status, 503);
+    assert.equal(bounced.body.error, '验证邮件发送失败，请稍后再试');
+    assertNoAuthMaterial(bounced.body);
+    assert.equal(new URLSearchParams(mail.calls.at(-1).body).has('AccessKeySecret'), false);
+    const [bouncedUsers] = await pool.execute('SELECT id FROM users WHERE email = ?', ['bounce@example.com']);
+    assert.equal(bouncedUsers.length, 0);
+
+    fail = false;
+    const created = await http.request('/api/auth/register', {
+      method: 'POST',
+      headers: forwarded,
+      body: { email: 'kept@example.com', password: 'password123' }
+    });
+    assert.equal(created.status, 201);
+    assertNoAuthMaterial(created.body);
+
+    fail = true;
+    const forgot = await http.request('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: forwarded,
+      body: { email: 'kept@example.com' }
+    });
+    assert.equal(forgot.status, 503);
+    assert.equal(forgot.body.error, '邮件发送失败，请稍后再试');
+    assertNoAuthMaterial(forgot.body);
+    const [resets] = await pool.execute(
+      'SELECT t.id FROM password_reset_tokens t JOIN users u ON u.id = t.user_id WHERE u.email = ?',
+      ['kept@example.com']
+    );
+    assert.equal(resets.length, 0);
+
+    await pool.execute(
+      'DELETE t FROM email_verification_tokens t JOIN users u ON u.id = t.user_id WHERE u.email = ?',
+      ['kept@example.com']
+    );
+    const login = await http.request('/api/auth/login', {
+      method: 'POST',
+      headers: forwarded,
+      body: { email: 'kept@example.com', password: 'password123' }
+    });
+    assert.equal(login.status, 503);
+    assert.equal(login.body.error, '验证邮件发送失败，请稍后再试');
+    assertNoAuthMaterial(login.body);
+    const [tokens] = await pool.execute(
+      'SELECT t.id FROM email_verification_tokens t JOIN users u ON u.id = t.user_id WHERE u.email = ?',
+      ['kept@example.com']
+    );
+    assert.equal(tokens.length, 0);
+  } finally {
+    mail.restore();
     productionEnv();
     await new Promise((resolve) => http.server.close(resolve));
   }
@@ -558,6 +697,7 @@ test('admin username logs in without verification and regular accounts stay the 
 
   process.env.EMAIL_DELIVERY = 'directmail';
   delete process.env.EXPOSE_DEV_LINKS;
+  const mail = mockDirectMail();
   const app = createApp(pool);
   const http = await listen(app);
   try {
@@ -649,6 +789,7 @@ test('admin username logs in without verification and regular accounts stay the 
     assert.ok(version[0].email_verified_at);
     assert.equal(jwt.decode(decodeURIComponent(http.cookieFrom(rotated).split('=')[1])).tv, 1);
   } finally {
+    mail.restore();
     productionEnv();
     await new Promise((resolve) => http.server.close(resolve));
   }
