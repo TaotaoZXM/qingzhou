@@ -19,7 +19,7 @@ function loadPushHelpers() {
   const context = {
     priorityRank: { 'urgent-important': 4, important: 3, urgent: 2, other: 1 },
     recommendationRules: {
-      low: { target: 'easy', order: ['easy', 'medium', 'hard'] },
+      low: { target: 'easy', order: ['easy', 'medium'] },
       some: { target: 'medium', order: ['medium', 'easy', 'hard'] },
       ready: { target: 'hard', order: ['hard', 'medium', 'easy'] }
     },
@@ -44,6 +44,38 @@ const catalog = [
   task('h-urgent', 'hard', 'urgent-important'),
   task('m-important', 'medium', 'important')
 ];
+
+test('low energy never backfills a free slot with a hard task', () => {
+  const { chooseRecommendationIdsFrom, fillSavedPushIds } = loadPushHelpers();
+  const scarce = [
+    task('easy-1', 'easy', 'other'),
+    task('medium-1', 'medium', 'important'),
+    task('hard-top', 'hard', 'urgent-important'),
+    task('hard-next', 'hard', 'important')
+  ];
+  assert.deepEqual(
+    ids(chooseRecommendationIdsFrom(scarce, 'low', { random: keepOrder })),
+    ['easy-1', 'medium-1']
+  );
+  assert.deepEqual(
+    ids(fillSavedPushIds(['easy-1'], scarce, 'low', keepOrder)),
+    ['easy-1', 'medium-1']
+  );
+  assert.equal(fillSavedPushIds(['easy-1', 'medium-1'], scarce, 'low', keepOrder), null);
+  assert.deepEqual(
+    ids(chooseRecommendationIdsFrom([
+      task('hard-top', 'hard', 'urgent-important'),
+      task('hard-next', 'hard', 'important')
+    ], 'low', { random: keepOrder })),
+    []
+  );
+  assert.deepEqual(
+    ids(chooseRecommendationIdsFrom(scarce, 'some', { random: keepOrder })),
+    ['medium-1', 'easy-1', 'hard-top']
+  );
+  assert.match(html, /const recommendationRuleVersion='difficulty-priority-v6'/);
+  assert.match(html, /low:\{target:'easy',order:\['easy','medium'\]\}/);
+});
 
 test('ranking still picks the energy target, then priority, without a new shuffle order', () => {
   const { chooseRecommendationIdsFrom } = loadPushHelpers();
@@ -133,7 +165,7 @@ test('filling slots updates only the current energy and leaves the other list al
   const context = {
     priorityRank: { 'urgent-important': 4, important: 3, urgent: 2, other: 1 },
     recommendationRules: {
-      low: { target: 'easy', order: ['easy', 'medium', 'hard'] },
+      low: { target: 'easy', order: ['easy', 'medium'] },
       some: { target: 'medium', order: ['medium', 'easy', 'hard'] },
       ready: { target: 'hard', order: ['hard', 'medium', 'easy'] }
     },
@@ -230,9 +262,12 @@ test('Cal has the same grey eyebrow style, checkboxes stay in front, and the pus
   const cal = between('<section id="calScreen"', '<nav class="bottom-nav">');
   const todo = between('<section id="todoScreen"', '<section id="doneScreen"');
   const done = between('<section id="doneScreen"', '<section id="calScreen"');
-  assert.match(cal, /<div class="eyebrow">LOOKING BACK<\/div>\s*<h1>Cal<\/h1>/);
+  assert.match(cal, /<div class="work-head"><div><div class="eyebrow">LOOKING BACK<\/div>\s*<h1>Cal<\/h1>/);
   assert.match(todo, /<div class="eyebrow">WORKSPACE<\/div>\s*<h1>To-do<\/h1>/);
   assert.match(done, /<div class="eyebrow">CLOSED LOOP<\/div>\s*<h1>Done<\/h1>/);
+  assert.match(html, /\.screen\.cal\{text-align:left;padding:31px 20px 90px/);
+  assert.match(html, /\.phone #calScreen \.work-head h1\{font-size:27px\}/);
+  assert.doesNotMatch(html, /\.cal-header\{padding-top:/);
   assert.match(html, /\.phone #calScreen \.eyebrow\{font-size:14px\}/);
   assert.match(html, /row\.append\(check,copy,chevron\)/);
   assert.match(between('function settledTaskRow', 'function renderTodoSettled'), /row\.append\(check,main\)/);

@@ -168,7 +168,8 @@
 .phone #todoScreen .group-title small{font-size:13px}
 .phone #todoScreen .task-title{font-size:15px}
 .phone #todoScreen .meta{font-size:13px}
-.phone #doneScreen .work-head h1{font-size:27px}
+.phone #doneScreen .work-head h1,
+.phone #calScreen .work-head h1{font-size:27px}
 .phone #doneScreen .done-intro p{font-size:12px}
 .phone #doneScreen .eyebrow{font-size:14px}
 .phone #calScreen .eyebrow{font-size:14px}
@@ -221,10 +222,7 @@
 .phone .cal-record-copy small{font-size:14px}
 .phone .cal-empty{font-size:14px}
 .bottom-nav{grid-template-columns:repeat(4,1fr)}
-.screen.cal{text-align:left;padding:0 20px 90px;background:#fbfcfa}
-.cal-header{padding-top:20px}
-.cal-header-row{display:flex;align-items:center;justify-content:space-between}
-.cal-header h1{margin-top:4px;font-size:27px;letter-spacing:-.06em}
+.screen.cal{text-align:left;padding:31px 20px 90px;background:#fbfcfa}
 .cal-header p{margin-top:7px;color:var(--muted);font-size:12px}
 .cal-month{margin-top:27px;padding:16px 0 14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .cal-month-head{display:flex;align-items:center;justify-content:space-between}
@@ -294,9 +292,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 /* Dialog type and tap targets. Layout and copy stay as they are. */
 .phone .screen.start .greeting{font-weight:600;color:#252a26}
 .phone .screen.start .greeting span{color:#367769;font-weight:600}
-.phone .work-head h1,.phone .cal-header h1{font-weight:650}
+.phone .work-head h1{font-weight:650}
 .phone .screen.cal{background:#fff;padding-left:17px;padding-right:17px}
-.phone .cal-header{padding-top:54px}
 .phone .sheet-head h2,
 .phone #todoSheet .sheet-head h2,
 .phone #eventSheet .sheet-head h2,
@@ -461,7 +458,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   </section>
 
   <section id="calScreen" class="screen cal hidden">
-    <div class="cal-header"><div class="cal-header-row"><div><div class="eyebrow">LOOKING BACK</div><h1>Cal</h1></div></div><p>回看那些已经发生的事</p></div>
+    <div class="cal-header"><div class="work-head"><div><div class="eyebrow">LOOKING BACK</div><h1>Cal</h1></div></div><p>回看那些已经发生的事</p></div>
     <div class="cal-month"><div class="cal-month-head"><h2 id="calMonthTitle" class="cal-month-title"></h2><div class="cal-month-actions"><button id="calPrevMonth" type="button" aria-label="上个月">‹</button><button id="calNextMonth" type="button" aria-label="下个月">›</button></div></div><div class="cal-weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div><div id="calDays" class="cal-days"></div></div>
     <div class="cal-selected"><h2 id="calSelectedTitle"></h2><p id="calSelectedSubtitle">这一天留下的记录</p></div>
     <div id="calRecords"></div>
@@ -500,9 +497,10 @@ let recommendationsGenerated=false;
 let recommendationState=null;
 let loadedRecommendationDay='';
 function recommendationStorageKey(){return 'lightboat-recommendations-'+dateKey(new Date())}
-const recommendationRuleVersion='difficulty-priority-v5';
+// Low never includes hard: when easy and medium run out, the list stays short.
+const recommendationRuleVersion='difficulty-priority-v6';
 const recommendationRules={
-  low:{target:'easy',order:['easy','medium','hard']},
+  low:{target:'easy',order:['easy','medium']},
   some:{target:'medium',order:['medium','easy','hard']},
   ready:{target:'hard',order:['hard','medium','easy']}
 };
